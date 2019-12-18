@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# To obtain an executable.
+ocamlbuild -r\
+    -cflags -w,a\
+    -verbose 0\
+    -lib str\
+    -lib unix\
+    -package zarith\
+    -package extlib\
+    -r\
+    Main.native
+
+
+# To profile
+# ocamlbuild Main.p.native
+# Then execute
+# Then run gprof ./Main.p.native
+
