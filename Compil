@@ -6,7 +6,6 @@ ocamlbuild -r\
     -verbose 0\
     -lib str\
     -lib unix\
-    -package zarith\
     -package extlib\
     -r\
     Main.native
