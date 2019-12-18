@@ -3,13 +3,15 @@
 A tool to generate random music from short patterns using operads.
 
 ## Build
-`chmod +x Compil`
-`./Compil`
++ `chmod +x Compil`
++ `./Compil`
 
 ## Dependencies
-ocamlbuild
++ ocaml
++ ocamlbuild
++ opam
++ extlib (`opam install extlib`)
 
-TODO
 
 ## User guide
 
