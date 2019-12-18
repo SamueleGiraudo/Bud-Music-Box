@@ -8,29 +8,10 @@ exception BadStringFormat
 
 (* Returns the list of integers from a to b. *)
 let rec interval a b =
-    if a > b then
-        []
-    else
-        a :: (interval (a + 1) b)
+    List.init (b - a + 1) (fun x -> x + a);;
 
-let list_to_string element_to_string sep lst =
-    lst |> List.map element_to_string |> String.concat sep
-
-let list_from_string string_to_element sep str =
-    let tokens = String.split_on_char sep str |> List.filter (fun str -> str <> "") in
-    let res = tokens |> List.fold_left
-        (fun res tk ->
-            try
-                let a = string_to_element tk in
-                a :: res
-            with
-                |_ -> res)
-        []
-    in
-    List.rev res
-
-(* Returns the factor of the list lst starting at position start and
- * having len as length. *)
+(* Returns the factor of the list lst starting at position start and having len as
+ * length. *)
 let rec factor_list lst start len =
     if len = 0 then
         []
@@ -39,26 +20,23 @@ let rec factor_list lst start len =
     else
         factor_list (List.tl lst) (start - 1) len
 
-(* Returns the list obtained by inserting the list lst_2 at position i
- * in the list lst_1. The numbering starts by 1. *)
+(* Returns the list obtained by inserting the list lst_2 at position i in the list lst_1.
+ * The numbering starts by 1. *)
 let partial_composition_lists lst_1 i lst_2 =
     assert ((1 <= i) && (i <= List.length lst_1));
     List.flatten [factor_list lst_1 0 (i - 1) ;
         lst_2 ;
         factor_list lst_1 i ((List.length lst_1) - i)]
 
-(* Returns the index of the ith element of the list lst satisfying the
- * predicate pred. *)
+(* Returns the index of the ith element of the list lst satisfying the predicate pred. *)
 let rec index_ith_occurrence lst pred i =
     match lst with
         |[] -> raise Not_found
         |x :: lst' when (pred x) && i = 1 -> 0
-        |x :: lst' when pred x ->
-            1 + (index_ith_occurrence lst' pred (i - 1))
+        |x :: lst' when pred x -> 1 + (index_ith_occurrence lst' pred (i - 1))
         |_ :: lst' -> 1 + (index_ith_occurrence lst' pred i)
 
-(* Returns the positions of the elements of the list lst that satisfy
- * the predicate pred.  *)
+(* Returns the positions of the elements of the list lst that satisfy the predicate pred. *)
 let positions_satisfying pred lst =
     let lst' = List.combine (interval 0 ((List.length lst) - 1)) lst in
     lst' |> List.fold_left
@@ -79,13 +57,37 @@ let rec length_start lst a =
 let pick_random lst =
     List.nth lst (Random.int (List.length lst))
 
+(* Returns a string representing the list lst, where element_to_string is a map sending
+ * each element to a string representing it, and sep is a separating string. *)
+let list_to_string element_to_string sep lst =
+    lst |> List.map element_to_string |> String.concat sep
+
+(* Returns the list made of the elements separated by the char sep in the string str, where
+ * string_to_element is a map constructing an element from a string. If a string does not
+ * encode an element (the map string_to_element returns an exception), this does not appear
+ * in the resulting list. *)
+let list_from_string string_to_element sep str =
+    let tokens = String.split_on_char sep str |> List.filter (fun str -> str <> "") in
+    let res = tokens |> List.fold_left
+        (fun res tk ->
+            try
+                let a = string_to_element tk in
+                a :: res
+            with
+                |_ -> res)
+        []
+    in
+    List.rev res
+
 (* Returns the version of the string s obtained by remove spaces, tabs, and newline
  * characters. *)
 let remove_blank_characters s =
     let preprocess = Str.split (Str.regexp "[ \t\n]+") s in
     String.concat "" preprocess
 
+
 (* The test function of the module. *)
 let test () =
     print_string "Test Tools\n";
     true
+

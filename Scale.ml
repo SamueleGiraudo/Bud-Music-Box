@@ -1,15 +1,16 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019
+ * Modifications: mar. 2019, aug. 2019, dec. 2019
  *)
 
 (* A degree is a (possibly negative) integer. *)
 type degree = int
 
-(* A scale is a list of integers. This represent the integer composition
- * associated with the scale. *)
+(* A scale is a list of integers. This represents the integer composition associated with
+ * the scale. *)
 type scale = int list
 
+(* Tests if the list lst is a scale. *)
 let is_scale lst =
     if lst = [] then
         false
@@ -35,14 +36,14 @@ let insen = [1; 4; 2; 3; 2]
 
 let ryukyu = [4; 1; 2; 4; 1]
 
-(* Returns the string representing the scale scale. For instance, the
- * minor pentatonic scale is represented by "3 2 2 3 2". *)
+(* Returns the string representing the scale scale. For instance, the minor pentatonic scale
+ * is represented by "3 2 2 3 2". *)
 let to_string scale =
     assert (is_scale scale);
     Tools.list_to_string string_of_int " " scale
 
-(* Returns the scale encoded by the string str. For instance,
- * "3 2 2 3 2" encodes the minor pentatonic scale. *)
+(* Returns the scale encoded by the string str.
+ * For instance, "3 2 2 3 2" encodes the minor pentatonic scale. *)
 let from_string str =
     Tools.list_from_string int_of_string ' ' str
 
@@ -56,15 +57,14 @@ let nb_notes_by_octave scale =
     assert (is_scale scale);
     List.length scale
 
-(* Returns the interval in semitones between the degree deg and its next
- * degree in the scale scale. *)
+(* Returns the interval in semitones between the degree deg and its next degree in the scale
+ * scale. *)
 let next_interval scale deg =
     assert (is_scale scale);
     List.nth scale (deg mod (List.length scale))
 
-(* Returns the interval in steps between the root and the degree deg
- * in the scale scale. The interval is negative if the deg is
- * negative. *)
+(* Returns the interval in steps between the root and the degree deg in the scale scale. The
+ * interval is negative if the deg is negative. *)
 let rec interval_from_root scale deg =
     assert (is_scale scale);
     if deg = 0 then

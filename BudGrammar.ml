@@ -6,8 +6,7 @@
 (* A color is a name (string). *)
 type color = string
 
-(* A colored element is an element of an operad augmented with output
- * an input colors. *)
+(* A colored element is an element of an operad augmented with output an input colors. *)
 type 'a colored_element = {
     out_color : color ;
     element : 'a ;
@@ -54,6 +53,8 @@ let colored_element_from_string element_from_string str =
             create_colored_element str_output_color' x str_input_colors'
         |_ -> raise Tools.BadStringFormat
 
+(* Returns a string representing the colored element ce, where element_to_string is a map
+ * sending any underlying object to a string representing it. *)
 let colored_element_to_string element_to_string ce =
     Printf.sprintf "%s | %s | %s"
         ce.out_color
@@ -71,9 +72,9 @@ let create operad generators initial_color =
 let arity budg ce =
     budg.operad.arity ce.element
 
-(* Returns the colored unit of color of the bud grammar budg. *)
-let colored_unit budg color =
-    {out_color = color; element = budg.operad.unit; in_colors = [color]}
+(* Returns the colored one of color of the bud grammar budg. *)
+let colored_one budg color =
+    {out_color = color; element = (Operad.one budg.operad); in_colors = [color]}
 
 (* Returns the partial composition of y at position i in x in the colored operad of the bud
  * grammar budg. *)
@@ -86,8 +87,8 @@ let partial_composition budg x i y =
         Tools.partial_composition_lists x.in_colors i y.in_colors in
     {out_color = x.out_color ; element = z' ; in_colors = in_colors}
 
-(* Returns the full composition of each elements of the list lst in x
- * in the colored operad of the bud grammar budg. *)
+(* Returns the full composition of each elements of the list lst in x in the colored operad
+ * of the bud grammar budg. *)
 let full_composition budg x lst =
     assert ((arity budg x) = (List.length lst));
     assert (List.combine x.in_colors
@@ -98,8 +99,8 @@ let full_composition budg x lst =
     indexed_elements |> List.rev |> List.fold_left
         (fun res (i, y) -> partial_composition budg res i y) x
 
-(* Returns the element obtained by composing each the inputs of x 
- * having the same input color as the output of y by y. *)
+(* Returns the element obtained by composing each the inputs of x having the same input
+ * color as the output of y by y. *)
 let colored_composition budg x y =
     let lst = Tools.interval 1 (arity budg x) |> List.map
         (fun i ->
@@ -107,17 +108,15 @@ let colored_composition budg x y =
             if a = y.out_color then
                 y
             else
-                colored_unit budg a) in
+                colored_one budg a) in
     full_composition budg x lst
 
-(* Returns the list of the generators of the bud grammar budg that have
- * c as out color. *)
+(* Returns the list of the generators of the bud grammar budg that have c as out color. *)
 let generators_with_out_color budg c =
     budg.generators |> List.filter (fun g -> g.out_color = c)
 
-(* Returns the colored element obtained by using the hook random
- * generator algorithm on the bug grammar budg after nb_iter iterations.
- *)
+(* Returns the colored element obtained by using the hook random generator algorithm on the
+ * bug grammar budg after nb_iter iterations. *)
 let hook_random_generator budg nb_iter =
     assert (nb_iter >= 0);
     Tools.interval 1 nb_iter |> List.fold_left
@@ -127,18 +126,16 @@ let hook_random_generator budg nb_iter =
                 res
             else
                 let i = 1 + Random.int ar in
-                let candidates = generators_with_out_color budg
-                    (in_color res i) in
+                let candidates = generators_with_out_color budg (in_color res i) in
                 if candidates = [] then
                     res
                 else
                     let y = Tools.pick_random candidates in
                     partial_composition budg res i y)
-        (colored_unit budg budg.initial_color)
+        (colored_one budg budg.initial_color)
 
-(* Returns the colored element obtained by using the synchronous random
- * generator algorithm on the bug grammar budg after nb_iter iterations.
- *)
+(* Returns the colored element obtained by using the synchronous random generator algorithm
+ * on the bug grammar budg after nb_iter iterations. *)
 let synchronous_random_generator budg nb_iter =
     assert (nb_iter >= 0);
     Tools.interval 1 nb_iter |> List.fold_left
@@ -148,15 +145,13 @@ let synchronous_random_generator budg nb_iter =
             if candidates |> List.exists (fun lst -> lst = []) then
                 res
             else
-                let picked_gens = candidates |> List.map
-                    Tools.pick_random in
+                let picked_gens = candidates |> List.map Tools.pick_random in
                 full_composition budg res picked_gens)
-        (colored_unit budg budg.initial_color)
+        (colored_one budg budg.initial_color)
 
-(* Returns the colored element obtained by using the stratum random
- * generator algorithm on the bug grammar budg after nb_iter iterations.
- * This algorithm works by choosing at random at each step a generator
- * and performs to the right a colored composition with the element
+(* Returns the colored element obtained by using the stratum random generator algorithm on
+ * the bug grammar budg after nb_iter iterations. This algorithm works by choosing at random
+ * at each step a generator and performs to the right a colored composition with the element
  * generated at the previous step. *)
 let stratum_random_generator budg nb_iter =
     assert (nb_iter >= 0);
@@ -164,7 +159,8 @@ let stratum_random_generator budg nb_iter =
         (fun res _ ->
             let y = Tools.pick_random budg.generators in
             colored_composition budg res y)
-        (colored_unit budg budg.initial_color)
+        (colored_one budg budg.initial_color)
+
 
 (* The test function of the module. *)
 let test () =

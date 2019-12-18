@@ -1,10 +1,10 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019
+ * Modifications: mar. 2019, aug. 2019, dec. 2019
  *)
 
-(* An atom is an indivisible element of a musical pattern. It can be
- * a rest or a beat attached with a degree. *)
+(* An atom is an indivisible element of a musical pattern. It can be a rest or a beat
+ * attached with a degree. *)
 type atom =
     |Rest
     |Beat of Scale.degree

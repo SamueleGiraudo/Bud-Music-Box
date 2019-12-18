@@ -61,17 +61,17 @@ let execute_command cmd env =
         end
 
         |"show"  -> begin
-            Printf.printf "- Context: %s\n" (Context.to_string env.context);
-            print_string "- Generation settings: ";
-            Printf.printf "generation shape: ";
+            Printf.printf "- Context:\n%s\n" (Context.to_string env.context);
+            print_string "- Generation settings:\n";
+            Printf.printf "    generation shape: ";
             let _ =
             match env.generation_shape with
-                |Hook -> Printf.printf "hook; "
-                |Synchronous -> Printf.printf "synchronous; "
-                |Stratum -> Printf.printf "stratum; "
+                |Hook -> Printf.printf "hook"
+                |Synchronous -> Printf.printf "synchronous"
+                |Stratum -> Printf.printf "stratum"
             in ();
-            Printf.printf "initial color: %s; " env.initial_color;
-            Printf.printf "steps: %d\n" (env.nb_steps);
+            Printf.printf "\n    initial color: %s\n" env.initial_color;
+            Printf.printf "    steps: %d\n" (env.nb_steps);
             Printf.printf "- Patterns:\n";
             env.colored_patterns |> List.iter
                 (fun cpat ->
