@@ -7,6 +7,11 @@
  * length and the same arity. *)
 type multi_pattern = Pattern.pattern list
 
+(* A colored multi-pattern is a multi-pattern surrounded with an output color an input
+ * colors. *)
+type colored_pattern =
+    multi_pattern BudGrammar.colored_element
+
 (* Tests if the list lst of patterns is a multi-pattern. *)
 let is_multi_pattern lst =
     if lst = [] then

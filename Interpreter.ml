@@ -3,18 +3,10 @@
  * Modifications: aug. 2019, sep. 2019, dec. 2019
  *)
 
-type generation_shape =
-    |Hook
-    |Synchronous
-    |Stratum
-
-type colored_pattern =
-    MultiPattern.multi_pattern BudGrammar.colored_element
-
 type environment = {
     context : Context.context;
-    generation_shape : generation_shape;
-    colored_patterns : colored_pattern list;
+    generation_shape : BudGrammar.generation_shape;
+    colored_patterns : MultiPattern.colored_pattern list;
     initial_color : BudGrammar.color;
     nb_steps : int;
     result : MultiPattern.multi_pattern option;
@@ -26,7 +18,7 @@ let default_initial_color = "a"
 
 let default_environment =
     {context = Context.create Scale.minor_harmonic 57 192;
-    generation_shape = Hook;
+    generation_shape = BudGrammar.Hook;
     colored_patterns = [];
     initial_color = default_initial_color;
     nb_steps = 64;
@@ -43,6 +35,12 @@ let multiplicity env =
 
 let help_string =
     ""
+
+let date_string () =
+    let tmp = Unix.gettimeofday () in
+    let t = Unix.localtime tmp in
+    Printf.sprintf "%d-%d-%d_%d:%d:%d"
+        (t.tm_year + 1900) t.tm_mon t.tm_mday t.tm_hour t.tm_min t.tm_sec
 
 let execute_command cmd env =
     let cmd' =  Str.split (Str.regexp "[=:]+") cmd in
@@ -66,9 +64,9 @@ let execute_command cmd env =
             Printf.printf "    generation shape: ";
             let _ =
             match env.generation_shape with
-                |Hook -> Printf.printf "hook"
-                |Synchronous -> Printf.printf "synchronous"
-                |Stratum -> Printf.printf "stratum"
+                |BudGrammar.Hook -> Printf.printf "hook"
+                |BudGrammar.Synchronous -> Printf.printf "synchronous"
+                |BudGrammar.Stratum -> Printf.printf "stratum"
             in ();
             Printf.printf "\n    initial color: %s\n" env.initial_color;
             Printf.printf "    steps: %d\n" (env.nb_steps);
@@ -96,9 +94,9 @@ let execute_command cmd env =
 
         |"root" -> begin
             print_string "Set root.\n";
-            let str = List.nth cmd' 1 in
-            let str = Tools.remove_blank_characters str in
             try
+                let str = List.nth cmd' 1 in
+                let str = Tools.remove_blank_characters str in
                 let root = int_of_string str in
                 if (0 <= root) && (root < 128) then begin
                     let env' = {env with context = Context.set_root env.context root} in
@@ -118,9 +116,9 @@ let execute_command cmd env =
 
         |"tempo" -> begin
             print_string "Set tempo.\n";
-            let str = List.nth cmd' 1 in
-            let str = Tools.remove_blank_characters str in
             try
+                let str = List.nth cmd' 1 in
+                let str = Tools.remove_blank_characters str in
                 let tempo = int_of_string str in
                 if 1 <= tempo then begin
                     let env' = {env with context = Context.set_tempo env.context tempo} in
@@ -140,8 +138,8 @@ let execute_command cmd env =
 
         |"scale" -> begin
             print_string "Set scale.\n";
-            let str = List.nth cmd' 1 in
             try
+                let str = List.nth cmd' 1 in
                 let scale = Scale.from_string str in
                 if (Scale.is_scale scale) && Scale.nb_steps_by_octave scale = 12 then begin
                     let env' = {env with context = Context.set_scale env.context scale} in
@@ -163,36 +161,42 @@ let execute_command cmd env =
 
         |"shape" -> begin
             print_string "Set generation shape.\n";
-            let str = List.nth cmd' 1 in
-            let str = Tools.remove_blank_characters str in
-            match str with
-                |"hook" -> begin
-                    let env' = {env with generation_shape = Hook} in
-                    Printf.printf "Generation shape set to hook.\n";
-                    env'
-                end
-                |"synchronous" -> begin
-                    let env' = {env with generation_shape = Synchronous} in
-                    Printf.printf "Generation shape set to synchronous.\n";
-                    env'
-                end
-                |"stratum" -> begin
-                    let env' = {env with generation_shape = Stratum} in
-                    Printf.printf "Generation shape set to stratum.\n";
-                    env'
-                end
+            try
+                let str = List.nth cmd' 1 in
+                let str = Tools.remove_blank_characters str in
+                match str with
+                    |"hook" -> begin
+                        let env' = {env with generation_shape = BudGrammar.Hook} in
+                        Printf.printf "Generation shape set to hook.\n";
+                        env'
+                    end
+                    |"synchronous" -> begin
+                        let env' = {env with generation_shape = BudGrammar.Synchronous} in
+                        Printf.printf "Generation shape set to synchronous.\n";
+                        env'
+                    end
+                    |"stratum" -> begin
+                        let env' = {env with generation_shape = BudGrammar.Stratum} in
+                        Printf.printf "Generation shape set to stratum.\n";
+                        env'
+                    end
+                    |_ -> begin
+                        Printf.printf "Error: shape name incorrect.\n";
+                        Printf.printf "Authorized names are hook, synchronous, and stratum.\n";
+                        env
+                    end
+            with
                 |_ -> begin
-                    Printf.printf "Error: shape name incorrect.\n";
-                    Printf.printf "Authorized names are hook, synchronous, and stratum.\n";
+                    print_string "Error: input format. String expected.\n";
                     env
-                end
+            end
         end
 
         |"steps" -> begin
             print_string "Set number of steps.\n";
-            let str = List.nth cmd' 1 in
-            let str = Tools.remove_blank_characters str in
             try
+                let str = List.nth cmd' 1 in
+                let str = Tools.remove_blank_characters str in
                 let nb_steps = int_of_string str in
                 if 0 <= nb_steps then begin
                     let env' = {env with nb_steps = nb_steps} in
@@ -212,8 +216,8 @@ let execute_command cmd env =
 
         |"add" -> begin
             print_string "Add pattern.\n";
-            let str = List.nth cmd' 1 in
             try
+                let str = List.nth cmd' 1 in
                 let cpat = BudGrammar.colored_element_from_string
                     MultiPattern.from_string str in
                 let mpat = BudGrammar.get_element cpat in
@@ -257,11 +261,11 @@ let execute_command cmd env =
                     env.colored_patterns env.initial_color in
                 let result =
                     match env.generation_shape with
-                        |Hook ->
+                        |BudGrammar.Hook ->
                             BudGrammar.hook_random_generator budg env.nb_steps
-                        |Synchronous ->
+                        |BudGrammar.Synchronous ->
                             BudGrammar.synchronous_random_generator budg env.nb_steps
-                        |Stratum ->
+                        |BudGrammar.Stratum ->
                             BudGrammar.stratum_random_generator budg env.nb_steps
                 in
                 let g = BudGrammar.get_element result in
@@ -280,6 +284,7 @@ let execute_command cmd env =
             if Option.is_some env.result then begin
                 let time = int_of_float (Unix.gettimeofday ()) in
                 let file_name = Printf.sprintf "Results/Music_%d" time in
+                let file_name = Printf.sprintf "Results/Music_%s" (date_string ()) in
                 let file_abc = open_out (file_name ^ ".abc") in
                 let str_abc = ABCNotation.complete_abc_string env.context
                     (Option.get env.result) in
@@ -329,7 +334,6 @@ let execute_command cmd env =
 let interaction_loop () =
     let rec loop env =
         print_string "> ";
-        (*let cmd = Tools.remove_blank_characters (read_line ()) in*)
         let cmd = read_line () in
         let env' = execute_command cmd env in
         if env'.exit then

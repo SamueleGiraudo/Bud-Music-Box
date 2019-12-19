@@ -20,6 +20,11 @@ type 'a bud_grammar = {
     initial_color : color
 }
 
+type generation_shape =
+    |Hook
+    |Synchronous
+    |Stratum
+
 (* Tests if ce is a well-formed colored element. This is the case if and only if the number
  * of input colors is the same as the arity of the underlying element of ce. *)
 let is_colored_element operad ce =

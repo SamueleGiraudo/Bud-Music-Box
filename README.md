@@ -7,7 +7,7 @@ A tool to generate random music from short patterns using operads.
 TODO
 
 ## Dependencies
-+ `ocaml` (`>= 4.0.8`)
++ `ocaml` (`>= 4.06.0`)
 + ocamlbuild
 + opam
 + extlib (`opam install extlib`)
