@@ -87,10 +87,8 @@ let colored_one budg color =
 let partial_composition budg x i y =
     assert ((1 <= i) && (i <= arity budg x));
     assert (y.out_color = (List.nth x.in_colors (i - 1)));
-    let z' = Operad.partial_composition budg.operad
-        x.element i y.element in
-    let in_colors =
-        Tools.partial_composition_lists x.in_colors i y.in_colors in
+    let z' = Operad.partial_composition budg.operad x.element i y.element in
+    let in_colors = Tools.partial_composition_lists x.in_colors i y.in_colors in
     {out_color = x.out_color ; element = z' ; in_colors = in_colors}
 
 (* Returns the full composition of each elements of the list lst in x in the colored operad

@@ -3,6 +3,7 @@
  * Modifications: aug. 2019, sep. 2019, dec. 2019
  *)
 
+(* An environment contains all the data needed to represent an execution state. *)
 type environment = {
     context : Context.context;
     generation_shape : BudGrammar.generation_shape;
@@ -30,6 +31,8 @@ let default_environment =
     file_name = None;
     exit = false}
 
+(* Returns an option on the multiplicity of the pattern of the environment env. Returns
+ * None if there is no pattern in env. *)
 let multiplicity env =
     match env.colored_patterns with
         |[] -> None
@@ -38,7 +41,37 @@ let multiplicity env =
             Some (MultiPattern.multiplicity mpat)
 
 let help_string =
-    ""
+    "Available instructions:\n"
+        ^ "+ help\n"
+        ^ "    -> Print the help.\n"
+        ^ "+ quit\n"
+        ^ "    -> Quit the application.\n"
+        ^ "+ show\n"
+        ^ "    -> Print the current content of the generation parameters.\n"
+        ^ "+ root = NOTE\n"
+        ^ "    where NOTE is the integer code of a midi note.\n"
+        ^ "    -> Set the root note, which is the one of degree 0.\n"
+        ^ "+ tempo = VAL\n"
+        ^ "    where VAL is a nonnegative integer.\n"
+        ^ "    -> Set the tempo as VAL bpm.\n"
+        ^ "+ scale = S1 S2 ... Sk\n"
+        ^ "    where S1 S2 ... Sk is the integer composition of a 12-scale.\n"
+        ^ "    -> Set the underlying set to the specified one.\n"
+        ^ "+ shape = hook | synchronous | stratum\n"
+        ^ "    -> Set the random generation algorithm.\n"
+        ^ "+ steps = VAL\n"
+        ^ "    where VAL is a nonnegative integer value.\n"
+        ^ "    -> Set the number of generation step as VAL.\n"
+        ^ "+ add : CMP \n"
+        ^ "    where CMP is a colored mult-pattern.\n"
+        ^ "    -> Add the specified pattern into the collection of patterns.\n"
+        ^ "+ generate\n"
+        ^ "    -> Generate a musical phrase from the current generation parameters.\n"
+        ^ "+ write\n"
+        ^ "    -> Create the ABC file, postscript file, and midi file from the generated \
+            phrase.\n"
+        ^ "+ play\n"
+        ^ "    -> Play the current midi file.\n"
 
 let date_string () =
     let tmp = Unix.gettimeofday () in

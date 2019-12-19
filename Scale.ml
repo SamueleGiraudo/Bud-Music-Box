@@ -26,7 +26,7 @@ let blues = [3; 2; 1; 1; 3; 2]
 
 let major_natural = [2; 2; 1; 2; 2; 2; 1]
 
-let minor_natural = [2 ; 1 ; 2 ; 2 ; 1 ; 2 ; 2]
+let minor_natural = [2; 1; 2; 2; 1; 2; 2]
 
 let phrygian_dominant = [1; 3; 1; 2; 1; 2; 2]
 
