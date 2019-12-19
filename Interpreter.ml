@@ -14,6 +14,10 @@ type environment = {
     exit : bool
 }
 
+let path_results = "Results"
+
+let prefix_result = "Phrase_"
+
 let default_initial_color = "a"
 
 let default_environment =
@@ -332,7 +336,9 @@ let execute_command cmd env =
 
         |"write" -> begin
             if Option.is_some env.result then begin
-                let file_name = Printf.sprintf "Results/Music_%s" (date_string ()) in
+                Sys.command ("mkdir -p " ^ path_results);
+                let file_name = Printf.sprintf "%s/%s%s"
+                    path_results prefix_result (date_string ()) in
                 let env' = {env with file_name = Some file_name} in
                 let ok = create_abc_file env' in
                 if ok then

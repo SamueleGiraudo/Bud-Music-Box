@@ -13,13 +13,15 @@ TODO
 
 ## Dependencies
 For Linux systems:
-+ `ocaml` (`>= 4.06.0`)
++ `ocaml` (Version `>= 4.06.0`.)
 + `ocamlbuild`
++ `ocaml-findlib`
 + `opam`
-+ `extlib` (available by `opam install extlib`)
-+ `abc2midi`
++ `extlib` (Available by `opam install extlib`. Do not forget to run `opam init` first.)
++ `abcmidi`
 + `abcm2ps`
 + `timidity`
++ `rlwrap` (Optional.)
 
 TODO
 
