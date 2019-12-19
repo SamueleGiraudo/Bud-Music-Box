@@ -42,6 +42,63 @@ let date_string () =
     Printf.sprintf "%d-%d-%d_%d:%d:%d"
         (t.tm_year + 1900) t.tm_mon t.tm_mday t.tm_hour t.tm_min t.tm_sec
 
+let create_abc_file env =
+    if Option.is_none env.file_name || Option.is_none env.result then
+        false
+    else begin
+        let file_name_abc = (Option.get env.file_name) ^ ".abc" in
+        let result = Option.get env.result in
+        let file_abc = open_out file_name_abc in
+        let str_abc = ABCNotation.complete_abc_string env.context result in
+        Printf.fprintf file_abc "%s\n" str_abc;
+        close_out file_abc;
+        true
+    end
+
+let create_score_file env =
+    if Option.is_none env.file_name then
+        false
+    else
+        let file_name_abc = (Option.get env.file_name) ^ ".abc" in
+        let file_name_ps = (Option.get env.file_name) ^ ".ps" in
+        if not (Sys.file_exists file_name_abc) then
+            false
+        else
+             let err = Sys.command ("abcm2ps " ^ file_name_abc ^ " -O " ^ file_name_ps) in
+             if err = 0 then
+                 true
+             else
+                false
+
+let create_midi_file env =
+     if Option.is_none env.file_name then
+        false
+    else
+        let file_name_abc = (Option.get env.file_name) ^ ".abc" in
+        let file_name_mid = (Option.get env.file_name) ^ ".mid" in
+        if not (Sys.file_exists file_name_abc) then
+            false
+        else
+            let err = Sys.command ("abc2midi " ^ file_name_abc ^ " -o " ^ file_name_mid) in
+            if err = 0 then
+                true
+            else
+                false
+
+let play_phrase env =
+    if Option.is_none env.file_name then
+        false
+    else
+        let file_name_mid = (Option.get env.file_name) ^ ".mid" in
+        if not (Sys.file_exists file_name_mid) then
+            false
+        else
+            let err = Sys.command ("timidity " ^ file_name_mid) in
+            if err = 0 then
+                true
+            else
+                false
+
 let execute_command cmd env =
     let cmd' =  Str.split (Str.regexp "[=:]+") cmd in
     let instr = Tools.remove_blank_characters (List.hd cmd') in
@@ -259,15 +316,8 @@ let execute_command cmd env =
                     (BudGrammar.get_element (List.hd env.colored_patterns)) in
                 let budg = BudGrammar.create (MultiPattern.operad m)
                     env.colored_patterns env.initial_color in
-                let result =
-                    match env.generation_shape with
-                        |BudGrammar.Hook ->
-                            BudGrammar.hook_random_generator budg env.nb_steps
-                        |BudGrammar.Synchronous ->
-                            BudGrammar.synchronous_random_generator budg env.nb_steps
-                        |BudGrammar.Stratum ->
-                            BudGrammar.stratum_random_generator budg env.nb_steps
-                in
+                let result = BudGrammar.random_generator budg env.nb_steps
+                env.generation_shape in
                 let g = BudGrammar.get_element result in
                 let env' = {env with result = Some g} in
                 print_string "A phrase has been generated.\n";
@@ -282,28 +332,23 @@ let execute_command cmd env =
 
         |"write" -> begin
             if Option.is_some env.result then begin
-                let time = int_of_float (Unix.gettimeofday ()) in
-                let file_name = Printf.sprintf "Results/Music_%d" time in
                 let file_name = Printf.sprintf "Results/Music_%s" (date_string ()) in
-                let file_abc = open_out (file_name ^ ".abc") in
-                let str_abc = ABCNotation.complete_abc_string env.context
-                    (Option.get env.result) in
-                Printf.fprintf file_abc "%s\n" str_abc;
-                close_out file_abc;
-                let err = Sys.command
-                    ("abcm2ps " ^ (file_name) ^ ".abc" ^ " -O " ^ file_name ^ ".ps") in
-                if err = 0 then
+                let env' = {env with file_name = Some file_name} in
+                let ok = create_abc_file env' in
+                if ok then
                     print_string "The abc file has been generated.\n"
                 else
                     print_string "Error: the abc file has not been generated.\n";
-                let err = Sys.command
-                    ("abc2midi " ^ file_name ^ ".abc  -o " ^ file_name ^ ".mid") in
-                if err = 0 then
+                let ok = create_score_file env' in
+                if ok then
+                    print_string "The ps file has been generated.\n"
+                else
+                    print_string "Error: the ps file has not been generated.\n";
+                let ok = create_midi_file env' in
+                if ok then
                     print_string "The midi file has been generated.\n"
                 else
                     print_string "Error: the midi file has not been generated.\n";
-                let env' = {env with file_name = Some file_name} in
-                print_string "The abc, ps, and midi file have been generated.\n";
                 env'
             end
             else begin
@@ -313,14 +358,12 @@ let execute_command cmd env =
         end
 
         |"play" -> begin
-            if (Option.is_some env.file_name) then begin
-                let err = Sys.command ("timidity " ^ (Option.get env.file_name) ^ ".mid") in
-                if err = 0 then
-                    print_string "Play the phrase...\n"
+            if (Option.is_some env.file_name) then
+                let ok = play_phrase env in
+                if ok then
+                    print_string "Phrase played.\n"
                 else
                     print_string "Error: the phrase cannot be played.\n";
-                print_string "End.\n"
-            end
             else
                 print_string "The midi file has not been written, play is impossible.\n";
             env

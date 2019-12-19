@@ -20,6 +20,7 @@ type 'a bud_grammar = {
     initial_color : color
 }
 
+(* A type for specifying a random generation shape. *)
 type generation_shape =
     |Hook
     |Synchronous
@@ -166,6 +167,14 @@ let stratum_random_generator budg nb_iter =
             colored_composition budg res y)
         (colored_one budg budg.initial_color)
 
+(* Returns an element generated at random by one of the three algorithms specified by shape.
+ * The random generation uses the bud generating system budg and uses nb_iter iterations. *)
+let random_generator budg nb_iter shape =
+    assert (nb_iter >= 0);
+    match shape with
+        |Hook -> hook_random_generator budg nb_iter
+        |Synchronous -> synchronous_random_generator budg nb_iter
+        |Stratum -> stratum_random_generator budg nb_iter
 
 (* The test function of the module. *)
 let test () =
