@@ -12,6 +12,18 @@ let information =
     Printf.sprintf "%s\nCopyright (C) 2019 %s\nWritten by %s [%s]\nVersion: %s\n"
         name author author email version
 
+let help_string =
+    "Available arguments:\n"
+        ^ "-v\n"
+        ^ "    -> Print the version of the application.\n"
+        ^ "-h\n"
+        ^ "    -> Print the help.\n"
+        ^ "-i\n"
+        ^ "    -> Launch the interpreter.\n"
+        ^ "-f PATH\n"
+        ^ (Printf.sprintf "    -> Interpret the file PATH having %s as extension.\n"
+            Interpreter.extension)
+
 let has_argument arg =
     Array.mem arg Sys.argv
 
@@ -34,7 +46,9 @@ if has_argument "-v" then begin
 end;
 
 if has_argument "-h" then begin
-    print_string "Help:\n";
+    print_string "Help:\n\n";
+    print_string help_string;
+    print_newline ();
     print_string Interpreter.help_string
 end;
 
