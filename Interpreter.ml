@@ -73,6 +73,9 @@ let help_string =
         ^ "+ add : CMP \n"
         ^ "    where CMP is a colored mult-pattern.\n"
         ^ "    -> Add the specified pattern into the collection of patterns.\n"
+        ^ "+ morphism : K1 K2 ... Km \n"
+        ^ "    where K1 K2 ... Km are integers and m is the multiplicity of the patterns.\n"
+        ^ "    -> Applies the specified morphism to the current generated phrase.\n"
         ^ "+ generate\n"
         ^ "    -> Generate a musical phrase from the current generation parameters.\n"
         ^ "+ write\n"
@@ -192,7 +195,8 @@ let execute_command cmd env =
                 env.colored_patterns |> List.iter
                     (fun cpat ->
                         Printf.printf "%s\n"
-                            (BudGrammar.colored_element_to_string MultiPattern.to_string cpat));
+                            (BudGrammar.colored_element_to_string
+                                MultiPattern.to_string cpat));
                 print_string "- Generated phrase: ";
                 if Option.is_some env.result then begin
                     Printf.printf "%s\n" (MultiPattern.to_string (Option.get env.result));
@@ -239,7 +243,8 @@ let execute_command cmd env =
                     let str = Tools.remove_blank_characters str in
                     let tempo = int_of_string str in
                     if 1 <= tempo then begin
-                        let env' = {env with context = Context.set_tempo env.context tempo} in
+                        let env' = {env with context = Context.set_tempo env.context tempo}
+                        in
                         Printf.printf "Tempo set to %d.\n" tempo;
                         env'
                     end
@@ -259,15 +264,18 @@ let execute_command cmd env =
                 try
                     let str = List.nth cmd' 1 in
                     let scale = Scale.from_string str in
-                    if (Scale.is_scale scale) && Scale.nb_steps_by_octave scale = 12 then begin
-                        let env' = {env with context = Context.set_scale env.context scale} in
+                    if Scale.is_scale scale && Scale.nb_steps_by_octave scale = 12
+                            then begin
+                        let env' = {env with context = Context.set_scale env.context scale}
+                        in
                         Printf.printf "Scale set to %s.\n" (Scale.to_string scale);
                         env'
                     end
                     else begin
-                        Printf.printf "Error: scale %s incorrect.\n" (Scale.to_string scale);
-                        print_string "The octave must have 12 steps and the scale must have at \
-                            least 1 note.\n";
+                        Printf.printf "Error: scale %s incorrect.\n"
+                            (Scale.to_string scale);
+                        print_string "The octave must have 12 steps and the scale must \
+                            have at least 1 note.\n";
                         env
                     end
                 with
@@ -289,7 +297,8 @@ let execute_command cmd env =
                             env'
                         end
                         |"synchronous" -> begin
-                            let env' = {env with generation_shape = BudGrammar.Synchronous} in
+                            let env' = {env with generation_shape = BudGrammar.Synchronous}
+                            in
                             Printf.printf "Generation shape set to synchronous.\n";
                             env'
                         end
@@ -356,7 +365,8 @@ let execute_command cmd env =
                             end
                         end
                         else begin
-                            print_string "Error: this pattern has not the good multiplicity.\n";
+                            print_string
+                                "Error: this pattern has not the good multiplicity.\n";
                             env
                         end
                     end
@@ -366,7 +376,38 @@ let execute_command cmd env =
                     end
                 with
                     |_ -> begin
-                        print_string "Error: input format. Colored multi-pattern expected.\n";
+                        print_string
+                            "Error: input format. Colored multi-pattern expected.\n";
+                        env
+                    end
+            end
+
+            |"morphism" -> begin
+                try
+                    let str = List.nth cmd' 1 in
+                    if Option.is_some env.result then begin
+                        let g = Option.get env.result in
+                        let k_lst = Tools.list_from_string int_of_string ' ' str in
+                        if (MultiPattern.multiplicity g) <> List.length k_lst then begin
+                                "Error: the morphism has not the good multiplicity.\n";
+                                env
+                        end
+                        else begin
+                            let g' = MultiPattern.exterior_product g k_lst in
+                            let env' = {env with result = Some g'} in
+                            print_string "The morphism has been applied on the phrase.\n";
+                            env'
+                        end
+                    end
+                    else begin
+                        print_string
+                            "Error: morphism application impossible, there is no generated \
+                            phrase.\n";
+                        env
+                    end
+                with
+                    |_ -> begin
+                        print_string "Error: input format. Integers expected.\n";
                         env
                     end
             end
@@ -415,7 +456,8 @@ let execute_command cmd env =
                     env'
                 end
                 else begin
-                    print_string "There is no generated phrase.\n";
+                    print_string
+                        "Error: writing impossible, there is no generated phrase.\n";
                     env
                 end
             end
@@ -428,7 +470,8 @@ let execute_command cmd env =
                     else
                         print_string "Error: the phrase cannot be played.\n";
                 else
-                    print_string "The midi file has not been written, play is impossible.\n";
+                    print_string
+                        "The midi file has not been written, play is impossible.\n";
                 env
             end
 

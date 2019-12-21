@@ -9,16 +9,15 @@ type atom =
     |Rest
     |Beat of Scale.degree
 
-(* Returns a string representing the atom a. A rest is represented by a
- * start "*" and a beat is represented by the value of its degree in
- * base ten. *)
+(* Returns a string representing the atom a. A rest is represented by a start "*" and a beat
+ * is represented by the value of its degree in base ten. *)
 let to_string a =
     match a with
         |Rest -> "*"
         |Beat d -> string_of_int d
 
-(* Returns the atom encoded by the string str. For instance, "*" encodes
- * a rest and "6" encodes the beat having 6 as degree. *)
+(* Returns the atom encoded by the string str. For instance, "*" encodes a rest and "6"
+ * encodes the beat having 6 as degree. *)
 let from_string str =
     if str = "*" then
         Rest
@@ -41,20 +40,26 @@ let is_beat a =
         |Rest -> false
         |Beat _ -> true
 
-(* Returns the degree associated with the atom a. If a not a beat,
- * the exception Failure is raised. *)
+(* Returns the degree associated with the atom a. If a not a beat, the exception Failure is
+ * raised. *)
 let get_degree a =
     match a with
         |Rest -> raise Tools.BadValue
         |Beat a -> a
 
-(* Returns the atom obtained from the atom a by incrementing it by
- * k if it is a beat. When a is a rest, a is returned. *)
+(* Returns the atom obtained from the atom a by incrementing it by k if it is a beat. When a
+ * is a rest, a is returned. *)
 let incr a k =
     match a with
         |Rest -> Rest
         |Beat d -> Beat (d + k)
 
+(* Returns the atom obtained from the atom a by multiplying it by k if it is a beat. When a
+ * is a rest, a is returned. *)
+let mul a k =
+    match a with
+        |Rest -> Rest
+        |Beat d -> Beat (d * k)
 
 (* The test function of the module. *)
 let test () =

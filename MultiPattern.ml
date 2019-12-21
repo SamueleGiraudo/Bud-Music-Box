@@ -72,6 +72,12 @@ let partial_composition mpat_1 i mpat_2 =
     let pairs = List.combine mpat_1 mpat_2 in
     pairs |> List.map (fun (seq_1, seq_2) -> Pattern.partial_composition seq_1 i seq_2)
 
+(* Returns the multi-pattern obtained by multiplying each pattern of the multi-pattern mpat
+ * by the corresponding element of the list of integers k_lst. *)
+let exterior_product mpat k_lst =
+    assert ((multiplicity mpat) = List.length k_lst);
+    List.map2 (fun pat k -> Pattern.exterior_product pat k) mpat k_lst
+
 (* Returns the operad of multi-patterns of multiplicity k. *)
 let operad k =
     assert (k >= 1);

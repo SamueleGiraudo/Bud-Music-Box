@@ -73,6 +73,10 @@ let partial_composition pat_1 i pat_2 =
     let pat_2' = pat_2 |> List.map (fun a -> Atom.incr a d) in
     Tools.partial_composition_lists pat_1 (j + 1) pat_2'
 
+(* Returns the pattern obtained by multiplying by k each of its atoms. *)
+let exterior_product pat k =
+    pat |> List.map (fun a -> Atom.mul a k)
+
 (* Returns the operad of patterns. *)
 let operad =
     Operad.create arity partial_composition unit
