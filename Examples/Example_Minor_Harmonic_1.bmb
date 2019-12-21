@@ -1,0 +1,15 @@
+scale = 2 1 2 2 1 3 1
+root = 57
+tempo = 192
+steps = 128
+
+add : a | 0 * 2 * 4 * ; 0 0 0 * * * | a a b
+add : a | 0 0 ; -7 -7 | c c
+add : a | 0 1 ; 0 0 | a a
+add : b | 0 0 ; 0 0 | b
+add : c | 0 ; 0 | c
+
+shape = hook
+generate
+write
+play
