@@ -8,8 +8,7 @@ ocamlbuild -r\
     -lib unix\
     -package extlib\
     -r\
-    Main.native
-
+    Sources/Main.native
 
 # To profile
 # ocamlbuild Main.p.native
