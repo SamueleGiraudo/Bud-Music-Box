@@ -43,21 +43,18 @@ else
 
 if has_argument "-v" then begin
     print_string information
-end;
-
-if has_argument "-h" then begin
+end
+else if has_argument "-h" then begin
     print_string "Help:\n\n";
     print_string help_string;
     print_newline ();
     print_string Interpreter.help_string
-end;
-
-if has_argument "-i" then begin
+end
+else if has_argument "-i" then begin
     print_string "Interpreter\n";
     Interpreter.interaction_loop ()
-end;
-
-if has_argument "-f" then begin
+end
+else if has_argument "-f" then begin
     let path = next_argument "-f" in
     if Option.is_none path then begin
         print_string "Error: a path must follow the -f argument.\n";
@@ -68,7 +65,9 @@ if has_argument "-f" then begin
         Printf.printf "Interpretation of %s...\n" path;
         let _ = Interpreter.interpret_file path in ()
     end
-end;
+end
+else
+    print_string "Use option -h to print help.\n";
 
 exit 0;
 
