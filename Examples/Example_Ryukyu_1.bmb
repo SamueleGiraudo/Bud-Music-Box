@@ -1,0 +1,14 @@
+scale = 4 1 2 4 1
+root = 60
+tempo = 192
+steps = 8
+
+add : a | 0 1 * 2 ; 0 * 0 -2 | a a b
+add : a | 5 4 3 * ; 0 -1 * -2 | b c a
+add : b | 0 ; 0 | b
+add : c | 0 1 ; 1 0 | b b
+
+shape = stratum
+generate
+write
+play
