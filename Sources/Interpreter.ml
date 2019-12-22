@@ -83,6 +83,7 @@ let help_string =
             phrase.\n"
         ^ "+ play\n"
         ^ "    -> Play the current midi file.\n"
+        ^ "+ Comments are lines starting by a #.\n"
 
 (* Returns a string containing the current date. *)
 let date_string () =
@@ -167,6 +168,11 @@ let execute_command cmd env =
     else
         let instr = Tools.remove_blank_characters (List.hd cmd') in
         match instr with
+            |"#" -> begin
+                print_string "Comment.\n";
+                env
+            end
+
             |"help" -> begin
                 print_string "Help.\n";
                 print_string help_string;
