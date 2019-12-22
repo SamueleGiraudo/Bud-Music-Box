@@ -6,13 +6,21 @@ A tool to generate random music from short patterns using operads.
 TODO
 
 ## Build
-+ `chmod +x Compil`
-+ `./Compil`
+The following instructions hold for Linux systems like Debian or Archlinux, after 2019.
+
+1. Clone the repository somewhere by running
+`git clone https://github.com/SamueleGiraudo/Bud-Music-Box.git`
+
+2. Install all dependencies (see the section below).
+
+3. Build the project by running `chmod +x Compil` and then `./Compil`.
 
 TODO
 
 ## Dependencies
-For Linux systems:
+The following programs are needed and they are available for most of the Linux systems like
+Debian or Archlinux, after 2019.
+
 + `ocaml` (Version `>= 4.06.0`.)
 + `ocamlbuild`
 + `ocaml-findlib`
