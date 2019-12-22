@@ -9,7 +9,6 @@ add : b | -1 ; -1 | a
 add : b | 0 0 ; 0 0 | a a
 add : c | 0 ; 0 | c
 
-
 shape = hook
 show
 generate

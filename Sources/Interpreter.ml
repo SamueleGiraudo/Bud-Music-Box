@@ -169,6 +169,7 @@ let execute_command cmd env =
         let instr = Tools.remove_blank_characters (List.hd cmd') in
         if String.length instr >= 1 && String.get instr 0 = '#' then begin
             print_string "Comment.\n";
+            print_newline ();
             env
         end
         else
@@ -183,6 +184,7 @@ let execute_command cmd env =
                 |"quit"  -> begin
                     print_string "Quit.\n";
                     let env' = {env with exit = true} in
+                    print_newline ();
                     env'
                 end
 
@@ -201,7 +203,7 @@ let execute_command cmd env =
                     Printf.printf "- Patterns:\n";
                     env.colored_patterns |> List.iter
                         (fun cpat ->
-                            Printf.printf "%s\n"
+                            Printf.printf "    %s\n"
                                 (BudGrammar.colored_element_to_string
                                     MultiPattern.to_string cpat));
                     print_string "- Generated phrase: ";
@@ -216,15 +218,14 @@ let execute_command cmd env =
                         print_string "no generated phrase.\n";
                     print_string "- Current file name: ";
                     if Option.is_some env.file_name then
-                        Printf.printf "%s\n" (Option.get env.file_name)
+                        Printf.printf "%s" (Option.get env.file_name)
                     else
-                        print_string "no file name.\n";
+                        print_string "no file name.";
                     print_newline ();
                     env
                 end
 
                 |"root" -> begin
-                    print_string "Set root.\n";
                     try
                         let str = List.nth cmd' 1 in
                         let str = Tools.remove_blank_characters str in
@@ -232,26 +233,24 @@ let execute_command cmd env =
                         if (0 <= root) && (root < 128) then begin
                             let env' =
                                 {env with context = Context.set_root env.context root} in
-                            Printf.printf "Root note set to %d.\n" root;
+                            Printf.printf "Root note set to %d." root;
                             print_newline ();
                             env'
                         end
                         else begin
-                            print_string
-                                "Error: the root note must be between 0 and 127.\n";
+                            print_string "Error: the root note must be between 0 and 127.";
                             print_newline ();
                             env
                         end
                     with
                         |_ -> begin
-                            print_string "Error: input format. Integer expected.\n";
+                            print_string "Error: input format. Integer expected.";
                             print_newline ();
                             env
                         end
                 end
 
                 |"tempo" -> begin
-                    print_string "Set tempo.\n";
                     try
                         let str = List.nth cmd' 1 in
                         let str = Tools.remove_blank_characters str in
@@ -259,25 +258,24 @@ let execute_command cmd env =
                         if 1 <= tempo then begin
                             let env' =
                                 {env with context = Context.set_tempo env.context tempo} in
-                            Printf.printf "Tempo set to %d.\n" tempo;
+                            Printf.printf "Tempo set to %d." tempo;
                             print_newline ();
                             env'
                         end
                         else begin
-                            print_string "Error: the tempo must be 1 or more.\n";
+                            print_string "Error: the tempo must be 1 or more.";
                             print_newline ();
                             env
                         end
                     with
                         |_ -> begin
-                            print_string "Error: input format. Integer expected.\n";
+                            print_string "Error: input format. Integer expected.";
                             print_newline ();
                             env
                         end
                 end
 
                 |"scale" -> begin
-                    print_string "Set scale.\n";
                     try
                         let str = List.nth cmd' 1 in
                         let scale = Scale.from_string str in
@@ -285,94 +283,88 @@ let execute_command cmd env =
                                 then begin
                             let env' =
                                 {env with context = Context.set_scale env.context scale} in
-                            Printf.printf "Scale set to %s.\n" (Scale.to_string scale);
+                            Printf.printf "Scale set to %s." (Scale.to_string scale);
                             print_newline ();
                             env'
                         end
                         else begin
-                            Printf.printf "Error: scale %s incorrect.\n"
-                                (Scale.to_string scale);
-                            print_string "The octave must have 12 steps and the scale must \
-                                have at least 1 note.\n";
+                            print_string "Error: scale. ";
+                            print_string "Must have 12 steps and at least 1 note.";
                             print_newline ();
                             env
                         end
                     with
                         |_ -> begin
-                            print_string "Error: input format. Integers expected.\n";
+                            print_string "Error: input format. Integers expected.";
                             print_newline ();
                             env
                         end
                 end
 
                 |"shape" -> begin
-                    print_string "Set generation shape.\n";
                     try
                         let str = List.nth cmd' 1 in
                         let str = Tools.remove_blank_characters str in
                         match str with
                             |"hook" -> begin
                                 let env' = {env with generation_shape = BudGrammar.Hook} in
-                                Printf.printf "Generation shape set to hook.\n";
+                                Printf.printf "Generation shape set to hook.";
                                 print_newline ();
                                 env'
                             end
                             |"synchronous" -> begin
                                 let env' =
                                     {env with generation_shape = BudGrammar.Synchronous} in
-                                Printf.printf "Generation shape set to synchronous.\n";
+                                Printf.printf "Generation shape set to synchronous.";
                                 print_newline ();
                                 env'
                             end
                             |"stratum" -> begin
                                 let env' =
                                     {env with generation_shape = BudGrammar.Stratum} in
-                                Printf.printf "Generation shape set to stratum.\n";
+                                Printf.printf "Generation shape set to stratum.";
                                 print_newline ();
                                 env'
                             end
                             |_ -> begin
-                                Printf.printf "Error: shape name incorrect.\n";
-                                Printf.printf
-                                    "Name must be hook, synchronous, or stratum.\n";
+                                Printf.printf "Error: shape name incorrect. ";
+                                Printf.printf "Name must be hook, synchronous, or stratum.";
                                 print_newline ();
                                 env
                             end
                     with
                         |_ -> begin
-                            print_string "Error: input format. String expected.\n";
+                            print_string "Error: input format. String expected.";
                             print_newline ();
                             env
                     end
                 end
 
                 |"steps" -> begin
-                    print_string "Set number of steps.\n";
                     try
                         let str = List.nth cmd' 1 in
                         let str = Tools.remove_blank_characters str in
                         let nb_steps = int_of_string str in
                         if 0 <= nb_steps then begin
                             let env' = {env with nb_steps = nb_steps} in
-                            Printf.printf "Number of steps set to %d.\n" nb_steps;
+                            Printf.printf "Number of steps set to %d." nb_steps;
                             print_newline ();
                             env'
                         end
                         else begin
-                            print_string "Error: the number of steps must be 0 or more.\n";
+                            print_string "Error: the number of steps must be 0 or more.";
                             print_newline ();
                             env
                         end
                     with
                         |_ -> begin
-                            print_string "Error: input format. Integer expected.\n";
+                            print_string "Error: input format. Integer expected.";
                             print_newline ();
                             env
                         end
                 end
 
                 |"add" -> begin
-                    print_string "Add pattern.\n";
                     try
                         let str = List.nth cmd' 1 in
                         let cpat = BudGrammar.colored_element_from_string
@@ -385,34 +377,32 @@ let execute_command cmd env =
                                 if (BudGrammar.is_colored_element
                                     (MultiPattern.operad m') cpat) then begin
                                     let env' = {env with
-                                        colored_patterns = cpat :: env.colored_patterns}
-                                    in
+                                        colored_patterns = cpat :: env.colored_patterns} in
+                                    print_string "Pattern added.";
                                     print_newline ();
                                     env'
                                 end
                                 else begin
-                                    print_string "Error: inconsistent colors.\n";
+                                    print_string "Error: inconsistent colors.";
                                     print_newline ();
                                     env
                                 end
                             end
                             else begin
-                                print_string
-                                    "Error: this pattern has not the good multiplicity.\n";
+                                print_string "Error: the pattern as a wrong multiplicity.";
                                 print_newline ();
                                 env
                             end
                         end
                         else begin
-                            print_string
-                                "Error: this is a not a well-formed multi-pattern.\n";
+                            print_string "Error: bad-formed multi-pattern.";
                             print_newline ();
                             env
                         end
                     with
                         |_ -> begin
                             print_string
-                                "Error: input format. Colored multi-pattern expected.\n";
+                                "Error: input format. Colored multi-pattern expected.";
                             print_newline ();
                             env
                         end
@@ -425,15 +415,15 @@ let execute_command cmd env =
                             let g = Option.get env.result in
                             let k_lst = Tools.list_from_string int_of_string ' ' str in
                             if (MultiPattern.multiplicity g) <> List.length k_lst then begin
-                                    "Error: the morphism has not the good multiplicity.\n";
+                                print_string
+                                    "Error: the morphism has not the good multiplicity.";
                                 print_newline ();
                                 env
                             end
                             else begin
                                 let g' = MultiPattern.exterior_product g k_lst in
                                 let env' = {env with result = Some g'} in
-                                print_string
-                                    "The morphism has been applied on the phrase.\n";
+                                print_string "The morphism has been applied on the phrase.";
                                 print_newline ();
                                 env'
                             end
@@ -441,13 +431,13 @@ let execute_command cmd env =
                         else begin
                             print_string
                                 "Error: morphism application impossible, there is no \
-                                generated phrase.\n";
+                                generated phrase.";
                             print_newline ();
                             env
                         end
                     with
                         |_ -> begin
-                            print_string "Error: input format. Integers expected.\n";
+                            print_string "Error: input format. Integers expected.";
                             print_newline ();
                             env
                         end
@@ -463,13 +453,12 @@ let execute_command cmd env =
                             env.generation_shape in
                         let g = BudGrammar.get_element result in
                         let env' = {env with result = Some g} in
-                        print_string "A phrase has been generated.\n";
+                        print_string "A phrase has been generated.";
                         print_newline ();
                         env'
                     end
                     else begin
-                        print_string
-                            "Error: generation impossible, there is no generator.\n";
+                        print_string "Error: generation impossible, there is no generator.";
                         print_newline ();
                         env
                     end
@@ -482,26 +471,37 @@ let execute_command cmd env =
                             path_results prefix_result (date_string ()) in
                         let env' = {env with file_name = Some file_name} in
                         let ok = create_abc_file env' in
-                        if ok then
-                            print_string "The abc file has been generated.\n"
-                        else
-                            print_string "Error: the abc file has not been generated.\n";
+                        if ok then begin
+                            print_string "The abc file has been generated.";
+                            print_newline ()
+                        end
+                        else begin
+                            print_string "Error: the abc file has not been generated.";
+                            print_newline ()
+                        end;
                         let ok = create_score_file env' in
-                        if ok then
-                            print_string "The ps file has been generated.\n"
-                        else
-                            print_string "Error: the ps file has not been generated.\n";
+                        if ok then begin
+                            print_string "The ps file has been generated.";
+                            print_newline ()
+                        end
+                        else begin
+                            print_string "Error: the ps file has not been generated.";
+                            print_newline ()
+                        end;
                         let ok = create_midi_file env' in
-                        if ok then
-                            print_string "The midi file has been generated.\n"
-                        else
-                            print_string "Error: the midi file has not been generated.\n";
-                        print_newline ();
+                        if ok then begin
+                            print_string "The midi file has been generated.";
+                            print_newline ()
+                        end
+                        else begin
+                            print_string "Error: the midi file has not been generated.";
+                            print_newline ()
+                        end;
                         env'
                     end
                     else begin
                         print_string
-                            "Error: writing impossible, there is no generated phrase.\n";
+                            "Error: writing impossible, there is no generated phrase.";
                         print_newline ();
                         env
                     end
@@ -511,18 +511,18 @@ let execute_command cmd env =
                     if (Option.is_some env.file_name) then
                         let ok = play_phrase env in
                         if ok then
-                            print_string "Phrase played.\n"
+                            print_string "Phrase played."
                         else
-                            print_string "Error: the phrase cannot be played.\n";
+                            print_string "Error: the phrase cannot be played.";
                     else
                         print_string
-                            "The midi file has not been written, play is impossible.\n";
+                            "The midi file has not been written, play is impossible.";
                     print_newline ();
                     env
                 end
 
                 |_ -> begin
-                    print_string "Error: unknown command.\n";
+                    print_string "Error: unknown command.";
                     print_newline ();
                     env
                 end
