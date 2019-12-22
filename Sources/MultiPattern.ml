@@ -37,9 +37,9 @@ let empty k =
     Tools.interval 1 k |> List.map (fun _ -> Pattern.empty)
 
 (* Returns the k-multi-pattern consisting in k voices of the unit pattern. *)
-let unit k =
+let one k =
     assert (k >= 1);
-    Tools.interval 1 k |> List.map (fun _ -> Pattern.unit)
+    Tools.interval 1 k |> List.map (fun _ -> Pattern.one)
 
 (* Returns the arity of the multi-pattern mpat. *)
 let arity mpat =
@@ -81,7 +81,7 @@ let exterior_product mpat k_lst =
 (* Returns the operad of multi-patterns of multiplicity k. *)
 let operad k =
     assert (k >= 1);
-    Operad.create arity partial_composition (unit k)
+    Operad.create arity partial_composition (one k)
 
 
 (* The test function of the module. *)

@@ -61,6 +61,7 @@ let mul a k =
         |Rest -> Rest
         |Beat d -> Beat (d * k)
 
+
 (* The test function of the module. *)
 let test () =
     print_string "Test Atom\n";

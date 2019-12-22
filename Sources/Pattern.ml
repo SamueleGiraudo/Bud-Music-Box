@@ -22,7 +22,7 @@ let empty =
     []
 
 (* Returns the pattern consisting in one atom, having degree 0. *)
-let unit =
+let one =
     [Atom.Beat 0]
 
 (* Returns the pattern consisting in one atom of degree deg followed by duration - 1 rests.
@@ -79,7 +79,7 @@ let exterior_product pat k =
 
 (* Returns the operad of patterns. *)
 let operad =
-    Operad.create arity partial_composition unit
+    Operad.create arity partial_composition one
 
 
 (* The test function of the module. *)
