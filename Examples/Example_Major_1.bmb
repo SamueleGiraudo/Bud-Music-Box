@@ -3,7 +3,7 @@ root = 60
 tempo = 192
 steps = 128
 
-add : a | 0 * : * 0 | a
+add : a | 0 * ; * 0 | a
 add : c | -2 ; -2 | a
 add : a | 0 0 ; 0 0 | a b
 add : a | * 2 * 3 ; 0 * 1 * | c c
