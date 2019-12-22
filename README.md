@@ -1,21 +1,26 @@
 # Bud-Music-Box
-A tool to generate random music from short patterns using operads.
+A tool to generate random music from short patterns using operads, colored operads, and bud
+generating systems.
 
-## Examples
+Copyright (C) 2019 Samuele Giraudo `samuele.giraudo@u-pem.fr`
+[https://igm.univ-mlv.fr/~giraudo/]
+
+
+## Quick overview and examples
 
 TODO
 
-## Build
+
+## Building
 The following instructions hold for Linux systems like Debian or Archlinux, after 2019.
 
 1. Clone the repository somewhere by running
-`git clone https://github.com/SamueleGiraudo/Bud-Music-Box.git`
+`git clone https://github.com/SamueleGiraudo/Bud-Music-Box.git`.
 
 2. Install all dependencies (see the section below).
 
 3. Build the project by running `chmod +x Compil` and then `./Compil`.
 
-TODO
 
 ## Dependencies
 The following programs are needed and they are available for most of the Linux systems like
@@ -31,18 +36,18 @@ Debian or Archlinux, after 2019.
 + `timidity`
 + `rlwrap` (Optional.)
 
-TODO
 
 ## User guide
 
 TODO
 
+
 ## Theoretical aspects
 
 TODO
 
+
 ## Bibliography
 
 TODO
-
 
