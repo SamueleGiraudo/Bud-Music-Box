@@ -30,7 +30,7 @@ let default_initial_color = "a"
 (* Returns the default environment. *)
 let default_environment =
     {context = Context.create Scale.minor_harmonic 57 192;
-    generation_shape = BudGrammar.Hook;
+    generation_shape = BudGrammar.Partial;
     colored_patterns = [];
     initial_color = default_initial_color;
     nb_steps = 64;
@@ -65,7 +65,7 @@ let help_string =
         ^ "+ scale = S1 S2 ... Sk\n"
         ^ "    where S1 S2 ... Sk is the integer composition of a 12-scale.\n"
         ^ "    -> Set the underlying set to the specified one.\n"
-        ^ "+ shape = hook | synchronous | stratum\n"
+        ^ "+ shape = partial | full | colored\n"
         ^ "    -> Set the random generation algorithm.\n"
         ^ "+ steps = VAL\n"
         ^ "    where VAL is a nonnegative integer value.\n"
@@ -194,9 +194,9 @@ let execute_command cmd env =
                     Printf.printf "    generation shape: ";
                     let _ =
                     match env.generation_shape with
-                        |BudGrammar.Hook -> Printf.printf "hook"
-                        |BudGrammar.Synchronous -> Printf.printf "synchronous"
-                        |BudGrammar.Stratum -> Printf.printf "stratum"
+                        |BudGrammar.Partial -> Printf.printf "partial"
+                        |BudGrammar.Full -> Printf.printf "full"
+                        |BudGrammar.Colored -> Printf.printf "colored"
                     in ();
                     Printf.printf "\n    initial color: %s\n" env.initial_color;
                     Printf.printf "    steps: %d\n" (env.nb_steps);
@@ -306,29 +306,30 @@ let execute_command cmd env =
                         let str = List.nth cmd' 1 in
                         let str = Tools.remove_blank_characters str in
                         match str with
-                            |"hook" -> begin
-                                let env' = {env with generation_shape = BudGrammar.Hook} in
-                                Printf.printf "Generation shape set to hook.";
+                            |"partial" -> begin
+                                let env' = {env with generation_shape = BudGrammar.Partial}
+                                in
+                                Printf.printf "Generation shape set to partial.";
                                 print_newline ();
                                 env'
                             end
-                            |"synchronous" -> begin
+                            |"full" -> begin
                                 let env' =
-                                    {env with generation_shape = BudGrammar.Synchronous} in
-                                Printf.printf "Generation shape set to synchronous.";
+                                    {env with generation_shape = BudGrammar.Full} in
+                                Printf.printf "Generation shape set to full.";
                                 print_newline ();
                                 env'
                             end
-                            |"stratum" -> begin
+                            |"colored" -> begin
                                 let env' =
-                                    {env with generation_shape = BudGrammar.Stratum} in
-                                Printf.printf "Generation shape set to stratum.";
+                                    {env with generation_shape = BudGrammar.Colored} in
+                                Printf.printf "Generation shape set to colored.";
                                 print_newline ();
                                 env'
                             end
                             |_ -> begin
                                 Printf.printf "Error: shape name incorrect. ";
-                                Printf.printf "Name must be hook, synchronous, or stratum.";
+                                Printf.printf "Name must be partial, full, or colored.";
                                 print_newline ();
                                 env
                             end

@@ -6,7 +6,7 @@ steps = 64
 add : a | 0 * 1 * 2 ; 0 0 * * -5 | a a b
 add : a | 0 ; -5 | b
 
-shape = hook
+shape = partial
 generate
 write
 play

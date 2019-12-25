@@ -22,9 +22,9 @@ type 'a bud_grammar = {
 
 (* A type for specifying a random generation shape. *)
 type generation_shape =
-    |Hook
-    |Synchronous
-    |Stratum
+    |Partial
+    |Full
+    |Colored
 
 (* Tests if ce is a well-formed colored element. This is the case if and only if the number
  * of input colors is the same as the arity of the underlying element of ce. *)
@@ -119,9 +119,9 @@ let colored_composition budg x y =
 let generators_with_out_color budg c =
     budg.generators |> List.filter (fun g -> g.out_color = c)
 
-(* Returns the colored element obtained by using the hook random generator algorithm on the
- * bug grammar budg after nb_iter iterations. *)
-let hook_random_generator budg nb_iter =
+(* Returns the colored element obtained by using the partial random generator algorithm on
+ * the bug grammar budg after nb_iter iterations. *)
+let partial_random_generator budg nb_iter =
     assert (nb_iter >= 0);
     Tools.interval 1 nb_iter |> List.fold_left
         (fun res _ ->
@@ -138,9 +138,9 @@ let hook_random_generator budg nb_iter =
                     partial_composition budg res i y)
         (colored_one budg budg.initial_color)
 
-(* Returns the colored element obtained by using the synchronous random generator algorithm
- * on the bug grammar budg after nb_iter iterations. *)
-let synchronous_random_generator budg nb_iter =
+(* Returns the colored element obtained by using the full random generator algorithm on the
+ * bug grammar budg after nb_iter iterations. *)
+let full_random_generator budg nb_iter =
     assert (nb_iter >= 0);
     Tools.interval 1 nb_iter |> List.fold_left
         (fun res _ ->
@@ -153,11 +153,11 @@ let synchronous_random_generator budg nb_iter =
                 full_composition budg res picked_gens)
         (colored_one budg budg.initial_color)
 
-(* Returns the colored element obtained by using the stratum random generator algorithm on
+(* Returns the colored element obtained by using the colored random generator algorithm on
  * the bug grammar budg after nb_iter iterations. This algorithm works by choosing at random
  * at each step a generator and performs to the right a colored composition with the element
  * generated at the previous step. *)
-let stratum_random_generator budg nb_iter =
+let colored_random_generator budg nb_iter =
     assert (nb_iter >= 0);
     Tools.interval 1 nb_iter |> List.fold_left
         (fun res _ ->
@@ -170,9 +170,9 @@ let stratum_random_generator budg nb_iter =
 let random_generator budg nb_iter shape =
     assert (nb_iter >= 0);
     match shape with
-        |Hook -> hook_random_generator budg nb_iter
-        |Synchronous -> synchronous_random_generator budg nb_iter
-        |Stratum -> stratum_random_generator budg nb_iter
+        |Partial -> partial_random_generator budg nb_iter
+        |Full -> full_random_generator budg nb_iter
+        |Colored -> colored_random_generator budg nb_iter
 
 (* The test function of the module. *)
 let test () =

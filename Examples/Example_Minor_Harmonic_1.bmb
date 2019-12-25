@@ -9,7 +9,7 @@ add : a | 0 1 ; 0 0 | a a
 add : b | 0 0 ; 0 0 | b
 add : c | 0 ; 0 | c
 
-shape = hook
+shape = partial
 generate
 write
 play

@@ -8,7 +8,7 @@ add : a | 5 4 3 * ; 0 -1 * -2 | b c a
 add : b | 0 ; 0 | b
 add : c | 0 1 ; 1 0 | b b
 
-shape = stratum
+shape = colored
 generate
 write
 play

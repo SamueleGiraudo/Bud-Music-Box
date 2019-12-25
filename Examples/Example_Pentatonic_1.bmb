@@ -6,7 +6,7 @@ steps = 4
 add : a | 0 * * 1 2 3 * * ; 0 -5 * * * * 0 0 | a b a a
 add : b | 0 ; 0 | b
 
-shape = synchronous
+shape = full
 generate
 write
 play
