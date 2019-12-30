@@ -76,6 +76,8 @@ let help_string =
         ^ "+ morphism : K1 K2 ... Km \n"
         ^ "    where K1 K2 ... Km are integers and m is the multiplicity of the patterns.\n"
         ^ "    -> Applies the specified morphism to the current generated phrase.\n"
+        ^ "+ mirror \n"
+        ^ "    -> Replaces the current generated phrase by its mirror.\n"
         ^ "+ generate\n"
         ^ "    -> Generate a musical phrase from the current generation parameters.\n"
         ^ "+ write\n"
@@ -442,6 +444,24 @@ let execute_command cmd env =
                             print_newline ();
                             env
                         end
+                end
+
+                |"mirror" -> begin
+                    if Option.is_some env.result then begin
+                        let g = Option.get env.result in
+                        let g' = MultiPattern.mirror g in
+                        let env' = {env with result = Some g'} in
+                        print_string "The phrase has been replaced by its mirror.";
+                        print_newline ();
+                        env'
+                    end
+                    else begin
+                        print_string
+                            "Error: mirror computation impossible, there is no generated \
+                            phrase.";
+                        print_newline ();
+                        env
+                    end
                 end
 
                 |"generate" -> begin

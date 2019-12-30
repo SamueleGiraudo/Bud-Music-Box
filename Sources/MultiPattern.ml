@@ -78,6 +78,10 @@ let exterior_product mpat k_lst =
     assert ((multiplicity mpat) = List.length k_lst);
     List.map2 (fun pat k -> Pattern.exterior_product pat k) mpat k_lst
 
+(* Returns the mirror image of the multi-pattern mpat. *)
+let mirror mpat =
+    mpat |> List.map Pattern.mirror
+
 (* Returns the operad of multi-patterns of multiplicity k. *)
 let operad k =
     assert (k >= 1);

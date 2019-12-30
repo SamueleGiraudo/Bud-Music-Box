@@ -77,6 +77,10 @@ let partial_composition pat_1 i pat_2 =
 let exterior_product pat k =
     pat |> List.map (fun a -> Atom.mul a k)
 
+(* Returns the mirror image of the pattern pat. *)
+let mirror pat =
+    List.rev pat
+
 (* Returns the operad of patterns. *)
 let operad =
     Operad.create arity partial_composition one
