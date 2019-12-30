@@ -6,10 +6,8 @@
 (* An environment contains all the data needed to represent an execution state. *)
 type environment = {
     context : Context.context;
-    generation_shape : BudGrammar.generation_shape;
+    parameters : Generation.parameters;
     colored_patterns : MultiPattern.colored_pattern list;
-    initial_color : BudGrammar.color;
-    nb_steps : int;
     result : MultiPattern.multi_pattern option;
     file_name : string option;
     exit : bool
@@ -24,16 +22,16 @@ let path_results = "Results"
 (* The prefix of all the generated result files  *)
 let prefix_result = "Phrase_"
 
-(* The default initial color of the underlying bud grammar. *)
-let default_initial_color = "a"
-
 (* Returns the default environment. *)
 let default_environment =
+    let parameters = Generation.create_parameters
+        Generation.default_initial_color
+        64
+        BudGrammar.Partial
+    in
     {context = Context.create Scale.minor_harmonic 57 192;
-    generation_shape = BudGrammar.Partial;
+    parameters = parameters;
     colored_patterns = [];
-    initial_color = default_initial_color;
-    nb_steps = 64;
     result = None;
     file_name = None;
     exit = false}
@@ -46,6 +44,17 @@ let multiplicity env =
         |cpat :: _ ->
             let mpat = BudGrammar.get_element cpat in
             Some (MultiPattern.multiplicity mpat)
+
+(* Returns the environment obtained by setting at nb_steps the number of generation steps
+ * of the environment env. *)
+let set_nb_steps env nb_steps =
+    assert (nb_steps >= 0);
+    {env with parameters = Generation.set_nb_steps env.parameters nb_steps}
+
+(* Returns the environment obtained by setting at shape the generation shape of the
+ * environment env. *)
+let set_shape env shape =
+    {env with parameters = Generation.set_shape env.parameters shape}
 
 (* Returns the help string, containing explanations for each command. *)
 let help_string =
@@ -195,13 +204,14 @@ let execute_command cmd env =
                     print_string "- Generation settings:\n";
                     Printf.printf "    generation shape: ";
                     let _ =
-                    match env.generation_shape with
+                    match Generation.shape env.parameters with
                         |BudGrammar.Partial -> Printf.printf "partial"
                         |BudGrammar.Full -> Printf.printf "full"
                         |BudGrammar.Colored -> Printf.printf "colored"
                     in ();
-                    Printf.printf "\n    initial color: %s\n" env.initial_color;
-                    Printf.printf "    steps: %d\n" (env.nb_steps);
+                    Printf.printf "\n    initial color: %s\n"
+                        (Generation.initial_color env.parameters);
+                    Printf.printf "    steps: %d\n" (Generation.nb_steps env.parameters);
                     Printf.printf "- Patterns:\n";
                     env.colored_patterns |> List.iter
                         (fun cpat ->
@@ -309,22 +319,19 @@ let execute_command cmd env =
                         let str = Tools.remove_blank_characters str in
                         match str with
                             |"partial" -> begin
-                                let env' = {env with generation_shape = BudGrammar.Partial}
-                                in
+                                let env' = set_shape env BudGrammar.Partial in
                                 Printf.printf "Generation shape set to partial.";
                                 print_newline ();
                                 env'
                             end
                             |"full" -> begin
-                                let env' =
-                                    {env with generation_shape = BudGrammar.Full} in
+                                let env' = set_shape env BudGrammar.Full in
                                 Printf.printf "Generation shape set to full.";
                                 print_newline ();
                                 env'
                             end
                             |"colored" -> begin
-                                let env' =
-                                    {env with generation_shape = BudGrammar.Colored} in
+                                let env' = set_shape env BudGrammar.Colored in
                                 Printf.printf "Generation shape set to colored.";
                                 print_newline ();
                                 env'
@@ -349,7 +356,7 @@ let execute_command cmd env =
                         let str = Tools.remove_blank_characters str in
                         let nb_steps = int_of_string str in
                         if 0 <= nb_steps then begin
-                            let env' = {env with nb_steps = nb_steps} in
+                            let env' = set_nb_steps env nb_steps in
                             Printf.printf "Number of steps set to %d." nb_steps;
                             print_newline ();
                             env'
@@ -466,13 +473,9 @@ let execute_command cmd env =
 
                 |"generate" -> begin
                     if env.colored_patterns <> [] then begin
-                        let m = MultiPattern.multiplicity
-                            (BudGrammar.get_element (List.hd env.colored_patterns)) in
-                        let budg = BudGrammar.create (MultiPattern.operad m)
-                            env.colored_patterns env.initial_color in
-                        let result = BudGrammar.random_generator budg env.nb_steps
-                            env.generation_shape in
-                        let g = BudGrammar.get_element result in
+                        let g = Generation.from_colored_patterns
+                            env.parameters
+                            env.colored_patterns in
                         let env' = {env with result = Some g} in
                         print_string "A phrase has been generated.";
                         print_newline ();
@@ -483,6 +486,38 @@ let execute_command cmd env =
                         print_newline ();
                         env
                     end
+                end
+
+                |"arpeggiate" -> begin
+                    try
+                        let str = List.nth cmd' 1 in
+                        let deg_lst = Tools.list_from_string int_of_string ' ' str in
+                        if (List.length env.colored_patterns) <> 1
+                                && (Option.get (multiplicity env) <> 1) then begin
+                            let pat =
+                            MultiPattern.pattern
+                                (BudGrammar.get_element (List.hd env.colored_patterns))
+                                1
+                            in
+                            let g = Generation.arpeggiation
+                                env.parameters pat deg_lst in
+                            let env' = {env with result = Some g} in
+                            print_string "An arpeggiation has been generated.";
+                            print_newline ();
+                            env'
+                        end
+                        else begin
+                            print_string "Error: arpeggiation impossible, there must be \
+                                one 1-pattern.";
+                            print_newline ();
+                            env
+                        end
+                    with
+                        |_ -> begin
+                            print_string "Error: input format. Integers expected.";
+                            print_newline ();
+                            env
+                        end
                 end
 
                 |"write" -> begin

@@ -31,10 +31,16 @@ let to_string mpat =
 let from_string str =
     Tools.list_from_string Pattern.from_string ';' str
 
+(* Returns the k-multi-pattern obtained by stacking the pattern pat with k copies of
+ * itself. *)
+let from_pattern pat k =
+    assert (k >= 1);
+    List.init k (fun _ -> pat)
+
 (* Returns the k-multi-pattern consisting in k voices of the empty pattern. *)
 let empty k =
     assert (k >= 1);
-    Tools.interval 1 k |> List.map (fun _ -> Pattern.empty)
+    from_pattern Pattern.empty k
 
 (* Returns the k-multi-pattern consisting in k voices of the unit pattern. *)
 let one k =
@@ -81,6 +87,19 @@ let exterior_product mpat k_lst =
 (* Returns the mirror image of the multi-pattern mpat. *)
 let mirror mpat =
     mpat |> List.map Pattern.mirror
+
+(* Returns the m-multi-pattern, where m is the length of the list of integers deg_lst,
+ * obtained by arpeggiating the degrees of deg_lst. This produces a multi-pattern of length
+ * m and of arity 1.
+ * For instance, for deg_lst = [0; 2; 4], the function returns the 3-multi-pattern
+ * 0 * * ; * 2 * ; * * 4.
+ *)
+let arpeggio deg_lst =
+    assert (deg_lst <> []);
+    let len = List.length deg_lst in
+    let pairs = List.combine (Tools.interval 0 (len - 1)) deg_lst in
+    pairs |> List.map
+        (fun (i, d) -> List.init len (fun j -> if j = i then Atom.Beat d else Atom.Rest))
 
 (* Returns the operad of multi-patterns of multiplicity k. *)
 let operad k =
