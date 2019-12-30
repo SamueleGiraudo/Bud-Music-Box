@@ -89,6 +89,10 @@ let help_string =
         ^ "    -> Replaces the current generated phrase by its mirror.\n"
         ^ "+ generate\n"
         ^ "    -> Generate a musical phrase from the current generation parameters.\n"
+        ^ "arpeggiate : D1 D2 ... Dm \n"
+        ^ "    where D1 D2 ... Dm are integers and m is a positive integer.\n"
+        ^ "    -> Arpeggiate the current pattern. This pattern must have 1 as multiplicity \
+               and must be alone.\n"
         ^ "+ write\n"
         ^ "    -> Create the ABC file, postscript file, and midi file from the generated \
             phrase.\n"
@@ -179,7 +183,7 @@ let execute_command cmd env =
     else
         let instr = Tools.remove_blank_characters (List.hd cmd') in
         if String.length instr >= 1 && String.get instr 0 = '#' then begin
-            print_string "Comment.\n";
+            print_string "Comment.";
             print_newline ();
             env
         end
@@ -492,15 +496,14 @@ let execute_command cmd env =
                     try
                         let str = List.nth cmd' 1 in
                         let deg_lst = Tools.list_from_string int_of_string ' ' str in
-                        if (List.length env.colored_patterns) <> 1
-                                && (Option.get (multiplicity env) <> 1) then begin
+                        if (List.length env.colored_patterns) = 1
+                                && (Option.get (multiplicity env)) = 1 then begin
                             let pat =
                             MultiPattern.pattern
                                 (BudGrammar.get_element (List.hd env.colored_patterns))
                                 1
                             in
-                            let g = Generation.arpeggiation
-                                env.parameters pat deg_lst in
+                            let g = Generation.arpeggiation env.parameters pat deg_lst in
                             let env' = {env with result = Some g} in
                             print_string "An arpeggiation has been generated.";
                             print_newline ();

@@ -60,7 +60,7 @@ let multi_pattern_to_abc_string context mpat =
         (fun i pat ->
             Printf.sprintf "V:voice%d\n%%%%MIDI program %d\n%s\n"
                 (i + 1)
-                1
+                35 (* Fretless bass.*)
                 (pattern_to_abc_string context pat)) in
     (String.concat "" lst) ^ "\n"
 
