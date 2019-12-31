@@ -89,7 +89,11 @@ let help_string =
         ^ "    -> Replaces the current generated phrase by its mirror.\n"
         ^ "+ generate\n"
         ^ "    -> Generate a musical phrase from the current generation parameters.\n"
-        ^ "arpeggiate : D1 D2 ... Dm \n"
+        ^ "+ temporize : VAL\n"
+        ^ "    where VAL is a positive integer value.\n"
+        ^ "    -> Incorporate some delays into the current pattern, ranging between 1 and \
+               VAL. This pattern must have 1 as multiplicity and must be alone.\n"
+        ^ "+ arpeggiate : D1 D2 ... Dm\n"
         ^ "    where D1 D2 ... Dm are integers and m is a positive integer.\n"
         ^ "    -> Arpeggiate the current pattern. This pattern must have 1 as multiplicity \
                and must be alone.\n"
@@ -492,14 +496,49 @@ let execute_command cmd env =
                     end
                 end
 
+                |"temporize" -> begin
+                    try
+                        let str = List.nth cmd' 1 in
+                        let str = Tools.remove_blank_characters str in
+                        let max_delay = int_of_string str in
+                        if (List.length env.colored_patterns) <> 1
+                                || (Option.get (multiplicity env)) <> 1 then begin
+                            print_string "Error: temporization impossible, there must be \
+                                one 1-pattern.";
+                            print_newline ();
+                            env
+                        end
+                        else if max_delay <= 0 then begin
+                            print_string "Error: the maximal delay must be 1 or more.";
+                            print_newline ();
+                            env
+                        end
+                        else begin
+                            let pat = MultiPattern.pattern
+                                (BudGrammar.get_element (List.hd env.colored_patterns))
+                                1
+                            in
+                            let g = Generation.temporization env.parameters pat max_delay in
+                            let env' = {env with result = Some g} in
+                            print_string "A temporization has been generated.";
+                            print_newline ();
+                            env'
+                        end
+                    with
+                        |_ -> begin
+                            print_string "Error: input format. Integer expected.";
+                            print_newline ();
+                            env
+                        end
+                end
+
                 |"arpeggiate" -> begin
                     try
                         let str = List.nth cmd' 1 in
                         let deg_lst = Tools.list_from_string int_of_string ' ' str in
                         if (List.length env.colored_patterns) = 1
                                 && (Option.get (multiplicity env)) = 1 then begin
-                            let pat =
-                            MultiPattern.pattern
+                            let pat = MultiPattern.pattern
                                 (BudGrammar.get_element (List.hd env.colored_patterns))
                                 1
                             in

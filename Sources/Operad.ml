@@ -3,8 +3,8 @@
  * Modifications: mar. 2019, apr. 2019, aug. 2019, dec. 2019
  *)
 
-(* An operad is specified by a map sending any of its elements to its
- * arity, a partial composition map, and a unit. *)
+(* An operad is specified by a map sending any of its elements to its arity, a partial
+ * composition map, and a unit. *)
 type 'a operad = {
     arity : 'a -> int;
     partial_composition : 'a -> int -> 'a -> 'a;
