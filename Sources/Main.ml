@@ -1,15 +1,16 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, apr. 2019, may 2019, aug. 2019, dec. 2019
+ * Modifications: mar. 2019, apr. 2019, may 2019, aug. 2019, dec. 2019, jan. 2020
  *)
 
 let name = "Bud Music Box"
 let version = "0.01"
+let version = "0.10"
 let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 
 let information =
-    Printf.sprintf "%s\nCopyright (C) 2019 %s\nWritten by %s [%s]\nVersion: %s\n"
+    Printf.sprintf "%s\nCopyright (C) 2019--2020 %s\nWritten by %s [%s]\nVersion: %s\n"
         name author author email version
 
 let help_string =

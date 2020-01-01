@@ -88,29 +88,30 @@ let exterior_product mpat k_lst =
 let mirror mpat =
     mpat |> List.map Pattern.mirror
 
-(* Returns the m-multi-pattern, where m is the length of the list of integers deg_lst,
- * obtained by forming a chord from the degrees of deg_lst. This produces a multi-pattern of
- * length 1 and or arity 1.
- * For instance, for deg_lst = [0; 2; 4], the function returns the 3-multi-pattern
+(* Returns the m-multi-pattern, where m is the arity of the degree pattern deg_pattern
+ * obtained by forming a chord from the degrees of deg_pattern. This produces a
+ * multi-pattern of length 1 and or arity 1.
+ * For instance, for deg_pattern = 0 2 4, the function returns the 3-multi-pattern
  * 0 ; 2 ; 4.
  *)
+let chord deg_pattern =
+    assert (deg_pattern <> []);
+    assert (deg_pattern |> List.for_all Atom.is_beat);
+    deg_pattern |> List.map (fun b -> [b])
 
-let chord deg_lst =
-    assert (deg_lst <> []);
-    deg_lst |> List.map (fun d -> [Atom.Beat d])
-
-(* Returns the m-multi-pattern, where m is the length of the list of integers deg_lst,
- * obtained by arpeggiating the degrees of deg_lst. This produces a multi-pattern of length
- * m and of arity 1.
- * For instance, for deg_lst = [0; 2; 4], the function returns the 3-multi-pattern
+(* Returns the m-multi-pattern, where m is the length of the degree pattern deg_pattern
+ * obtained by arpeggiating the degrees of deg_pattern. This produces a multi-pattern of
+ * length m and of arity 1.
+ * For instance, for deg_pattern = 0 2 4, the function returns the 3-multi-pattern
  * 0 * * ; * 2 * ; * * 4.
  *)
-let arpeggio deg_lst =
-    assert (deg_lst <> []);
-    let len = List.length deg_lst in
-    let pairs = List.combine (Tools.interval 0 (len - 1)) deg_lst in
+let arpeggio deg_pattern =
+    assert (deg_pattern <> []);
+    assert (deg_pattern |> List.for_all Atom.is_beat);
+    let len = List.length deg_pattern in
+    let pairs = List.combine (Tools.interval 0 (len - 1)) deg_pattern in
     pairs |> List.map
-        (fun (i, d) -> List.init len (fun j -> if j = i then Atom.Beat d else Atom.Rest))
+        (fun (i, d) -> List.init len (fun j -> if j = i then d else Atom.Rest))
 
 (* Returns the operad of multi-patterns of multiplicity k. *)
 let operad k =

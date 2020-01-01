@@ -2,7 +2,7 @@
 A tool to generate random music from short patterns using operads, colored operads, and bud
 generating systems.
 
-Copyright (C) 2019 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
+Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
 

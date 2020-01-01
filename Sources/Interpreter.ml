@@ -72,35 +72,40 @@ let help_string =
         ^ "    where VAL is a nonnegative integer.\n"
         ^ "    -> Set the tempo as VAL bpm.\n"
         ^ "+ scale = S1 S2 ... Sk\n"
-        ^ "    where S1 S2 ... Sk is the integer composition of a 12-scale.\n"
+        ^ "  where S1 S2 ... Sk is the integer composition of a 12-scale.\n"
         ^ "    -> Set the underlying set to the specified one.\n"
         ^ "+ shape = partial | full | colored\n"
         ^ "    -> Set the random generation algorithm.\n"
         ^ "+ steps = VAL\n"
-        ^ "    where VAL is a nonnegative integer value.\n"
+        ^ "  where VAL is a nonnegative integer value.\n"
         ^ "    -> Set the number of generation step as VAL.\n"
         ^ "+ add : CMP \n"
-        ^ "    where CMP is a colored mult-pattern.\n"
+        ^ "  where CMP is a colored mult-pattern.\n"
         ^ "    -> Add the specified pattern into the collection of patterns.\n"
         ^ "+ morphism : K1 K2 ... Km \n"
-        ^ "    where K1 K2 ... Km are integers and m is the multiplicity of the patterns.\n"
+        ^ "  where K1 K2 ... Km are integers and m is the multiplicity of the patterns.\n"
         ^ "    -> Applies the specified morphism to the current generated phrase.\n"
         ^ "+ mirror \n"
         ^ "    -> Replaces the current generated phrase by its mirror.\n"
         ^ "+ generate\n"
         ^ "    -> Generate a musical phrase from the current generation parameters.\n"
         ^ "+ temporize : VAL\n"
-        ^ "    where VAL is a positive integer value.\n"
+        ^ "  where VAL is a positive integer value.\n"
         ^ "    -> Incorporate some delays into the current pattern, ranging between 1 and \
                VAL. This pattern must have 1 as multiplicity and must be alone.\n"
-        ^ "+ harmonize : D1 D2 ... Dm\n"
-        ^ "    where D1 D2 ... Dm are integers and m is a positive integer.\n"
-        ^ "    -> Harmonize the current pattern. This pattern must have 1 as multiplicity \
-               and must be alone.\n"
-        ^ "+ arpeggiate : D1 D2 ... Dm\n"
-        ^ "    where D1 D2 ... Dm are integers and m is a positive integer.\n"
-        ^ "    -> Arpeggiate the current pattern. This pattern must have 1 as multiplicity \
-               and must be alone.\n"
+        ^ "+ rhythmize : RP \n"
+        ^ "  where RP is a rhythm pattern (consisting in 0 and *).\n"
+        ^ "    -> Add some repetitions of beats into the current pattern following the \
+            specified rhythm pattern RP. The current pattern must have 1 as multiplicity \
+            and must be alone.\n"
+        ^ "+ harmonize : DP\n"
+        ^ "  where DP is a degree pattern of arity m.\n"
+        ^ "    -> Harmonize the current pattern following the degree pattern DP. The \
+            current pattern must have 1 as multiplicity and must be alone.\n"
+        ^ "+ arpeggiate : DP\n"
+        ^ "  where DP is a degree pattern of arity m.\n"
+        ^ "    -> Arpeggiate the current pattern following the degree pattern DP. The \
+            current pattern must have 1 as multiplicity and must be alone.\n"
         ^ "+ write\n"
         ^ "    -> Create the ABC file, postscript file, and midi file from the generated \
             phrase.\n"
@@ -536,17 +541,52 @@ let execute_command cmd env =
                         end
                 end
 
-                |"harmonize" -> begin
+                |"rhythmize" -> begin
                     try
                         let str = List.nth cmd' 1 in
-                        let deg_lst = Tools.list_from_string int_of_string ' ' str in
+                        let rhythm = Pattern.from_string str in
                         if (List.length env.colored_patterns) = 1
-                                && (Option.get (multiplicity env)) = 1 then begin
+                                && (Option.get (multiplicity env)) = 1 
+                                && Pattern.extract_degrees rhythm |> List.for_all
+                                    (fun d -> d = 0) then begin
                             let pat = MultiPattern.pattern
                                 (BudGrammar.get_element (List.hd env.colored_patterns))
                                 1
                             in
-                            let g = Generation.harmonization env.parameters pat deg_lst in
+                            let g = Generation.rhythmization env.parameters pat rhythm in
+                            let env' = {env with result = Some g} in
+                            print_string "A rhytmization has been generated.";
+                            print_newline ();
+                            env'
+                        end
+                        else begin
+                            print_string "Error: rhythmization impossible, there must be \
+                                one 1-pattern, and a rhythm pattern as argument (only 0 \
+                                and *).";
+                            print_newline ();
+                            env
+                        end
+                    with
+                        |_ -> begin
+                            print_string "Error: input format. Rhythm pattern expected.";
+                            print_newline ();
+                            env
+                        end
+                end
+
+                |"harmonize" -> begin
+                    try
+                        let str = List.nth cmd' 1 in
+                        let deg_pattern = Pattern.from_string str in
+                        if (List.length env.colored_patterns) = 1
+                                && (Option.get (multiplicity env)) = 1
+                                && deg_pattern |> List.for_all Atom.is_beat then begin
+                            let pat = MultiPattern.pattern
+                                (BudGrammar.get_element (List.hd env.colored_patterns))
+                                1
+                            in
+                            let g = Generation.harmonization env.parameters pat deg_pattern
+                            in
                             let env' = {env with result = Some g} in
                             print_string "A harmonization has been generated.";
                             print_newline ();
@@ -554,7 +594,7 @@ let execute_command cmd env =
                         end
                         else begin
                             print_string "Error: harmonization impossible, there must be \
-                                one 1-pattern.";
+                                one 1-pattern, and a degree pattern as argument.";
                             print_newline ();
                             env
                         end
@@ -569,14 +609,16 @@ let execute_command cmd env =
                 |"arpeggiate" -> begin
                     try
                         let str = List.nth cmd' 1 in
-                        let deg_lst = Tools.list_from_string int_of_string ' ' str in
+                        let deg_pattern = Pattern.from_string str in
                         if (List.length env.colored_patterns) = 1
-                                && (Option.get (multiplicity env)) = 1 then begin
+                                && (Option.get (multiplicity env)) = 1
+                                && deg_pattern |> List.for_all Atom.is_beat then begin
                             let pat = MultiPattern.pattern
                                 (BudGrammar.get_element (List.hd env.colored_patterns))
                                 1
                             in
-                            let g = Generation.arpeggiation env.parameters pat deg_lst in
+                            let g = Generation.arpeggiation env.parameters pat deg_pattern
+                            in
                             let env' = {env with result = Some g} in
                             print_string "An arpeggiation has been generated.";
                             print_newline ();
@@ -584,7 +626,7 @@ let execute_command cmd env =
                         end
                         else begin
                             print_string "Error: arpeggiation impossible, there must be \
-                                one 1-pattern.";
+                                one 1-pattern, and a degree pattern as argument.";
                             print_newline ();
                             env
                         end
