@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2019
- * Modifications: aug. 2019, sep. 2019, dec. 2019
+ * Modifications: aug. 2019, sep. 2019, dec. 2019, jan. 2020
  *)
 
 (* An environment contains all the data needed to represent an execution state. *)
@@ -93,6 +93,10 @@ let help_string =
         ^ "    where VAL is a positive integer value.\n"
         ^ "    -> Incorporate some delays into the current pattern, ranging between 1 and \
                VAL. This pattern must have 1 as multiplicity and must be alone.\n"
+        ^ "+ harmonize : D1 D2 ... Dm\n"
+        ^ "    where D1 D2 ... Dm are integers and m is a positive integer.\n"
+        ^ "    -> Harmonize the current pattern. This pattern must have 1 as multiplicity \
+               and must be alone.\n"
         ^ "+ arpeggiate : D1 D2 ... Dm\n"
         ^ "    where D1 D2 ... Dm are integers and m is a positive integer.\n"
         ^ "    -> Arpeggiate the current pattern. This pattern must have 1 as multiplicity \
@@ -527,6 +531,36 @@ let execute_command cmd env =
                     with
                         |_ -> begin
                             print_string "Error: input format. Integer expected.";
+                            print_newline ();
+                            env
+                        end
+                end
+
+                |"harmonize" -> begin
+                    try
+                        let str = List.nth cmd' 1 in
+                        let deg_lst = Tools.list_from_string int_of_string ' ' str in
+                        if (List.length env.colored_patterns) = 1
+                                && (Option.get (multiplicity env)) = 1 then begin
+                            let pat = MultiPattern.pattern
+                                (BudGrammar.get_element (List.hd env.colored_patterns))
+                                1
+                            in
+                            let g = Generation.harmonization env.parameters pat deg_lst in
+                            let env' = {env with result = Some g} in
+                            print_string "A harmonization has been generated.";
+                            print_newline ();
+                            env'
+                        end
+                        else begin
+                            print_string "Error: harmonization impossible, there must be \
+                                one 1-pattern.";
+                            print_newline ();
+                            env
+                        end
+                    with
+                        |_ -> begin
+                            print_string "Error: input format. Integers expected.";
                             print_newline ();
                             env
                         end

@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019
+ * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020
  *)
 
 (* A multi-pattern is a nonempty list of patterns such that all its patterns have the same
@@ -87,6 +87,17 @@ let exterior_product mpat k_lst =
 (* Returns the mirror image of the multi-pattern mpat. *)
 let mirror mpat =
     mpat |> List.map Pattern.mirror
+
+(* Returns the m-multi-pattern, where m is the length of the list of integers deg_lst,
+ * obtained by forming a chord from the degrees of deg_lst. This produces a multi-pattern of
+ * length 1 and or arity 1.
+ * For instance, for deg_lst = [0; 2; 4], the function returns the 3-multi-pattern
+ * 0 ; 2 ; 4.
+ *)
+
+let chord deg_lst =
+    assert (deg_lst <> []);
+    deg_lst |> List.map (fun d -> [Atom.Beat d])
 
 (* Returns the m-multi-pattern, where m is the length of the list of integers deg_lst,
  * obtained by arpeggiating the degrees of deg_lst. This produces a multi-pattern of length
