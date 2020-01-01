@@ -93,8 +93,8 @@ let rhythmization param pattern rhythm =
     let cpat_1 = BudGrammar.create_colored_element param.initial_color mpat in_colors in
     let cpat_2 = BudGrammar.create_colored_element transition_color_1 mpat in_colors in
     let mpat_3 = MultiPattern.from_pattern rhythm 1 in
-    let cpat_3 = BudGrammar.create_colored_element
-        transition_color_1 mpat_3 [default_sink_color] in
+    let in_colors' = List.init (Pattern.arity rhythm) (fun _ -> default_sink_color) in
+    let cpat_3 = BudGrammar.create_colored_element transition_color_1 mpat_3 in_colors' in
     from_colored_patterns param [cpat_1; cpat_2; cpat_3]
 
 (* Returns the element generated at random from the 1-pattern pattern together with the

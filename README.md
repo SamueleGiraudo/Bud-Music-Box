@@ -5,6 +5,14 @@ generating systems.
 Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
+Versions:
++ `0.10` (2020-01-01)
+    + Several improvements.
+    + Add instructions `morphism` and `mirror`.
+    + Add instructions `temporize`, `rhythmize`, `harmonize`, and `arpeggiate`.
++ `0.01` (2019-12-18)
+    + Initial version.
+
 
 ## Quick overview and examples
 

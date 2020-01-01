@@ -546,7 +546,7 @@ let execute_command cmd env =
                         let str = List.nth cmd' 1 in
                         let rhythm = Pattern.from_string str in
                         if (List.length env.colored_patterns) = 1
-                                && (Option.get (multiplicity env)) = 1 
+                                && (Option.get (multiplicity env)) = 1
                                 && Pattern.extract_degrees rhythm |> List.for_all
                                     (fun d -> d = 0) then begin
                             let pat = MultiPattern.pattern
