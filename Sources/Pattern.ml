@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019
+ * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020
  *)
 
 (* A pattern is a list of atoms. There is no condition: all lists are valid patterns, even
@@ -76,6 +76,16 @@ let partial_composition pat_1 i pat_2 =
 (* Returns the pattern obtained by multiplying by k each of its atoms. *)
 let exterior_product pat k =
     pat |> List.map (fun a -> Atom.mul a k)
+
+(* Returns the pattern obtained by replacing each rest of the pattern pat by a sequence of
+ * mul rests and by multiplying each degree by mul. *)
+let transform dilatation mul pat =
+    pat |> List.map
+        (fun a ->
+            match a with
+                |Atom.Rest -> List.init mul (fun _ -> Atom.Rest)
+                |Atom.Beat d -> [Atom.Beat (d * mul)])
+        |> List.flatten
 
 (* Returns the mirror image of the pattern pat. *)
 let mirror pat =

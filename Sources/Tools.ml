@@ -1,10 +1,17 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020
  *)
 
 exception BadValue
 exception BadStringFormat
+
+(* Tests if the integer value x is different from 0.*)
+let int_to_bool x =
+    if x = 0 then
+        false
+    else
+        true
 
 (* Returns the list of integers from a to b. *)
 let rec interval a b =
@@ -57,6 +64,13 @@ let rec length_start lst a =
 let pick_random lst =
     List.nth lst (Random.int (List.length lst))
 
+let rec list_factor lst start len =
+    match lst with
+        |[] -> []
+        |_ when len = 0 -> []
+        |x :: lst' when start = 0 -> x :: (list_factor lst' 0 (len - 1))
+        |_ :: lst' -> list_factor lst' (start - 1) len
+
 (* Returns a string representing the list lst, where element_to_string is a map sending
  * each element to a string representing it, and sep is a separating string. *)
 let list_to_string element_to_string sep lst =
@@ -78,6 +92,9 @@ let list_from_string string_to_element sep str =
         []
     in
     List.rev res
+
+let remove_first_char s =
+    String.sub s 1 ((String.length s) - 1)
 
 (* Returns the version of the string s obtained by remove spaces, tabs, and newline
  * characters. *)

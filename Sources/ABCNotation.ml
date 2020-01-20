@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2019
- * Modifications: aug. 2019, dec. 2019
+ * Modifications: aug. 2019, dec. 2019, jan. 2020
  *)
 
 (* Returns the abc notation of the midi note note. *)
@@ -53,21 +53,24 @@ let pattern_to_abc_string context pat =
     first_rest_str ^ (String.concat " " str)
 
 (* Returns a string representing the multi-pattern mpat under the context context in the abc
- * notation. *)
-let multi_pattern_to_abc_string context mpat =
+ * notation. The list midi_sounds contains the respective midi codes of the voices. *)
+let multi_pattern_to_abc_string context midi_sounds mpat =
     assert (MultiPattern.is_multi_pattern mpat);
+    assert ((List.length midi_sounds) >= (MultiPattern.multiplicity mpat));
     let lst = mpat |> List.mapi
         (fun i pat ->
             Printf.sprintf "V:voice%d\n%%%%MIDI program %d\n%s\n"
                 (i + 1)
-                35 (* Fretless bass.*)
+                (List.nth midi_sounds i)
                 (pattern_to_abc_string context pat)) in
     (String.concat "" lst) ^ "\n"
 
-(* Returns a string representing the multi-pattern mpat under the context context in the abc
- * notation. This string contains all the information to be a valid abc program. *)
-let complete_abc_string context mpat =
+(* Returns a string in the abc notation representing the multi-pattern mpat under the
+ * context context and with the midi sounds specified by the integer list midi_sounds. This
+  * string contains all the information to be a valid abc program. *)
+let complete_abc_string context midi_sounds mpat =
     assert (MultiPattern.is_multi_pattern mpat);
+    assert ((List.length midi_sounds) >= (MultiPattern.multiplicity mpat));
     let res = "" in
     let res = res ^ "X:1\n" in
     let res = res ^ "T:Music\n" in
@@ -76,7 +79,7 @@ let complete_abc_string context mpat =
     let res = res ^ "M:8/8\n" in
     let res = res ^ "L:1/8\n" in
     let res = res ^ (Printf.sprintf "Q:1/8=%d\n" (Context.tempo context)) in
-    let res = res ^ multi_pattern_to_abc_string context mpat in
+    let res = res ^ multi_pattern_to_abc_string context midi_sounds mpat in
     res
 
 

@@ -84,6 +84,12 @@ let exterior_product mpat k_lst =
     assert ((multiplicity mpat) = List.length k_lst);
     List.map2 (fun pat k -> Pattern.exterior_product pat k) mpat k_lst
 
+(* Returns the pattern obtained by replacing each rest of the multi-pattern mpat by a
+ * sequence of mul rests and by multiplying each degree by mul. *)
+let transform dilatation mul_lst mpat =
+    assert ((multiplicity mpat) = List.length mul_lst);
+    List.map2 (fun pat mul -> Pattern.transform pat mul) mpat mul_lst
+
 (* Returns the mirror image of the multi-pattern mpat. *)
 let mirror mpat =
     mpat |> List.map Pattern.mirror
