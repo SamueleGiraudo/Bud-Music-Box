@@ -8,6 +8,12 @@
 Each single instruction fits on one line. All characters following a `#` in a given line are
 ignored and can therefore be treated as comments.
 
+Identifiers are strings made of the symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`.
+
+
+## Syntax for multi-patterns and colored multi-patterns
+TODO
+
 
 ## Instruction set
 
@@ -62,7 +68,7 @@ ignored and can therefore be treated as comments.
 ### Naming a multi-pattern
 `$NAME := multi_pattern PAT`
 
-+ `NAME` is an identifier made of the symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, 
++ `NAME` is an identifier.
 + `PAT` is a multi-pattern.
 + Bounds the specified identifier to the specified object. Any instruction having
   multi-patterns as arguments accept `$NAME` as argument.
@@ -71,7 +77,7 @@ ignored and can therefore be treated as comments.
 ### Naming a colored multi-pattern
 `$NAME := colored_multi_pattern CPAT`
 
-+ `NAME` is an identifier made of the symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, 
++ `NAME` is an identifier.
 + `CPAT` is a colored multi-pattern.
 + Bounds the specified identifier to the specified object. Any instruction having
   colored multi-patterns as arguments accept `$NAME` as argument.

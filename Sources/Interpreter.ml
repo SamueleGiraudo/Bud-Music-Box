@@ -38,6 +38,8 @@ let add_colored_pattern env name cpat =
     let new_lst = (name, cpat) :: (List.remove_assoc name env.colored_patterns) in
     {env with colored_patterns = new_lst}
 
+let default_midi_sound = 0
+
 (* Returns the extension of the file containing commands for the generation. *)
 let extension = "bmb"
 
@@ -99,6 +101,31 @@ let date_string () =
     Printf.sprintf "%d-%d-%d_%d:%d:%d"
         (t.tm_year + 1900) t.tm_mon t.tm_mday t.tm_hour t.tm_min t.tm_sec
 
+let create_files env mpat file_name =
+    let file_name_abc = file_name ^ ".abc" in
+    let file_name_ps = file_name ^ ".ps" in
+    let file_name_mid = file_name ^ ".mid" in
+    if Sys.file_exists file_name_abc || Sys.file_exists file_name_ps
+            || Sys.file_exists file_name_mid then
+        false
+    else begin
+        let m = MultiPattern.multiplicity mpat in
+        let diff_m = m - List.length env.midi_sounds in
+        let midi_sounds = if diff_m <= 0 then
+            env.midi_sounds
+        else
+            List.append env.midi_sounds (List.init diff_m (fun _ -> default_midi_sound))
+        in
+        let str_abc = ABCNotation.complete_abc_string env.context midi_sounds mpat in
+        let file_abc = open_out file_name_abc in
+        Printf.fprintf file_abc "%s\n" str_abc;
+        close_out file_abc;
+        Sys.command ("abcm2ps " ^ file_name_abc ^ " -O " ^ file_name_ps);
+        Sys.command ("abc2midi " ^ file_name_abc ^ " -o " ^ file_name_mid);
+        true
+    end
+
+(*
 (* Create an abc file from the environment env. Returns true if the creation is possible and
  * false otherwise. *)
 let create_abc_file env mpat file_name =
@@ -129,7 +156,7 @@ let create_score_file env file_name =
 
 (* Create a midi file from the environment env. Returns true if the creation is possible and
  * false otherwise. *)
-let create_midi_file env file_name =
+let create_midi_file file_name =
     let file_name_abc = file_name ^ ".abc" in
     if not (Sys.file_exists file_name_abc) then
         false
@@ -140,19 +167,16 @@ let create_midi_file env file_name =
         else
             let err = Sys.command ("abc2midi " ^ file_name_abc ^ " -o " ^ file_name_mid) in
              not (Tools.int_to_bool err)
+*)
 
 (* Play the phrase from the environment env. Returns true if the playing is possible and
  * false otherwise. *)
 let play_phrase env mpat =
     let file_name_tmp = Printf.sprintf "tmp_%f" (Unix.gettimeofday ()) in
-    let err = create_abc_file env mpat file_name_tmp in
+    let err = create_files env mpat file_name_tmp in
     if not err then
         false
     else
-        let err = create_midi_file env file_name_tmp in
-        if not err then
-            false
-        else
             let file_name_mid = file_name_tmp ^ ".mid" in
             let err = Sys.command ("timidity " ^ file_name_mid) in
             not (Tools.int_to_bool err)
@@ -329,31 +353,13 @@ let execute_command cmd env =
             let file_name = List.nth words 1 in
             let mpat_name = Tools.remove_first_char (List.nth words 2) in
             let mpat = multi_pattern_with_name env mpat_name in
-            let ok = create_abc_file env mpat file_name in
+            let ok = create_files env mpat file_name in
             if ok then begin
-                print_string "The abc file has been generated.";
+                print_string "The files has been generated.";
                 print_newline ()
             end
             else begin
-                print_string "Error: the abc file has not been generated.";
-                print_newline ()
-            end;
-            let ok = create_score_file env file_name in
-            if ok then begin
-                print_string "The ps file has been generated.";
-                print_newline ()
-            end
-            else begin
-                print_string "Error: the ps file has not been generated.";
-                print_newline ()
-            end;
-            let ok = create_midi_file env file_name in
-            if ok then begin
-                print_string "The midi file has been generated.";
-                print_newline ()
-            end
-            else begin
-                print_string "Error: the midi file has not been generated.";
+                print_string "Error: the files have not been generated.";
                 print_newline ()
             end;
             env
