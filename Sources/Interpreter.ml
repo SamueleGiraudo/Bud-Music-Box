@@ -12,6 +12,11 @@ type environment = {
     exit : bool
 }
 
+(* Some exceptions to handle instructions containing errors. *)
+exception SyntaxError
+exception ValueError
+exception ExecutionError
+
 (* Returns a string representing the environment env. *)
 let environment_to_string env =
     Printf.sprintf
@@ -30,23 +35,28 @@ let environment_to_string env =
             "\n    "
             env.colored_patterns))
 
+(* Returns the environment obtained by adding the multi-pattern mpat with the name name.
+ * If there is already a multi-pattern with this name, it is overwritten. *)
 let add_multi_pattern env name mpat =
     let new_lst = (name, mpat) :: (List.remove_assoc name env.multi_patterns) in
     {env with multi_patterns = new_lst}
 
+(* Returns the environment obtained by adding the colored multi-pattern cpat with the name
+ * name. If there is already a colored multi-pattern with this name, it is overwritten. *)
 let add_colored_pattern env name cpat =
     let new_lst = (name, cpat) :: (List.remove_assoc name env.colored_patterns) in
     {env with colored_patterns = new_lst}
 
+(* Returns the default midi sound (Acoustic Grand Piano). *)
 let default_midi_sound = 0
 
 (* Returns the extension of the file containing commands for the generation. *)
 let extension = "bmb"
 
-(* The relative path of the directory containing the generated results. *)
+(* The relative path of the directory containing the generated temporary results. *)
 let path_results = "Results"
 
-(* The prefix of all the generated result files  *)
+(* The prefix of all the generated temporary result files  *)
 let prefix_result = "Phrase_"
 
 let help_file_path = "Help.md"
@@ -59,35 +69,18 @@ let default_environment =
     colored_patterns = [];
     exit = false}
 
+let is_name str =
+    String.get str 0 = '$'
+
+(* Returns the multi-pattern of name name in the environment env. If there is no such
+ * multi-pattern, the exception Not_found is raised. *)
 let multi_pattern_with_name env name =
     List.assoc name env.multi_patterns
 
+(* Returns the colored multi-pattern of name name in the environment env. If there is no
+ * such colored multi-pattern, the exception Not_found is raised. *)
 let colored_multi_pattern_with_name env name =
     List.assoc name env.colored_patterns
-
-(* Returns an option on the multiplicity of the pattern of the environment env. Returns
- * None if there is no pattern in env. *)
-(*
-let multiplicity env =
-    match env.colored_patterns with
-        |[] -> None
-        |cpat :: _ ->
-            let mpat = BudGrammar.get_element cpat in
-            Some (MultiPattern.multiplicity mpat)
-*)
-
-(* Returns the environment obtained by setting at nb_steps the number of generation steps
- * of the environment env. *)
-(*let set_nb_steps env nb_steps =
-    assert (nb_steps >= 0);
-    {env with parameters = Generation.set_nb_steps env.parameters nb_steps}
-*)
-
-(* Returns the environment obtained by setting at shape the generation shape of the
- * environment env. *)
-(*let set_shape env shape =
-    {env with parameters = Generation.set_shape env.parameters shape}
-*)
 
 (* Returns the help string, containing explanations for each command. *)
 let help_string =
@@ -101,6 +94,9 @@ let date_string () =
     Printf.sprintf "%d-%d-%d_%d:%d:%d"
         (t.tm_year + 1900) t.tm_mon t.tm_mday t.tm_hour t.tm_min t.tm_sec
 
+(* Create an ABC file, a postscript file, and a MIDI file of the multi-pattern mpat from the
+ * environment env. All the generated files have as name file_name, augmented with their
+ * adequate extension. Returns true if the creation is possible and false otherwise. *)
 let create_files env mpat file_name =
     let file_name_abc = file_name ^ ".abc" in
     let file_name_ps = file_name ^ ".ps" in
@@ -125,215 +121,363 @@ let create_files env mpat file_name =
         true
     end
 
-(*
-(* Create an abc file from the environment env. Returns true if the creation is possible and
- * false otherwise. *)
-let create_abc_file env mpat file_name =
-    let file_name_abc = file_name ^ ".abc" in
-    if Sys.file_exists file_name_abc then
-        false
-    else begin
-        let file_abc = open_out file_name_abc in
-        let str_abc = ABCNotation.complete_abc_string env.context env.midi_sounds mpat in
-        Printf.fprintf file_abc "%s\n" str_abc;
-        close_out file_abc;
-        true
-    end
-
-(* Create a ps file from the environment env. Returns true if the creation is possible and
- * false otherwise. *)
-let create_score_file env file_name =
-    let file_name_abc = file_name ^ ".abc" in
-    if not (Sys.file_exists file_name_abc) then
-        false
-    else
-        let file_name_ps = file_name ^ ".ps" in
-        if Sys.file_exists file_name_ps then
-            false
-        else
-             let err = Sys.command ("abcm2ps " ^ file_name_abc ^ " -O " ^ file_name_ps) in
-             not (Tools.int_to_bool err)
-
-(* Create a midi file from the environment env. Returns true if the creation is possible and
- * false otherwise. *)
-let create_midi_file file_name =
-    let file_name_abc = file_name ^ ".abc" in
-    if not (Sys.file_exists file_name_abc) then
-        false
-    else
-        let file_name_mid = file_name ^ ".mid" in
-        if Sys.file_exists file_name_mid then
-            false
-        else
-            let err = Sys.command ("abc2midi " ^ file_name_abc ^ " -o " ^ file_name_mid) in
-             not (Tools.int_to_bool err)
-*)
-
 (* Play the phrase from the environment env. Returns true if the playing is possible and
  * false otherwise. *)
 let play_phrase env mpat =
-    let file_name_tmp = Printf.sprintf "tmp_%f" (Unix.gettimeofday ()) in
-    let err = create_files env mpat file_name_tmp in
+    let file_name = Printf.sprintf "%s/%s%f"
+        path_results prefix_result (Unix.gettimeofday ()) in
+    let err = create_files env mpat file_name in
     if not err then
         false
     else
-            let file_name_mid = file_name_tmp ^ ".mid" in
-            let err = Sys.command ("timidity " ^ file_name_mid) in
-            not (Tools.int_to_bool err)
+        let file_name_mid = file_name ^ ".mid" in
+        let err = Sys.command ("timidity " ^ file_name_mid) in
+        not (Tools.int_to_bool err)
 
-(* Returns the next version of the environment env, altered by the command cmd. As side
- * effect, the action of the command is performed. *)
-let execute_command cmd env =
-        let words = Str.split (Str.regexp "[ \t\n]+") cmd in
-        if words = [] then begin
-            print_string "Empty instruction.";
+let command_comment words env = 
+    if List.hd words <> "#" then
+        None
+    else begin
+        print_string "Comment.";
+        print_newline ();
+        Some env
+    end
+
+let command_quit words env =
+    if List.hd words <> "quit" then
+        None
+    else begin
+        print_string "Quit.\n";
+        print_newline ();
+        let env' = {env with exit = true} in
+        Some env'
+    end
+
+let command_help words env =
+    if List.hd words <> "help" then
+        None
+    else begin
+        print_string "Help.\n";
+        print_string help_string;
+        print_newline ();
+        Some env
+    end
+
+let command_show words env =
+    if List.hd words <> "show" then
+        None
+    else begin
+        print_string "Current environment:\n";
+        print_string (environment_to_string env);
+        print_newline ();
+        Some env
+    end
+
+let command_set_scale words env =
+    if List.hd words <> "set_scale" then
+        None
+    else
+        try
+            let scale = List.tl words |> List.map int_of_string in
+            if not (Scale.is_scale scale) then
+                raise ValueError;
+            if not ((Scale.nb_steps_by_octave scale) = 12) then
+                raise ValueError;
+            let env' = {env with context = Context.set_scale env.context scale} in
+            Printf.printf "Scale set to %s." (Scale.to_string scale);
             print_newline ();
-            env
-        end
-        else if List.hd words = "#" then begin
-            print_string "Comment.";
+            Some env'
+        with
+            |Failure _ -> begin
+                print_string "Error: input format. Integers expected.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value. A 12-scale is expected.";
+                print_newline ();
+                Some env
+            end
+
+let command_set_root words env =
+    if List.hd words <> "set_root" then
+        None
+    else
+        try
+            let root = int_of_string (List.nth words 1) in
+            if not ((0 <= root) && (root < 128)) then
+                raise ValueError;
+            let env' = {env with context = Context.set_root env.context root} in
+            Printf.printf "Root note set to %d." root;
             print_newline ();
-            env
-        end
-        else if List.hd words = "quit" then begin
-            print_string "Quit.\n";
-            let env' = {env with exit = true} in
+            Some env'
+        with
+            |Failure _ -> begin
+                print_string "Error: input format. Integer expected.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value. A note between 0 and 127 is expected.";
+                print_newline ();
+                Some env
+            end
+
+let command_set_tempo words env =
+    if List.hd words <> "set_tempo" then
+        None
+    else
+        try
+            let tempo = int_of_string (List.nth words 1) in
+            if not (tempo >= 1) then
+                raise ValueError;
+            let env' = {env with context = Context.set_tempo env.context tempo} in
+            Printf.printf "Tempo set to %d." tempo;
             print_newline ();
-            env'
-        end
-        else if List.hd words = "help" then begin
-            print_string "Help.\n";
-            print_string help_string;
+            Some env'
+        with
+            |Failure _ -> begin
+                print_string "Error: input format. Integer expected.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value. A tempo equal as 1 or greater is expected.";
+                print_newline ();
+                Some env
+            end
+
+let command_set_sounds words env =
+    if List.hd words <> "set_sounds" then
+        None
+    else
+        try
+            let midi_sounds = List.tl words |> List.map int_of_string in
+            if midi_sounds |> List.exists (fun s -> s < 0 || s > 127) then
+                raise ValueError;
+            let env' = {env with midi_sounds = midi_sounds} in
+            Printf.printf "MIDI sounds set";
             print_newline ();
-            env
-        end
-        else if List.hd words = "show" then begin
-            Printf.printf "Current environment:\n%s" (environment_to_string env);
-            print_newline ();
-            env
-        end
-        else if List.hd words = "set_scale" then begin
-            try
-                let scale = List.tl words |> List.map int_of_string in
-                if Scale.is_scale scale && Scale.nb_steps_by_octave scale = 12
-                    then begin
-                    let env' =
-                        {env with context = Context.set_scale env.context scale} in
-                    Printf.printf "Scale set to %s." (Scale.to_string scale);
-                    print_newline ();
-                    env'
-                end
-                else begin
-                    print_string "Error: scale. ";
-                    print_string "Must have 12 steps and at least 1 note.";
-                    print_newline ();
-                    env
-                end
-            with
-                |_ -> begin
-                    print_string "Error: input format. Integers expected.";
-                    print_newline ();
-                    env
-                end
-        end
-        else if List.hd words = "set_root" then begin
-            try
-                let str = List.nth words 1 in
-                let root = int_of_string str in
-                if (0 <= root) && (root < 128) then begin
-                    let env' =
-                        {env with context = Context.set_root env.context root} in
-                    Printf.printf "Root note set to %d." root;
-                    print_newline ();
-                    env'
-                end
-                else begin
-                    print_string "Error: the root note must be between 0 and 127.";
-                    print_newline ();
-                    env
-                end
-            with
-                |_ -> begin
-                    print_string "Error: input format. Integer expected.";
-                    print_newline ();
-                    env
-                end
-        end
-        else if List.hd words = "set_tempo" then begin
-            try
-                let str = List.nth words 1 in
-                let tempo = int_of_string str in
-                if 1 <= tempo then begin
-                    let env' =
-                        {env with context = Context.set_tempo env.context tempo} in
-                    Printf.printf "Tempo set to %d." tempo;
-                    print_newline ();
-                    env'
-                end
-                else begin
-                    print_string "Error: the tempo must be 1 or more.";
-                    print_newline ();
-                    env
-                end
-            with
-                |_ -> begin
-                    print_string "Error: input format. Integer expected.";
-                    print_newline ();
-                    env
-                end
-        end
-        else if List.hd words = "set_sounds" then begin
-            try
-                let midi_sounds = List.tl words |> List.map int_of_string in
-                if midi_sounds |> List.for_all (fun s -> 0 <= s && s <= 127) then begin
-                    let env' = {env with midi_sounds = midi_sounds} in
-                    Printf.printf "MIDI sounds set";
-                    print_newline ();
-                    env'
-                end
-                else begin
-                    print_string "Error: MIDI sounds. ";
-                    print_string "Must be between 0 and 127.";
-                    print_newline ();
-                    env
-                end
-            with
-                |_ -> begin
-                    print_string "Error: input format. Integers expected.";
-                    print_newline ();
-                    env
-                end
-        end
-        else if String.get (List.hd words) 0 = '$'&& (List.nth words 1) = ":="
-                && (List.nth words 2) = "multi_pattern" then begin
+            Some env'
+        with
+            |Failure _ -> begin
+                print_string "Error: input format. Integers expected.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: input format. A MIDI sound list is a list of integers \
+                    between 0 and 127";
+                print_newline ();
+                Some env
+            end
+
+let command_name_multi_pattern words env =
+    if List.length words < 3 || not (is_name (List.nth words 0))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "multi_pattern" then
+        None
+    else
+        try
             let name = Tools.remove_first_char (List.hd words) in
-            let mpat = Tools.factor_list words 3 ((List.length words) - 3)
+            let str_mpat = Tools.factor_list words 3 ((List.length words) - 3)
                 |> String.concat " " in
-            let mpat = MultiPattern.from_string mpat in
+            let mpat = MultiPattern.from_string str_mpat in
             let env' = add_multi_pattern env name mpat in
             print_string "Multi-pattern added.";
             print_newline ();
-            env'
-        end
-        else if String.get (List.hd words) 0 = '$'&& (List.nth words 1) = ":="
-                && (List.nth words 2) = "colored_multi_pattern" then begin
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+
+let command_name_colored_multi_pattern words env =
+    if List.length words < 3 || not (is_name (List.nth words 0))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "colored_multi_pattern" then
+        None
+    else
+        try
             let name = Tools.remove_first_char (List.hd words) in
-            let cpat = Tools.factor_list words 3 ((List.length words) - 3)
+            let str_cpat = Tools.factor_list words 3 ((List.length words) - 3)
                 |> String.concat " " in
-            let cpat = BudGrammar.colored_element_from_string
-                MultiPattern.from_string cpat in
+            let cpat = BudGrammar.colored_element_from_string 
+                MultiPattern.from_string str_cpat in
             let env' = add_colored_pattern env name cpat in
             print_string "Colored multi-pattern added.";
             print_newline ();
-            env'
-        end
-        else if String.get (List.hd words) 0 = '$' && (List.nth words 1) = ":="
-                && (List.nth words 2) = "generate" then begin
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+
+let command_partial_compose words env =
+    if List.length words < 6 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 3)) || not (is_name (List.nth words 5))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "partial_compose" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let name_1 = Tools.remove_first_char (List.nth words 3) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            let pos = int_of_string (List.nth words 4) in
+            let name_2 = Tools.remove_first_char (List.nth words 5) in
+            let mpat_2 = multi_pattern_with_name env name_2 in
+            let res = MultiPattern.partial_composition mpat_1 pos mpat_2 in
+            let env' = add_multi_pattern env name res in
+            print_string "Partial composition computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_full_compose words env =
+    if List.length words < 5 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 3)) || not (is_name (List.nth words 4))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "full_compose" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let name_1 = Tools.remove_first_char (List.nth words 3) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            let name_lst = Tools.factor_list words 4 ((List.length words) - 4) |> List.map
+                Tools.remove_first_char in
+            let mpat_lst = name_lst |> List.map (multi_pattern_with_name env) in
+            let res = MultiPattern.full_composition mpat_1 mpat_lst in
+            let env' = add_multi_pattern env name res in
+            print_string "Full composition computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_transform words env =
+    if List.length words < 6 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words ((List.length words) - 1)))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "transform" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let name_1 = Tools.remove_first_char (List.nth words ((List.length words) - 1)) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            let dilatation = int_of_string (List.nth words 3) in
+            if dilatation < 0 then
+                raise ValueError;
+            let mul_lst = Tools.factor_list words 4 ((List.length words) - 5) |> List.map
+                int_of_string in
+            if List.length mul_lst <> MultiPattern.multiplicity mpat_1 then
+                raise ValueError;
+            let mpat = MultiPattern.transform dilatation mul_lst mpat_1 in
+            let env' = add_multi_pattern env name mpat in
+            print_string "Transformation computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_mirror words env =
+    if List.length words <> 4 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 3)) || List.nth words 1 <> ":="
+            || List.nth words 2 <> "mirror" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let name_1 = Tools.remove_first_char (List.nth words 3) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            let mpat = MultiPattern.mirror mpat_1 in
+            let env' = add_multi_pattern env name mpat in
+            print_string "Mirror computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_generate words env =
+    if List.length words < 6 || not (is_name (List.nth words 0))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "generate" then
+        None
+    else
+        try
             let name = Tools.remove_first_char (List.hd words) in
             let shape = match List.nth words 3 with
                 |"partial" -> BudGrammar.Partial
                 |"full" -> BudGrammar.Full
                 |"colored" -> BudGrammar.Colored
+                |_ -> raise ValueError
             in
             let size = int_of_string (List.nth words 4) in
             let initial_color = List.nth words 5 in
@@ -347,271 +491,362 @@ let execute_command cmd env =
                 (Generation.create_parameters initial_color size shape)
                 colored_patterns in
             let env' = add_multi_pattern env name mpat in
-            env'
-        end
-        else if List.hd words = "write" then begin
+            print_string "Multi-pattern generated.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_temporize words env =
+    if List.length words < 7 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 5)) || List.nth words 1 <> ":="
+            || List.nth words 2 <> "temporize" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let shape = match List.nth words 3 with
+                |"partial" -> BudGrammar.Partial
+                |"full" -> BudGrammar.Full
+                |"colored" -> BudGrammar.Colored
+                |_ -> raise ValueError
+            in
+            let size = int_of_string (List.nth words 4) in
+            if size < 0 then
+                raise ValueError;
+            let name_1 = Tools.remove_first_char (List.nth words 5) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            if MultiPattern.multiplicity mpat_1 <> 1 then
+                raise ValueError;
+            let max_delay = int_of_string (List.nth words 6) in
+            if max_delay < 0 then
+                raise ValueError;
+            let param = Generation.create_parameters
+                Generation.default_initial_color size shape in
+            let mpat = Generation.temporization
+                param (MultiPattern.pattern mpat_1 1) max_delay in
+            let env' = add_multi_pattern env name mpat in
+            print_string "Temporization computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_rhythmize words env =
+    if List.length words < 7 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 5)) || not (is_name (List.nth words 6))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "rhythmize" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let shape = match List.nth words 3 with
+                |"partial" -> BudGrammar.Partial
+                |"full" -> BudGrammar.Full
+                |"colored" -> BudGrammar.Colored
+                |_ -> raise ValueError
+            in
+            let size = int_of_string (List.nth words 4) in
+            if size < 0 then
+                raise ValueError;
+            let name_1 = Tools.remove_first_char (List.nth words 5) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            if MultiPattern.multiplicity mpat_1 <> 1 then
+                raise ValueError;
+
+            let name_2 = Tools.remove_first_char (List.nth words 6) in
+            let mpat_2 = multi_pattern_with_name env name_2 in
+            if MultiPattern.multiplicity mpat_2 <> 1 then
+                raise ValueError;
+            if MultiPattern.pattern mpat_1 1 |> Pattern.extract_degrees |> List.exists
+                    (fun d -> d <> 0) then
+                raise ValueError;
+            let param = Generation.create_parameters
+                Generation.default_initial_color size shape in
+            let mpat = Generation.rhythmization
+                param (MultiPattern.pattern mpat_1 1) (MultiPattern.pattern mpat_2 1) in
+            let env' = add_multi_pattern env name mpat in
+            print_string "Rhythmization computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_harmonize words env =
+    if List.length words < 7 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 5)) || not (is_name (List.nth words 6))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "harmonize" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let shape = match List.nth words 3 with
+                |"partial" -> BudGrammar.Partial
+                |"full" -> BudGrammar.Full
+                |"colored" -> BudGrammar.Colored
+                |_ -> raise ValueError
+            in
+            let size = int_of_string (List.nth words 4) in
+            if size < 0 then
+                raise ValueError;
+            let name_1 = Tools.remove_first_char (List.nth words 5) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            if MultiPattern.multiplicity mpat_1 <> 1 then
+                raise ValueError;
+            let name_2 = Tools.remove_first_char (List.nth words 6) in
+            let mpat_2 = multi_pattern_with_name env name_2 in
+            if MultiPattern.multiplicity mpat_2 <> 1 then
+                raise ValueError;
+            if MultiPattern.length mpat_2 <> MultiPattern.arity mpat_2 then
+                raise ValueError;
+            let param = Generation.create_parameters
+                Generation.default_initial_color size shape in
+            let mpat = Generation.harmonization
+                param (MultiPattern.pattern mpat_1 1) (MultiPattern.pattern mpat_2 1) in
+            let env' = add_multi_pattern env name mpat in
+            print_string "Harmonization computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_arpeggiate words env =
+    if List.length words < 7 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 5)) || not (is_name (List.nth words 6))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "arpeggiate" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let shape = match List.nth words 3 with
+                |"partial" -> BudGrammar.Partial
+                |"full" -> BudGrammar.Full
+                |"colored" -> BudGrammar.Colored
+                |_ -> raise ValueError
+            in
+            let size = int_of_string (List.nth words 4) in
+            if size < 0 then
+                raise ValueError;
+            let name_1 = Tools.remove_first_char (List.nth words 5) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            if MultiPattern.multiplicity mpat_1 <> 1 then
+                raise ValueError;
+            let name_2 = Tools.remove_first_char (List.nth words 6) in
+            let mpat_2 = multi_pattern_with_name env name_2 in
+            if MultiPattern.multiplicity mpat_2 <> 1 then
+                raise ValueError;
+            if MultiPattern.length mpat_2 <> MultiPattern.arity mpat_2 then
+                raise ValueError;
+            let param = Generation.create_parameters
+                Generation.default_initial_color size shape in
+            let mpat = Generation.arpeggiation
+                param (MultiPattern.pattern mpat_1 1) (MultiPattern.pattern mpat_2 1) in
+            let env' = add_multi_pattern env name mpat in
+            print_string "Arpeggiation computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_write words env =
+    if List.hd words <> "write" || List.length words < 3
+            || not (is_name (List.nth words 2)) then
+        None
+    else
+        try
             let file_name = List.nth words 1 in
             let mpat_name = Tools.remove_first_char (List.nth words 2) in
             let mpat = multi_pattern_with_name env mpat_name in
             let ok = create_files env mpat file_name in
-            if ok then begin
-                print_string "The files has been generated.";
-                print_newline ()
+            if not ok then
+                raise ExecutionError;
+            print_string "The files has been generated.";
+            print_newline ();
+            Some env
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
             end
-            else begin
-                print_string "Error: the files have not been generated.";
-                print_newline ()
-            end;
-            env
-        end
-        else if List.hd words = "play" then begin
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |ExecutionError -> begin
+                print_string "Error: execution.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_play words env =
+    if List.hd words <> "play" || List.length words < 2
+            || not (is_name (List.nth words 1)) then
+        None
+    else
+        try
             let mpat_name = Tools.remove_first_char (List.nth words 1) in
             let mpat = multi_pattern_with_name env mpat_name in
             let ok = play_phrase env mpat in
-            if ok then
-                print_string "Phrase played."
-            else
-                print_string "Error: the phrase cannot be played.";
+            if not ok then
+                raise ExecutionError;
+            print_string "Phrase played.";
+            print_newline ();
+            Some env
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |ExecutionError -> begin
+                print_string "Error: execution.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+(* Returns the next version of the environment env, altered by the command cmd. As side
+ * effect, the action of the command is performed. *)
+let execute_command cmd env =
+        let words = Str.split (Str.regexp "[ \t\n]+") cmd in
+        if words = [] then begin
+            print_string "Empty instruction.";
             print_newline ();
             env
         end
+        else let env_opt = command_comment words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_quit words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_help words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_show words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_set_scale words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_set_root words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_set_tempo words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_set_sounds words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_name_multi_pattern words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_name_colored_multi_pattern words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_partial_compose words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_full_compose words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_transform words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_mirror words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_generate words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_temporize words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_rhythmize words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_harmonize words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_arpeggiate words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_write words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_play words env in
+        if Option.is_some env_opt then Option.get env_opt
         else begin
             print_string "Error: unknown command.";
             print_newline ();
             env
         end
-
-        (*
-        else if List.hd words = "transform" then begin
-            if List.length words <= 3 then begin
-                print_string "Error";
-                print_newline ();
-                env
-            end
-            else begin
-                let dilatation = int_of_string (List.nth words 1) in
-                let mul_lst = Tools.list_factor words 2 ((List.length word) - 3) in
-                let name = Tools.remove_first_char
-                    (List.nth words ((List.length words) - 1)) in
-                let mpat = multi_pattern_with_name env 
-            end
-        end
-        *)
-        
-
-(*
-                |"morphism" -> begin
-                    try
-                        let str = List.nth cmd' 1 in
-                        if Option.is_some env.result then begin
-                            let g = Option.get env.result in
-                            let k_lst = Tools.list_from_string int_of_string ' ' str in
-                            if (MultiPattern.multiplicity g) <> List.length k_lst then begin
-                                print_string
-                                    "Error: the morphism has not the good multiplicity.";
-                                print_newline ();
-                                env
-                            end
-                            else begin
-                                let g' = MultiPattern.exterior_product g k_lst in
-                                let env' = {env with result = Some g'} in
-                                print_string "The morphism has been applied on the phrase.";
-                                print_newline ();
-                                env'
-                            end
-                        end
-                        else begin
-                            print_string
-                                "Error: morphism application impossible, there is no \
-                                generated phrase.";
-                            print_newline ();
-                            env
-                        end
-                    with
-                        |_ -> begin
-                            print_string "Error: input format. Integers expected.";
-                            print_newline ();
-                            env
-                        end
-                end
-
-                |"mirror" -> begin
-                    if Option.is_some env.result then begin
-                        let g = Option.get env.result in
-                        let g' = MultiPattern.mirror g in
-                        let env' = {env with result = Some g'} in
-                        print_string "The phrase has been replaced by its mirror.";
-                        print_newline ();
-                        env'
-                    end
-                    else begin
-                        print_string
-                            "Error: mirror computation impossible, there is no generated \
-                            phrase.";
-                        print_newline ();
-                        env
-                    end
-                end
-*)
-
-(*
-                |"temporize" -> begin
-                    try
-                        let str = List.nth cmd' 1 in
-                        let str = Tools.remove_blank_characters str in
-                        let max_delay = int_of_string str in
-                        if (List.length env.colored_patterns) <> 1
-                                || (Option.get (multiplicity env)) <> 1 then begin
-                            print_string "Error: temporization impossible, there must be \
-                                one 1-pattern.";
-                            print_newline ();
-                            env
-                        end
-                        else if max_delay <= 0 then begin
-                            print_string "Error: the maximal delay must be 1 or more.";
-                            print_newline ();
-                            env
-                        end
-                        else begin
-                            let pat = MultiPattern.pattern
-                                (BudGrammar.get_element (List.hd env.colored_patterns))
-                                1
-                            in
-                            let g = Generation.temporization env.parameters pat max_delay in
-                            let env' = {env with result = Some g} in
-                            print_string "A temporization has been generated.";
-                            print_newline ();
-                            env'
-                        end
-                    with
-                        |_ -> begin
-                            print_string "Error: input format. Integer expected.";
-                            print_newline ();
-                            env
-                        end
-                end
-
-                |"rhythmize" -> begin
-                    try
-                        let str = List.nth cmd' 1 in
-                        let rhythm = Pattern.from_string str in
-                        if (List.length env.colored_patterns) = 1
-                                && (Option.get (multiplicity env)) = 1
-                                && Pattern.extract_degrees rhythm |> List.for_all
-                                    (fun d -> d = 0) then begin
-                            let pat = MultiPattern.pattern
-                                (BudGrammar.get_element (List.hd env.colored_patterns))
-                                1
-                            in
-                            let g = Generation.rhythmization env.parameters pat rhythm in
-                            let env' = {env with result = Some g} in
-                            print_string "A rhytmization has been generated.";
-                            print_newline ();
-                            env'
-                        end
-                        else begin
-                            print_string "Error: rhythmization impossible, there must be \
-                                one 1-pattern, and a rhythm pattern as argument (only 0 \
-                                and * ).";
-                            print_newline ();
-                            env
-                        end
-                    with
-                        |_ -> begin
-                            print_string "Error: input format. Rhythm pattern expected.";
-                            print_newline ();
-                            env
-                        end
-                end
-
-                |"harmonize" -> begin
-                    try
-                        let str = List.nth cmd' 1 in
-                        let deg_pattern = Pattern.from_string str in
-                        if (List.length env.colored_patterns) = 1
-                                && (Option.get (multiplicity env)) = 1
-                                && deg_pattern |> List.for_all Atom.is_beat then begin
-                            let pat = MultiPattern.pattern
-                                (BudGrammar.get_element (List.hd env.colored_patterns))
-                                1
-                            in
-                            let g = Generation.harmonization env.parameters pat deg_pattern
-                            in
-                            let env' = {env with result = Some g} in
-                            print_string "A harmonization has been generated.";
-                            print_newline ();
-                            env'
-                        end
-                        else begin
-                            print_string "Error: harmonization impossible, there must be \
-                                one 1-pattern, and a degree pattern as argument.";
-                            print_newline ();
-                            env
-                        end
-                    with
-                        |_ -> begin
-                            print_string "Error: input format. Integers expected.";
-                            print_newline ();
-                            env
-                        end
-                end
-
-                |"arpeggiate" -> begin
-                    try
-                        let str = List.nth cmd' 1 in
-                        let deg_pattern = Pattern.from_string str in
-                        if (List.length env.colored_patterns) = 1
-                                && (Option.get (multiplicity env)) = 1
-                                && deg_pattern |> List.for_all Atom.is_beat then begin
-                            let pat = MultiPattern.pattern
-                                (BudGrammar.get_element (List.hd env.colored_patterns))
-                                1
-                            in
-                            let g = Generation.arpeggiation env.parameters pat deg_pattern
-                            in
-                            let env' = {env with result = Some g} in
-                            print_string "An arpeggiation has been generated.";
-                            print_newline ();
-                            env'
-                        end
-                        else begin
-                            print_string "Error: arpeggiation impossible, there must be \
-                                one 1-pattern, and a degree pattern as argument.";
-                            print_newline ();
-                            env
-                        end
-                    with
-                        |_ -> begin
-                            print_string "Error: input format. Integers expected.";
-                            print_newline ();
-                            env
-                        end
-                end
-*)
-
-(*
-
-                |"play" -> begin
-                    if (Option.is_some env.file_name) then
-                        let ok = play_phrase env in
-                        if ok then
-                            print_string "Phrase played."
-                        else
-                            print_string "Error: the phrase cannot be played.";
-                    else
-                        print_string
-                            "The midi file has not been written, play is impossible.";
-                    print_newline ();
-                    env
-                end
-
-                |_ -> begin
-                    print_string "Error: unknown command.";
-                    print_newline ();
-                    env
-                end
-*)
-
 
 (* Launch the main interaction loop. *)
 let interaction_loop () =

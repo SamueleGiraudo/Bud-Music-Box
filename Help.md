@@ -10,8 +10,23 @@ ignored and can therefore be treated as comments.
 
 Identifiers are strings made of the symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`.
 
+Spaces around the token `:=` are part of the syntax.
+
 
 ## Syntax for multi-patterns and colored multi-patterns
+A multi-pattern is specified by the sequence of its atoms, that are degrees (expressed by
+signed decimal integers) of rests (expressed by `*`). Two voices of a multi-pattern are
+separated by a `;`.
+
+For instance,
+
+`1 -1 * * 2 * 4 ; 0 * * 1 * -3; * * 2 2 2 2 *`
+
+is a string specifying a 3-multi-pattern. This multi-pattern has arity $4$ because each
+voice contains 4 beats. Its length is 7 since it contains additionally 3 rests, so that this
+multi-pattern lasts 7 amounts of time.
+
+A colored multi-pattern is specified by
 TODO
 
 
@@ -177,7 +192,7 @@ TODO
   generation algorithm with the specified shape and the specified size.
 
 
-### Generate the associated files of a multi-pattern 
+### Write the associated files of a multi-pattern 
 `write FILE_NAME $PAT`
 
 + `FILE_NAME` is a path to a non-existing file.

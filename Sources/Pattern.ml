@@ -74,8 +74,9 @@ let partial_composition pat_1 i pat_2 =
     Tools.partial_composition_lists pat_1 (j + 1) pat_2'
 
 (* Returns the pattern obtained by multiplying by k each of its atoms. *)
-let exterior_product pat k =
+(*let exterior_product pat k =
     pat |> List.map (fun a -> Atom.mul a k)
+*)
 
 (* Returns the pattern obtained by replacing each rest of the pattern pat by a sequence of
  * mul rests and by multiplying each degree by mul. *)

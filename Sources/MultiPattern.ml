@@ -80,15 +80,16 @@ let partial_composition mpat_1 i mpat_2 =
 
 (* Returns the multi-pattern obtained by multiplying each pattern of the multi-pattern mpat
  * by the corresponding element of the list of integers k_lst. *)
-let exterior_product mpat k_lst =
+(*let exterior_product mpat k_lst =
     assert ((multiplicity mpat) = List.length k_lst);
     List.map2 (fun pat k -> Pattern.exterior_product pat k) mpat k_lst
+*)
 
 (* Returns the pattern obtained by replacing each rest of the multi-pattern mpat by a
  * sequence of mul rests and by multiplying each degree by mul. *)
 let transform dilatation mul_lst mpat =
     assert ((multiplicity mpat) = List.length mul_lst);
-    List.map2 (fun pat mul -> Pattern.transform pat mul) mpat mul_lst
+    List.map2 (fun mul pat -> Pattern.transform dilatation mul pat) mul_lst mpat
 
 (* Returns the mirror image of the multi-pattern mpat. *)
 let mirror mpat =
@@ -123,6 +124,14 @@ let arpeggio deg_pattern =
 let operad k =
     assert (k >= 1);
     Operad.create arity partial_composition (one k)
+
+let full_composition mpat mpat_lst =
+    assert (is_multi_pattern mpat);
+    assert (mpat_lst |> List.for_all is_multi_pattern);
+    assert (mpat_lst |> List.for_all
+        (fun mpat' -> (multiplicity mpat) = (multiplicity mpat')));
+    let m = multiplicity mpat in
+    Operad.full_composition (operad m) mpat mpat_lst
 
 
 (* The test function of the module. *)
