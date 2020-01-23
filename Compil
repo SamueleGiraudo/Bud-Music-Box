@@ -10,6 +10,8 @@ ocamlbuild -r\
     -r\
     Sources/Main.native
 
+mv Main.native bmb
+
 # To profile
 # ocamlbuild Main.p.native
 # Then execute

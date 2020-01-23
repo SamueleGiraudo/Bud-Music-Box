@@ -5,7 +5,7 @@ generating systems.
 Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
-Versions:
+## Versions
 + `0.10` (2020-01-01)
     + Several improvements.
     + Add instructions `morphism` and `mirror`.
@@ -15,11 +15,22 @@ Versions:
 
 
 ## Quick overview and examples
+
+### Main functionalities
 1. [Multi-pattern creation](Examples/MultiPatternCreation.bmb)
 1. [Multi-pattern composition](Examples/MultiPatternComposition.bmb)
 1. [Setting the ambient scale, root, and tempo](Examples/ScaleRootTempo.bmb)
 1. [Changing instruments](Examples/Sounds.bmb)
-1. [Colored multi-patterns and random generation](Exampiles/Generation.bmb)
+1. [Colored multi-patterns and random generation](Examples/Generation.bmb)
+1. [Temporization, rhythmization, arpeggiation, and harmonization](
+        Examples/PatternVariations.bmb)
+
+### Complete examples
++ An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale, played on kotos.
++ An [example](Examples/CompleteHir2.bmb) on the Hirajoshi scale, played on voices.
++ An [example](Examples/CompleteMaj1.bmb) on the major natural scale.
++ An [example](Examples/CompleteHar1.bmb) on the minor harmonic scale.
++ An [example](Examples/CompletePen1.bmb) on the minor pentatonic scale.
 
 
 ## Building
@@ -31,6 +42,8 @@ The following instructions hold for Linux systems like Debian or Archlinux, afte
 2. Install all dependencies (see the section below).
 
 3. Build the project by running `chmod +x Compil` and then `./Compil`.
+
+This creates an executable `bmb`.
 
 
 ## Dependencies
@@ -55,7 +68,7 @@ language.
 Files containing such instructions must have `bmb` as extension. Given such a file
 `Program.bmb`, the command
 
-`./Main.native -f Program.bmb`
+`./bmb -f Program.bmb`
 
 executes line by line each of its instructions.
 

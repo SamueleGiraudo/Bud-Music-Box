@@ -124,6 +124,10 @@ let create_files env mpat file_name =
 (* Play the phrase from the environment env. Returns true if the playing is possible and
  * false otherwise. *)
 let play_phrase env mpat =
+    if not (Sys.file_exists path_results) then
+        let _ = Sys.command ("mkdir -p " ^ path_results) in ()
+    else
+        ();
     let file_name = Printf.sprintf "%s/%s%f"
         path_results prefix_result (Unix.gettimeofday ()) in
     let err = create_files env mpat file_name in
@@ -312,6 +316,11 @@ let command_name_colored_multi_pattern words env =
                 |> String.concat " " in
             let cpat = BudGrammar.colored_element_from_string 
                 MultiPattern.from_string str_cpat in
+            if not (MultiPattern.is_multi_pattern (BudGrammar.get_element cpat)) then
+                raise ValueError;
+            let m = MultiPattern.multiplicity (BudGrammar.get_element cpat) in
+            if not (BudGrammar.is_colored_element (MultiPattern.operad m) cpat) then
+                raise ValueError;
             let env' = add_colored_multi_pattern env name cpat in
             print_string "Colored multi-pattern added.";
             print_newline ();
