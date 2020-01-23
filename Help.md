@@ -1,10 +1,7 @@
-% Bud Music Box language
-% Samuele Giraudo
-% January 2020
-
+# Bud Music Box language instruction set
+This page describes all the instructions of the Bud Music Box language.
 
 ## General conventions
-
 Each single instruction fits on one line. All characters following a `#` in a given line are
 ignored and can therefore be treated as comments.
 

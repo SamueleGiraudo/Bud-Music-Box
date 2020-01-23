@@ -1,4 +1,4 @@
-# Bud-Music-Box
+# Bud Music Box
 A tool to generate random music from short patterns using operads, colored operads, and bud
 generating systems.
 
@@ -46,9 +46,16 @@ Debian or Archlinux, after 2019.
 
 
 ## User guide
-TODO
+This [page](Help.md) contains the description of the Bud Music Box instruction set and
+language.
 
-[See here](Help.md)
+Files containing such instructions must have `bmb` as extension. Given such a file
+`Program.bmb`, the command
+
+`./Main.native -f Program.bmb`
+
+executes line by line each of its instructions.
+
 
 ## Theoretical aspects
 
@@ -58,4 +65,8 @@ TODO
 ## Bibliography
 
 TODO
+
++
++
++
 
