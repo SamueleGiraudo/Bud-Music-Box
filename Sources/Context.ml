@@ -23,8 +23,8 @@ let create scale root tempo =
 
 (* Returns a string representing the context context. *)
 let to_string context =
-    Printf.sprintf ("    MIDI root note: %d\n    tempo: %d bpm\n    scale: %s")
-        context.root context.tempo (Scale.to_string context.scale)
+    Printf.sprintf ("    scale: %s\n    MIDI root note:% d\n    tempo: %d bpm")
+        (Scale.to_string context.scale) context.root context.tempo 
 
 (* Returns the scale of the context context. *)
 let scale context =

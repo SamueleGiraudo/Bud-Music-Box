@@ -1,0 +1,29 @@
+# By default, the ambient scale is the harmonic minor scale.
+$increasing_7 := multi_pattern 0 1 2 3 4 5 6 7
+
+play $increasing_7
+
+# Let us use the major natural scale as ambient scale...
+set_scale 2 2 1 2 2 2 1
+
+# ... and let us play the first notes of this scale.
+play $increasing_7
+
+
+# By default, le degree 0 corresponds with the MIDI note 57 (middle A).
+
+# Let us change this note by providing a new MIDI code...
+set_root 45
+
+# ... and play the previous pattern (therefore, one octave below).
+play $increasing_7
+
+
+# By default, multi-pattern are played at a speed of 192 beats by minute.
+
+# Let us change this tempo by providing a new value...
+set_tempo 312
+
+# ... and play the previous pattern (therefore, faster).
+play $increasing_7
+

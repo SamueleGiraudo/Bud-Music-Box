@@ -1,0 +1,15 @@
+# Creation of colored 2-multi-patterns.
+
+# A first one of arity 4.
+$cpat_1 := colored_multi_pattern a | 0 -1 1 * * ; -7 * * 0 0 | b a a
+
+# A second one of arity 1.
+$cpat_2 := colored_multi_pattern a | 0 * ; * 0 | a
+
+# We use the partial bud generation algorithm with 32 iterations and "a" as initial color
+# on the colored multi-patterns $c1 and $c2.
+$p := generate partial 32 a $cpat_1 $cpat_2
+
+# Let us play the result.
+play $p
+

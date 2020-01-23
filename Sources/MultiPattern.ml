@@ -33,7 +33,11 @@ let from_string str =
     if str = "" then
         [Pattern.empty]
     else
-        Tools.list_from_string Pattern.from_string ';' str
+        let mpat = Tools.list_from_string Pattern.from_string ';' str in
+        if is_multi_pattern mpat then
+            mpat
+        else
+            raise Tools.BadValue
 
 (* Returns the k-multi-pattern obtained by stacking the pattern pat with k copies of
  * itself. *)

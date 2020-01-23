@@ -295,7 +295,7 @@ let command_name_multi_pattern words env =
                 print_newline ();
                 Some env
             end
-            |ValueError | Tools.BadStringFormat -> begin
+            |ValueError | Tools.BadStringFormat | Tools.BadValue -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env
@@ -322,7 +322,7 @@ let command_name_colored_multi_pattern words env =
                 print_newline ();
                 Some env
             end
-            |ValueError | Tools.BadStringFormat -> begin
+            |ValueError | Tools.BadStringFormat | Tools.BadValue -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env

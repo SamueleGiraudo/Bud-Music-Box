@@ -15,6 +15,8 @@ Versions:
 
 
 ## Quick overview and examples
+1. [Multi-pattern creation](Examples/MultiPatternCreation.bmb)
+
 
 TODO
 

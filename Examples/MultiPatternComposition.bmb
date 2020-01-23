@@ -1,0 +1,19 @@
+# A first 1-multi-patten.
+$mpat_1 := multi_pattern 0 1 2 3
+
+# A second 1-multi-pattern.
+$mpat_2 := multi_pattern 0 2 4
+
+# A third 1-multi-pattern.
+$mpat_3 := multi_pattern -1 -3 -5
+
+# The partial composition of the second multi-pattern into the first one at position 2.
+$res_1 := partial_compose $mpat_1 2 $mpat_2
+
+# The full composition of the second multi-pattern with the third, the third, and the first.
+$res_2 := full_compose $mpat_2 $mpat_3 $mpat_3 $mpat_1
+
+# Print the internal state of the machine (scale, root note, tempo, MIDI sounds,
+# multi-patterns, and colored multi-patterns.
+show
+

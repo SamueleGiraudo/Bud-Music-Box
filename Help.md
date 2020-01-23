@@ -17,7 +17,9 @@ separated by a `;`.
 
 For instance,
 
-`1 -1 * * 2 * 4 ; 0 * * 1 * -3 0 ; * * 2 2 2 2 *`
+```
+1 -1 * * 2 * 4 ; 0 * * 1 * -3 0 ; * * 2 2 2 2 *
+```
 
 is a string specifying a $3$-multi-pattern. This multi-pattern has arity $4$ because each
 voice contains $4$ beats. Its length is $7$ since it contains additionally $3$ rests, so
@@ -27,9 +29,11 @@ A colored multi-pattern is specified by its output color (following the same rul
 identifiers), a `|`, its underlying multi-pattern, a `|`, and finally the sequence of its
 input colors (following the same rules as identifiers).
 
-For instance;
+For instance,
 
-`out | 2 * * 0 1 ; 1 * 0 1 * ; 1 -1 3 * * | in_1 in_2 in_2`
+```
+out | 2 * * 0 1 ; 1 * 0 1 * ; 1 -1 3 * * | in_1 in_2 in_2
+```
 
 is a string specifying a colored $3$-multi-pattern. Its output color is `out` and its input
 colors are, from left to right, `in_1`, `in_2`, and `in_2`.
