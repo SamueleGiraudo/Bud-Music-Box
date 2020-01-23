@@ -42,10 +42,15 @@ let to_string scale =
     assert (is_scale scale);
     Tools.list_to_string string_of_int " " scale
 
-(* Returns the scale encoded by the string str.
- * For instance, "3 2 2 3 2" encodes the minor pentatonic scale. *)
+(* Returns the scale encoded by the string str. Raises Tools.BadStringFormat if str does not
+ * encode a scale. Raises Tools.BadValue if str encodes an integer list which is not a
+ * scale. For instance, "3 2 2 3 2" encodes the minor pentatonic scale. *)
 let from_string str =
-    Tools.list_from_string int_of_string ' ' str
+    let lst = Tools.list_from_string int_of_string ' ' str in
+    if not (is_scale lst) then
+        raise Tools.BadValue
+    else
+        lst
 
 (* Returns the number of steps by octave in the scale scale. *)
 let nb_steps_by_octave scale =

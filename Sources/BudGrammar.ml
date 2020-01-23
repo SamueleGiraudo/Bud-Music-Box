@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019
+ * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020
  *)
 
 (* A color is a name (string). *)
@@ -25,6 +25,13 @@ type generation_shape =
     |Partial
     |Full
     |Colored
+
+let generation_shape_from_string str =
+    match str with
+        |"partial" -> Partial
+        |"full" -> Full
+        |"colored" -> Colored
+        |_ -> raise Tools.BadStringFormat
 
 (* Tests if ce is a well-formed colored element. This is the case if and only if the number
  * of input colors is the same as the arity of the underlying element of ce. *)

@@ -13,7 +13,8 @@ let to_string pat =
 
 (* Returns the pattern encoded by the string str.
  * For instance, "* 1 * * * 2 -1 8 * 12 0" encodes a pattern, where the "*" are rests. Each
- * beat or rest must be separated by at least one space. *)
+ * beat or rest must be separated by at least one space. Raises Tools.BadStringFormat if
+ * str does no encode a pattern. *)
 let from_string str =
     Tools.list_from_string Atom.from_string ' ' str
 
@@ -73,18 +74,14 @@ let partial_composition pat_1 i pat_2 =
     let pat_2' = pat_2 |> List.map (fun a -> Atom.incr a d) in
     Tools.partial_composition_lists pat_1 (j + 1) pat_2'
 
-(* Returns the pattern obtained by multiplying by k each of its atoms. *)
-(*let exterior_product pat k =
-    pat |> List.map (fun a -> Atom.mul a k)
-*)
-
 (* Returns the pattern obtained by replacing each rest of the pattern pat by a sequence of
  * mul rests and by multiplying each degree by mul. *)
 let transform dilatation mul pat =
+    assert (dilatation >= 0);
     pat |> List.map
         (fun a ->
             match a with
-                |Atom.Rest -> List.init mul (fun _ -> Atom.Rest)
+                |Atom.Rest -> List.init dilatation (fun _ -> Atom.Rest)
                 |Atom.Beat d -> [Atom.Beat (d * mul)])
         |> List.flatten
 

@@ -8,7 +8,7 @@ type environment = {
     context : Context.context;
     midi_sounds : int list;
     multi_patterns : (string * MultiPattern.multi_pattern) list;
-    colored_patterns : (string * MultiPattern.colored_pattern) list;
+    colored_multi_patterns : (string * MultiPattern.colored_multi_pattern) list;
     exit : bool
 }
 
@@ -33,7 +33,7 @@ let environment_to_string env =
                 Printf.sprintf "%s = %s" name
                     (BudGrammar.colored_element_to_string MultiPattern.to_string cpat))
             "\n    "
-            env.colored_patterns))
+            env.colored_multi_patterns))
 
 (* Returns the environment obtained by adding the multi-pattern mpat with the name name.
  * If there is already a multi-pattern with this name, it is overwritten. *)
@@ -43,9 +43,9 @@ let add_multi_pattern env name mpat =
 
 (* Returns the environment obtained by adding the colored multi-pattern cpat with the name
  * name. If there is already a colored multi-pattern with this name, it is overwritten. *)
-let add_colored_pattern env name cpat =
-    let new_lst = (name, cpat) :: (List.remove_assoc name env.colored_patterns) in
-    {env with colored_patterns = new_lst}
+let add_colored_multi_pattern env name cpat =
+    let new_lst = (name, cpat) :: (List.remove_assoc name env.colored_multi_patterns) in
+    {env with colored_multi_patterns = new_lst}
 
 (* Returns the default midi sound (Acoustic Grand Piano). *)
 let default_midi_sound = 0
@@ -66,7 +66,7 @@ let default_environment =
     {context = Context.create Scale.minor_harmonic 57 192;
     midi_sounds = [];
     multi_patterns = [];
-    colored_patterns = [];
+    colored_multi_patterns = [];
     exit = false}
 
 let is_name str =
@@ -80,7 +80,7 @@ let multi_pattern_with_name env name =
 (* Returns the colored multi-pattern of name name in the environment env. If there is no
  * such colored multi-pattern, the exception Not_found is raised. *)
 let colored_multi_pattern_with_name env name =
-    List.assoc name env.colored_patterns
+    List.assoc name env.colored_multi_patterns
 
 (* Returns the help string, containing explanations for each command. *)
 let help_string =
@@ -134,7 +134,7 @@ let play_phrase env mpat =
         let err = Sys.command ("timidity " ^ file_name_mid) in
         not (Tools.int_to_bool err)
 
-let command_comment words env = 
+let command_comment words env =
     if List.hd words <> "#" then
         None
     else begin
@@ -178,9 +178,7 @@ let command_set_scale words env =
         None
     else
         try
-            let scale = List.tl words |> List.map int_of_string in
-            if not (Scale.is_scale scale) then
-                raise ValueError;
+            let scale = List.tl words |> String.concat " " |> Scale.from_string in
             if not ((Scale.nb_steps_by_octave scale) = 12) then
                 raise ValueError;
             let env' = {env with context = Context.set_scale env.context scale} in
@@ -188,8 +186,13 @@ let command_set_scale words env =
             print_newline ();
             Some env'
         with
-            |Failure _ -> begin
+            |Tools.BadStringFormat -> begin
                 print_string "Error: input format. Integers expected.";
+                print_newline ();
+                Some env
+            end
+            |Tools.BadValue -> begin
+                print_string "Error: value. A scale is expected.";
                 print_newline ();
                 Some env
             end
@@ -292,7 +295,7 @@ let command_name_multi_pattern words env =
                 print_newline ();
                 Some env
             end
-            |ValueError -> begin
+            |ValueError | Tools.BadStringFormat -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env
@@ -309,7 +312,7 @@ let command_name_colored_multi_pattern words env =
                 |> String.concat " " in
             let cpat = BudGrammar.colored_element_from_string 
                 MultiPattern.from_string str_cpat in
-            let env' = add_colored_pattern env name cpat in
+            let env' = add_colored_multi_pattern env name cpat in
             print_string "Colored multi-pattern added.";
             print_newline ();
             Some env'
@@ -319,7 +322,7 @@ let command_name_colored_multi_pattern words env =
                 print_newline ();
                 Some env
             end
-            |ValueError -> begin
+            |ValueError | Tools.BadStringFormat -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env
@@ -336,8 +339,12 @@ let command_partial_compose words env =
             let name_1 = Tools.remove_first_char (List.nth words 3) in
             let mpat_1 = multi_pattern_with_name env name_1 in
             let pos = int_of_string (List.nth words 4) in
+            if not (1 <= pos && pos <= (MultiPattern.arity mpat_1)) then
+                raise ValueError;
             let name_2 = Tools.remove_first_char (List.nth words 5) in
             let mpat_2 = multi_pattern_with_name env name_2 in
+            if MultiPattern.multiplicity mpat_1 <> MultiPattern.multiplicity mpat_2 then
+                raise ValueError;
             let res = MultiPattern.partial_composition mpat_1 pos mpat_2 in
             let env' = add_multi_pattern env name res in
             print_string "Partial composition computed.";
@@ -373,6 +380,12 @@ let command_full_compose words env =
             let name_lst = Tools.factor_list words 4 ((List.length words) - 4) |> List.map
                 Tools.remove_first_char in
             let mpat_lst = name_lst |> List.map (multi_pattern_with_name env) in
+            if (List.length mpat_lst) <> (MultiPattern.arity mpat_1) then
+                raise ValueError;
+            if not (mpat_lst |> List.for_all
+                (fun mpat ->
+                    MultiPattern.multiplicity mpat = MultiPattern.multiplicity mpat_1)) then
+                raise ValueError;
             let res = MultiPattern.full_composition mpat_1 mpat_lst in
             let env' = add_multi_pattern env name res in
             print_string "Full composition computed.";
@@ -403,7 +416,8 @@ let command_transform words env =
     else
         try
             let name = Tools.remove_first_char (List.hd words) in
-            let name_1 = Tools.remove_first_char (List.nth words ((List.length words) - 1)) in
+            let name_1 = Tools.remove_first_char
+                (List.nth words ((List.length words) - 1)) in
             let mpat_1 = multi_pattern_with_name env name_1 in
             let dilatation = int_of_string (List.nth words 3) in
             if dilatation < 0 then
@@ -473,23 +487,27 @@ let command_generate words env =
     else
         try
             let name = Tools.remove_first_char (List.hd words) in
-            let shape = match List.nth words 3 with
-                |"partial" -> BudGrammar.Partial
-                |"full" -> BudGrammar.Full
-                |"colored" -> BudGrammar.Colored
-                |_ -> raise ValueError
-            in
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
             let size = int_of_string (List.nth words 4) in
             let initial_color = List.nth words 5 in
-            let colored_patterns_names = Tools.factor_list
+            let colored_multi_patterns_names = Tools.factor_list
                 words 6 ((List.length words) - 6) in
-            let colored_patterns = colored_patterns_names |> List.map
+            let colored_multi_patterns = colored_multi_patterns_names |> List.map
                 (fun name ->
                     let name' = Tools.remove_first_char name in
                     colored_multi_pattern_with_name env name') in
-            let mpat = Generation.from_colored_patterns
+            if colored_multi_patterns = [] then
+                raise ValueError;
+            let m = MultiPattern.multiplicity
+                (BudGrammar.get_element (List.hd colored_multi_patterns)) in
+            if not (colored_multi_patterns |> List.for_all
+                (fun cm ->
+                    (MultiPattern.multiplicity (BudGrammar.get_element cm)) = m)) then
+                raise ValueError;
+            let mpat = Generation.from_colored_multi_patterns
                 (Generation.create_parameters initial_color size shape)
-                colored_patterns in
+                initial_color
+                colored_multi_patterns in
             let env' = add_multi_pattern env name mpat in
             print_string "Multi-pattern generated.";
             print_newline ();
@@ -500,7 +518,7 @@ let command_generate words env =
                 print_newline ();
                 Some env
             end
-            |ValueError -> begin
+            |ValueError | Tools.BadStringFormat -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env
@@ -519,12 +537,7 @@ let command_temporize words env =
     else
         try
             let name = Tools.remove_first_char (List.hd words) in
-            let shape = match List.nth words 3 with
-                |"partial" -> BudGrammar.Partial
-                |"full" -> BudGrammar.Full
-                |"colored" -> BudGrammar.Colored
-                |_ -> raise ValueError
-            in
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
             let size = int_of_string (List.nth words 4) in
             if size < 0 then
                 raise ValueError;
@@ -549,7 +562,7 @@ let command_temporize words env =
                 print_newline ();
                 Some env
             end
-            |ValueError -> begin
+            |ValueError | Tools.BadStringFormat -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env
@@ -568,12 +581,7 @@ let command_rhythmize words env =
     else
         try
             let name = Tools.remove_first_char (List.hd words) in
-            let shape = match List.nth words 3 with
-                |"partial" -> BudGrammar.Partial
-                |"full" -> BudGrammar.Full
-                |"colored" -> BudGrammar.Colored
-                |_ -> raise ValueError
-            in
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
             let size = int_of_string (List.nth words 4) in
             if size < 0 then
                 raise ValueError;
@@ -581,7 +589,6 @@ let command_rhythmize words env =
             let mpat_1 = multi_pattern_with_name env name_1 in
             if MultiPattern.multiplicity mpat_1 <> 1 then
                 raise ValueError;
-
             let name_2 = Tools.remove_first_char (List.nth words 6) in
             let mpat_2 = multi_pattern_with_name env name_2 in
             if MultiPattern.multiplicity mpat_2 <> 1 then
@@ -603,7 +610,7 @@ let command_rhythmize words env =
                 print_newline ();
                 Some env
             end
-            |ValueError -> begin
+            |ValueError | Tools.BadStringFormat -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env
@@ -622,12 +629,7 @@ let command_harmonize words env =
     else
         try
             let name = Tools.remove_first_char (List.hd words) in
-            let shape = match List.nth words 3 with
-                |"partial" -> BudGrammar.Partial
-                |"full" -> BudGrammar.Full
-                |"colored" -> BudGrammar.Colored
-                |_ -> raise ValueError
-            in
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
             let size = int_of_string (List.nth words 4) in
             if size < 0 then
                 raise ValueError;
@@ -655,7 +657,7 @@ let command_harmonize words env =
                 print_newline ();
                 Some env
             end
-            |ValueError -> begin
+            |ValueError | Tools.BadStringFormat -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env
@@ -674,12 +676,7 @@ let command_arpeggiate words env =
     else
         try
             let name = Tools.remove_first_char (List.hd words) in
-            let shape = match List.nth words 3 with
-                |"partial" -> BudGrammar.Partial
-                |"full" -> BudGrammar.Full
-                |"colored" -> BudGrammar.Colored
-                |_ -> raise ValueError
-            in
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
             let size = int_of_string (List.nth words 4) in
             if size < 0 then
                 raise ValueError;
@@ -707,7 +704,7 @@ let command_arpeggiate words env =
                 print_newline ();
                 Some env
             end
-            |ValueError -> begin
+            |ValueError | Tools.BadStringFormat -> begin
                 print_string "Error: value.";
                 print_newline ();
                 Some env

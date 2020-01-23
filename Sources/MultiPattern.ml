@@ -9,7 +9,7 @@ type multi_pattern = Pattern.pattern list
 
 (* A colored multi-pattern is a multi-pattern surrounded with an output color an input
  * colors. *)
-type colored_pattern =
+type colored_multi_pattern =
     multi_pattern BudGrammar.colored_element
 
 (* Tests if the list lst of patterns is a multi-pattern. *)
@@ -24,12 +24,16 @@ let is_multi_pattern lst =
 (* Returns a string representing the multi-pattern mpat. *)
 let to_string mpat =
     assert (is_multi_pattern mpat);
-    Tools.list_to_string (Pattern.to_string) " ; " mpat
+    Tools.list_to_string Pattern.to_string " ; " mpat
 
 (* Returns the multi-pattern encoded by the string str.
- * For instance, "* 1 * 2 ; * * 0 -1" is a 2-multi-pattern. *)
+ * For instance, "* 1 * 2 ; * * 0 -1" is a 2-multi-pattern.
+ * Raises Tools.BadStringFormat if str does no encode a multi-pattern.*)
 let from_string str =
-    Tools.list_from_string Pattern.from_string ';' str
+    if str = "" then
+        [Pattern.empty]
+    else
+        Tools.list_from_string Pattern.from_string ';' str
 
 (* Returns the k-multi-pattern obtained by stacking the pattern pat with k copies of
  * itself. *)
@@ -78,16 +82,10 @@ let partial_composition mpat_1 i mpat_2 =
     let pairs = List.combine mpat_1 mpat_2 in
     pairs |> List.map (fun (seq_1, seq_2) -> Pattern.partial_composition seq_1 i seq_2)
 
-(* Returns the multi-pattern obtained by multiplying each pattern of the multi-pattern mpat
- * by the corresponding element of the list of integers k_lst. *)
-(*let exterior_product mpat k_lst =
-    assert ((multiplicity mpat) = List.length k_lst);
-    List.map2 (fun pat k -> Pattern.exterior_product pat k) mpat k_lst
-*)
-
 (* Returns the pattern obtained by replacing each rest of the multi-pattern mpat by a
  * sequence of mul rests and by multiplying each degree by mul. *)
 let transform dilatation mul_lst mpat =
+    assert (dilatation >= 0);
     assert ((multiplicity mpat) = List.length mul_lst);
     List.map2 (fun mul pat -> Pattern.transform dilatation mul pat) mul_lst mpat
 
@@ -125,6 +123,8 @@ let operad k =
     assert (k >= 1);
     Operad.create arity partial_composition (one k)
 
+(* Returns the multi-pattern obtained by the full composition of the multi-pattern mpat
+ * with the multi-pattern of the list mpat_lst. *)
 let full_composition mpat mpat_lst =
     assert (is_multi_pattern mpat);
     assert (mpat_lst |> List.for_all is_multi_pattern);

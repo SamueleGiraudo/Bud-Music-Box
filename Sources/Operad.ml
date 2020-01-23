@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, apr. 2019, aug. 2019, dec. 2019
+ * Modifications: mar. 2019, apr. 2019, aug. 2019, dec. 2019, jan. 2020
  *)
 
 (* An operad is specified by a map sending any of its elements to its arity, a partial
@@ -33,8 +33,8 @@ let partial_composition op x i y =
 (* Returns the full composition in the operad op of x and the list lst of elements. *)
 let full_composition op x lst =
     assert ((op.arity x) = (List.length lst));
-    let indexes = Tools.interval 1 (op.arity x) |> List.rev in
-    let indexed_elements = List.combine indexes lst in
+    let indexes = Tools.interval 1 (op.arity x) in
+    let indexed_elements = List.combine indexes lst |> List.rev in
     indexed_elements |> List.fold_left (fun res (i, y) -> op.partial_composition res i y) x
 
 (* Returns the binary composition in the operad op of x and y. *)

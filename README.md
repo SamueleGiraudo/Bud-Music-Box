@@ -48,7 +48,7 @@ Debian or Archlinux, after 2019.
 ## User guide
 TODO
 
-[See here](../Help.md)
+[See here](Help.md)
 
 ## Theoretical aspects
 

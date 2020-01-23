@@ -88,7 +88,7 @@ let list_from_string string_to_element sep str =
                 let a = string_to_element tk in
                 a :: res
             with
-                |_ -> res)
+                |_ -> raise BadStringFormat)
         []
     in
     List.rev res

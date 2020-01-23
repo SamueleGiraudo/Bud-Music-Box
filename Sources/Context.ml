@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, apr. 2019, aug. 2019, dec. 2019
+ * Modifications: mar. 2019, apr. 2019, aug. 2019, dec. 2019, jan. 2020
  *)
 
 (* A midi note is an integer between 0 and 127. The value 60 represents the middle C. *)
@@ -23,7 +23,7 @@ let create scale root tempo =
 
 (* Returns a string representing the context context. *)
 let to_string context =
-    Printf.sprintf ("    midi root note: %d\n    tempo: %d bpm\n    scale: %s")
+    Printf.sprintf ("    MIDI root note: %d\n    tempo: %d bpm\n    scale: %s")
         context.root context.tempo (Scale.to_string context.scale)
 
 (* Returns the scale of the context context. *)
