@@ -1,0 +1,15 @@
+$c1 := colored_multi_pattern a | 0 2 * 1 * 0 4 ; -5 * * 0 0 0 0 | c b a a c
+$c2 := colored_multi_pattern a | 1 * 0 ; 0 * 1 | a a
+$c3 := colored_multi_pattern b | -1 ; -1 | a
+$c4 := colored_multi_pattern b | 0 0 ; 0 0 | a a
+$c5 := colored_multi_pattern c | 0 ; 0 | c
+
+set_scale 2 1 4 1 4
+set_root 57
+set_tempo 96
+set_sounds 52 53
+
+$res := generate full 4 a $c1 $c2 $c3 $c4 $c5
+show
+play $res
+

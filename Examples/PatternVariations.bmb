@@ -1,0 +1,29 @@
+# Let a 1-multi-pattern.
+$p := multi_pattern 3 2 * 2 1 * 1 0 *
+
+
+# Creates and plays a random temporization of this pattern.
+$new := temporize partial 16 $p 2
+play $new
+
+
+# Let a rhythm-pattern (a 1-multi-pattern with only rests and degree 0).
+$r := multi-pattern 0 * 0 0
+
+# Creates and plays a random rhythmization of the pattern $p.
+$new := rhythmize full 4 $p $r
+play $new
+
+
+# Let a degree-pattern (a 1-multi-pattern without rests).
+$d := multi_pattern 0 2 4 7
+
+# Creates and plays a random harmonization of the pattern $p.
+$new := harmonize partial 8 $p $d
+play $new
+
+
+# Creates and plays a random arpeggiation of the pattern $p.
+$new := arpeggiate full 8 $p $d
+play $new
+
