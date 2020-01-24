@@ -81,15 +81,36 @@ executes line by line each of its instructions.
 
 
 ## Theoretical aspects
-
-TODO
+An operad is an algebraic structure wherein elements are operations. This program is based
+upon an operad on an abstraction of polyphonic musical phrases called multi-patterns. The
+set of all this object is endowed with the structure of an operad allowing us to perform
+computations on musical phrases. The main idea is that one can, from a set of small musical
+phrases, generate randomly a new musical phrase by computing some random compositions of
+these patterns.
 
 
 ## Bibliography
 
-TODO
++ About operads:
+    + M. Méndez.
+      Set operads in combinatorics and computer science.
+      Springer, Cham, SpringerBriefs in Mathematics, xvi+129, 2015.
+    + S. Giraudo.
+      Nonsymmetric Operads in Combinatorics.
+      Springer Nature Switzerland AG, ix+172, 2018.
 
-+
-+
-+
++ About operads and combinatorial generation:
+    + S. Giraudo.
+      Colored operads, series on colored operads, and combinatorial generating systems.
+      Discrete Math.,
+      342, 6, 1624--1657, 2019.
+
++ About the operad of patterns:
+    + S. Giraudo.
+      Generation of musical pattern through operads.
+      Preprint, 2020.
+
+    + S. Giraudo.
+      The music box operad: random generation of musical phrases from patterns.
+      Work in progress, 2020.
 
