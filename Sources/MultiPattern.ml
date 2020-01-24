@@ -137,6 +137,13 @@ let full_composition mpat mpat_lst =
     let m = multiplicity mpat in
     Operad.full_composition (operad m) mpat mpat_lst
 
+let binary_composition mpat_1 mpat_2 =
+    assert (is_multi_pattern mpat_1);
+    assert (is_multi_pattern mpat_2);
+    assert ((multiplicity mpat_1) = (multiplicity mpat_2));
+    let m = multiplicity mpat_1 in
+    Operad.binary_composition (operad m) mpat_1 mpat_2
+
 
 (* The test function of the module. *)
 let test () =

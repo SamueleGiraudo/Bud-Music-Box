@@ -417,6 +417,42 @@ let command_full_compose words env =
                 Some env
             end
 
+let command_binarily_compose words env =
+    if List.length words < 5 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 3)) || not (is_name (List.nth words 4))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "binarily_compose" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let name_1 = Tools.remove_first_char (List.nth words 3) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            let name_2 = Tools.remove_first_char (List.nth words 4) in
+            let mpat_2 = multi_pattern_with_name env name_2 in
+            if MultiPattern.multiplicity mpat_1 <> MultiPattern.multiplicity mpat_2 then
+                raise ValueError;
+            let res = MultiPattern.binary_composition mpat_1 mpat_2 in
+            let env' = add_multi_pattern env name res in
+            print_string "Binary composition computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
 let command_transform words env =
     if List.length words < 6 || not (is_name (List.nth words 0))
             || not (is_name (List.nth words ((List.length words) - 1)))
@@ -602,7 +638,7 @@ let command_rhythmize words env =
             let mpat_2 = multi_pattern_with_name env name_2 in
             if MultiPattern.multiplicity mpat_2 <> 1 then
                 raise ValueError;
-            if MultiPattern.pattern mpat_1 1 |> Pattern.extract_degrees |> List.exists
+            if MultiPattern.pattern mpat_2 1 |> Pattern.extract_degrees |> List.exists
                     (fun d -> d <> 0) then
                 raise ValueError;
             let param = Generation.create_parameters
@@ -676,6 +712,48 @@ let command_harmonize words env =
                 print_newline ();
                 Some env
             end
+
+let command_mobiusate words env =
+    if List.length words < 6 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 5)) || List.nth words 1 <> ":="
+            || List.nth words 2 <> "mobiusate" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
+            let size = int_of_string (List.nth words 4) in
+            if size < 0 then
+                raise ValueError;
+            let name_1 = Tools.remove_first_char (List.nth words 5) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            if MultiPattern.multiplicity mpat_1 <> 1 then
+                raise ValueError;
+            let param = Generation.create_parameters
+                Generation.default_initial_color size shape in
+            let mpat = Generation.mobiusation
+                param (MultiPattern.pattern mpat_1 1) in
+            let env' = add_multi_pattern env name mpat in
+            print_string "Mobiusation computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError | Tools.BadStringFormat -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
 
 let command_arpeggiate words env =
     if List.length words < 7 || not (is_name (List.nth words 0))
@@ -830,6 +908,8 @@ let execute_command cmd env =
         if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_full_compose words env in
         if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_binarily_compose words env in
+        if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_transform words env in
         if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_mirror words env in
@@ -843,6 +923,8 @@ let execute_command cmd env =
         else let env_opt = command_harmonize words env in
         if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_arpeggiate words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_mobiusate words env in
         if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_write words env in
         if Option.is_some env_opt then Option.get env_opt

@@ -120,9 +120,19 @@ colors are, from left to right, `in_1`, `in_2`, and `in_2`.
 ### Fully compose multi-patterns
 `$NAME := full_compose $PAT $PAT_1 ... $PAT_n`
 
++ `NAME` is an identifier.
 + `PAT` is the name of an $m$-multi-pattern of arity $n$.
 + `PAT_1`, ..., `PAT_n` are names of $m$-multi-patterns.
 + Returns the full composition of `PAT` with `PAT_1`, ..., `PAT_n`.
+
+
+### Binarily compose two multi-patterns
+`$NAME := binarily_compose $PAT_1 $PAT_2
+
++ `NAME` is an identifier.
++ `PAT_1` is the name of an $m$-multi-pattern.
++ `PAT_2` is the name of an $m$-multi-pattern.
++ Returns the binary composition of `PAT_1` with `PAT_2`
 
 
 ### Transform multi-patterns
@@ -196,9 +206,20 @@ colors are, from left to right, `in_1`, `in_2`, and `in_2`.
 + `SIZE` is a nonnegative integer value.
 + `PAT` is the name of a $1$-multi-pattern.
 + `D_PAT` is the name of a $1$-multi-pattern with no rest and of arity $m$.
-+ Returns the m-multi-pattern obtained by randomly composing `PAT` with itself and by
++ Returns the $m$-multi-pattern obtained by randomly composing `PAT` with itself and by
   arpeggiating some of its degrees according to the degree-pattern `D_PAT`. This use the
   generation algorithm with the specified shape and the specified size.
+
+
+### Mobiusate a $1$-multi-pattern
+`$NAME := mobiusate SHAPE SIZE $PAT``
+
++ `SHAPE` is `partial`, `full`, or `colored`.
++ `SIZE` is a nonnegative integer value.
++ `PAT` is the name of a $1$-multi-pattern.
++ Returns the $2$-multi-pattern obtained by randomly composing the $2$-multi-pattern
+  obtained by stacking `PAT` with its mirror image. This use the generation algorithm with
+  the specified shape and the specified size.
 
 
 ### Write the associated files of a multi-pattern 

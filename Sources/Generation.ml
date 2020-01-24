@@ -110,3 +110,10 @@ let arpeggiation param pattern deg_pattern =
         transition_color_1 mpat_3 [default_sink_color] in
     from_colored_multi_patterns param default_initial_color [cpat_1; cpat_2; cpat_3]
 
+let mobiusation param pattern =
+    let pattern' = Pattern.mirror pattern in
+    let mpat = [pattern; pattern'] in
+    let in_colors = List.init (Pattern.arity pattern) (fun _ -> default_initial_color) in
+    let cpat = BudGrammar.create_colored_element default_initial_color mpat in_colors in
+    from_colored_multi_patterns param default_initial_color [cpat]
+

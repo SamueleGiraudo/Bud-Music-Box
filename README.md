@@ -6,6 +6,9 @@ Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
 ## Versions
++ `0.11` (2020-01-24)
+    + Add instructions `binarily_composition` and `mobiusation`.
+    + Language and instructions redesign.
 + `0.10` (2020-01-01)
     + Several improvements.
     + Add instructions `morphism` and `mirror`.
@@ -22,8 +25,12 @@ Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 1. [Setting the ambient scale, root, and tempo](Examples/ScaleRootTempo.bmb)
 1. [Changing instruments](Examples/Sounds.bmb)
 1. [Colored multi-patterns and random generation](Examples/Generation.bmb)
-1. [Temporization, rhythmization, arpeggiation, and harmonization](
-        Examples/PatternVariations.bmb)
+1. [Temporization](Examples/Temporization.bmb)
+1. [Rhythmization](Examples/Rhythmization.bmb)
+1. [Harmonization](Examples/Harmonization.bmb)
+1. [Arpeggiation](Examples/Arpeggiation.bmb)
+1. [Mobiusation](Examples/Mobiusation.bmb)
+
 
 ### Complete examples
 + An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale, played on kotos.
