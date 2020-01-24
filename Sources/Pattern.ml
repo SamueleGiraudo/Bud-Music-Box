@@ -11,10 +11,9 @@ type pattern = Atom.atom list
 let to_string pat =
     Tools.list_to_string Atom.to_string " " pat
 
-(* Returns the pattern encoded by the string str.
- * For instance, "* 1 * * * 2 -1 8 * 12 0" encodes a pattern, where the "*" are rests. Each
- * beat or rest must be separated by at least one space. Raises Tools.BadStringFormat if
- * str does no encode a pattern. *)
+(* Returns the pattern encoded by the string str. Raises Tools.BadStringFormat if str does
+ * no encode a pattern. For instance, "* 1 * * * 2 -1 8 * 12 0" encodes a pattern, where the
+ * "*" are rests. Each beat or rest must be separated by at least one space.  *)
 let from_string str =
     Tools.list_from_string Atom.from_string ' ' str
 
@@ -26,17 +25,16 @@ let empty =
 let one =
     [Atom.Beat 0]
 
+(* Returns the pattern consisting in a sequence of duration rests. *)
+let rest duration =
+    assert (duration >= 0);
+    List.init duration (fun _ -> Atom.Rest)
+
 (* Returns the pattern consisting in one atom of degree deg followed by duration - 1 rests.
  * This is in fact a degree with duration as duration. *)
 let beat deg duration =
     assert (duration >= 1);
-    let rests = (Tools.interval 2 duration) |> List.map (fun _ -> Atom.Rest) in
-    (Atom.Beat deg) :: rests
-
-(* Returns the pattern consisting in a sequence of duration rests. *)
-let rest duration =
-    assert (duration >= 0);
-    (Tools.interval 1 duration) |> List.map (fun _ -> Atom.Rest)
+    (Atom.Beat deg) :: (rest (duration - 1))
 
 (* Returns the pattern obtained by concatenating the patterns of the list of patterns
  * pattern_lst. *)
@@ -75,7 +73,7 @@ let partial_composition pat_1 i pat_2 =
     Tools.partial_composition_lists pat_1 (j + 1) pat_2'
 
 (* Returns the pattern obtained by replacing each rest of the pattern pat by a sequence of
- * mul rests and by multiplying each degree by mul. *)
+ * dilatation rests and by multiplying each degree by mul. *)
 let transform dilatation mul pat =
     assert (dilatation >= 0);
     pat |> List.map
@@ -92,10 +90,4 @@ let mirror pat =
 (* Returns the operad of patterns. *)
 let operad =
     Operad.create arity partial_composition one
-
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test Pattern\n";
-    true
 

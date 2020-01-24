@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020
  *)
 
 (* A degree is a (possibly negative) integer. *)
@@ -79,10 +79,4 @@ let rec interval_from_root scale deg =
         (next_interval scale deg') + (interval_from_root scale deg')
     else
         - (interval_from_root (List.rev scale) (- deg))
-
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test Scale\n";
-    true
 

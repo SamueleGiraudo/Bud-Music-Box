@@ -26,6 +26,8 @@ type generation_shape =
     |Full
     |Colored
 
+(* Returns the generation shape encoded by the string str. Raises Tools.BadStringFormat if
+ *  str does not encode any generation shape. *)
 let generation_shape_from_string str =
     match str with
         |"partial" -> Partial
@@ -52,9 +54,9 @@ let in_color ce i =
     List.nth ce.in_colors (i - 1)
 
 (* Returns the colored element represented by the string str where element_from_string is a
- * map returning an underlying element from a string.
- * For instance, "a | 1 * 2 ; * 0 0 | b a" encodes a colored  2-multi-pattern with a as
- * output color and b a as input colors*)
+ * map returning an underlying element from a string. Raises Tools.BadStringFormat if
+ * str does not encode a colored element. For instance, "a | 1 * 2 ; * 0 0 | b a" encodes a
+ * colored  2-multi-pattern with a as output color and b a as input colors. *)
 let colored_element_from_string element_from_string str =
     let tokens = String.split_on_char '|' str in
     match tokens with
@@ -77,9 +79,7 @@ let colored_element_to_string element_to_string ce =
 (* Returns the bud grammar with the specified attributes. *)
 let create operad generators initial_color =
     assert (generators |> List.for_all (is_colored_element operad));
-    {operad = operad;
-    generators = generators;
-    initial_color = initial_color}
+    {operad = operad; generators = generators; initial_color = initial_color}
 
 (* Returns the arity of the colored element ce in the bud grammar budg. *)
 let arity budg ce =
@@ -87,7 +87,7 @@ let arity budg ce =
 
 (* Returns the colored one of color of the bud grammar budg. *)
 let colored_one budg color =
-    {out_color = color; element = (Operad.one budg.operad); in_colors = [color]}
+    {out_color = color; element = Operad.one budg.operad; in_colors = [color]}
 
 (* Returns the partial composition of y at position i in x in the colored operad of the bud
  * grammar budg. *)
@@ -96,7 +96,7 @@ let partial_composition budg x i y =
     assert (y.out_color = (List.nth x.in_colors (i - 1)));
     let z' = Operad.partial_composition budg.operad x.element i y.element in
     let in_colors = Tools.partial_composition_lists x.in_colors i y.in_colors in
-    {out_color = x.out_color ; element = z' ; in_colors = in_colors}
+    {out_color = x.out_color; element = z'; in_colors = in_colors}
 
 (* Returns the full composition of each elements of the list lst in x in the colored operad
  * of the bud grammar budg. *)
@@ -105,21 +105,17 @@ let full_composition budg x lst =
     assert (List.combine x.in_colors
         (lst |> List.map (fun y -> y.out_color))
             |> List.for_all (fun (c_1, c_2) -> c_1 = c_2));
-    let indexes = Tools.interval 1 (arity budg x) in
-    let indexed_elements = List.combine indexes lst in
-    indexed_elements |> List.rev |> List.fold_left
-        (fun res (i, y) -> partial_composition budg res i y) x
+    let indexed_elements = lst |> List.mapi (fun i y -> (i + 1, y)) |> List.rev in
+    indexed_elements |>
+        List.fold_left (fun res (i, y) -> partial_composition budg res i y) x
 
 (* Returns the element obtained by composing each the inputs of x having the same input
  * color as the output of y by y. *)
 let colored_composition budg x y =
-    let lst = Tools.interval 1 (arity budg x) |> List.map
+    let lst = List.init (arity budg x)
         (fun i ->
-            let a = in_color x i in
-            if a = y.out_color then
-                y
-            else
-                colored_one budg a) in
+            let a = in_color x (i + 1) in
+            if a = y.out_color then y else colored_one budg a) in
     full_composition budg x lst
 
 (* Returns the list of the generators of the bud grammar budg that have c as out color. *)
@@ -180,9 +176,4 @@ let random_generator budg nb_iter shape =
         |Partial -> partial_random_generator budg nb_iter
         |Full -> full_random_generator budg nb_iter
         |Colored -> colored_random_generator budg nb_iter
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test BudGrammar\n";
-    true
 

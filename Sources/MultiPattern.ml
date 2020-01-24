@@ -26,9 +26,10 @@ let to_string mpat =
     assert (is_multi_pattern mpat);
     Tools.list_to_string Pattern.to_string " ; " mpat
 
-(* Returns the multi-pattern encoded by the string str.
- * For instance, "* 1 * 2 ; * * 0 -1" is a 2-multi-pattern.
- * Raises Tools.BadStringFormat if str does no encode a multi-pattern.*)
+(* Returns the multi-pattern encoded by the string str. For instance, "* 1 * 2 ; * * 0 -1"
+ * is a 2-multi-pattern. Raises Tools.BadStringFormat if str does no encode a
+ * multi-pattern and raises Tools.BadValue if str encodes a list of patterns which does not
+ * form a multi-pattern. *)
 let from_string str =
     if str = "" then
         [Pattern.empty]
@@ -39,21 +40,21 @@ let from_string str =
         else
             raise Tools.BadValue
 
-(* Returns the k-multi-pattern obtained by stacking the pattern pat with k copies of
+(* Returns the m-multi-pattern obtained by stacking the pattern pat with m copies of
  * itself. *)
-let from_pattern pat k =
-    assert (k >= 1);
-    List.init k (fun _ -> pat)
+let from_pattern pat m =
+    assert (m >= 1);
+    List.init m (fun _ -> pat)
 
-(* Returns the k-multi-pattern consisting in k voices of the empty pattern. *)
-let empty k =
-    assert (k >= 1);
-    from_pattern Pattern.empty k
+(* Returns the m-multi-pattern consisting in m voices of the empty pattern. *)
+let empty m =
+    assert (m >= 1);
+    from_pattern Pattern.empty m
 
-(* Returns the k-multi-pattern consisting in k voices of the unit pattern. *)
-let one k =
-    assert (k >= 1);
-    Tools.interval 1 k |> List.map (fun _ -> Pattern.one)
+(* Returns the m-multi-pattern consisting in m voices of the unit pattern. *)
+let one m =
+    assert (m >= 1);
+    List.init m (fun _ -> Pattern.one)
 
 (* Returns the arity of the multi-pattern mpat. *)
 let arity mpat =
@@ -99,10 +100,8 @@ let mirror mpat =
 
 (* Returns the m-multi-pattern, where m is the arity of the degree pattern deg_pattern
  * obtained by forming a chord from the degrees of deg_pattern. This produces a
- * multi-pattern of length 1 and or arity 1.
- * For instance, for deg_pattern = 0 2 4, the function returns the 3-multi-pattern
- * 0 ; 2 ; 4.
- *)
+ * multi-pattern of length 1 and or arity 1. For instance, for deg_pattern = 0 2 4, the
+ * function returns the 3-multi-pattern 0 ; 2 ; 4. *)
 let chord deg_pattern =
     assert (deg_pattern <> []);
     assert (deg_pattern |> List.for_all Atom.is_beat);
@@ -110,10 +109,8 @@ let chord deg_pattern =
 
 (* Returns the m-multi-pattern, where m is the length of the degree pattern deg_pattern
  * obtained by arpeggiating the degrees of deg_pattern. This produces a multi-pattern of
- * length m and of arity 1.
- * For instance, for deg_pattern = 0 2 4, the function returns the 3-multi-pattern
- * 0 * * ; * 2 * ; * * 4.
- *)
+ * length m and of arity 1. For instance, for deg_pattern = 0 2 4, the function returns the
+ * 3-multi-pattern 0 * * ; * 2 * ; * * 4. *)
 let arpeggio deg_pattern =
     assert (deg_pattern <> []);
     assert (deg_pattern |> List.for_all Atom.is_beat);
@@ -122,10 +119,10 @@ let arpeggio deg_pattern =
     pairs |> List.map
         (fun (i, d) -> List.init len (fun j -> if j = i then d else Atom.Rest))
 
-(* Returns the operad of multi-patterns of multiplicity k. *)
-let operad k =
-    assert (k >= 1);
-    Operad.create arity partial_composition (one k)
+(* Returns the operad of m-multi-patterns. *)
+let operad m =
+    assert (m >= 1);
+    Operad.create arity partial_composition (one m)
 
 (* Returns the multi-pattern obtained by the full composition of the multi-pattern mpat
  * with the multi-pattern of the list mpat_lst. *)
@@ -143,10 +140,4 @@ let binary_composition mpat_1 mpat_2 =
     assert ((multiplicity mpat_1) = (multiplicity mpat_2));
     let m = multiplicity mpat_1 in
     Operad.binary_composition (operad m) mpat_1 mpat_2
-
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test MultiPattern\n";
-    true
 

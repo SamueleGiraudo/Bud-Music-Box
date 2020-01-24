@@ -110,6 +110,8 @@ let arpeggiation param pattern deg_pattern =
         transition_color_1 mpat_3 [default_sink_color] in
     from_colored_multi_patterns param default_initial_color [cpat_1; cpat_2; cpat_3]
 
+(* Returns the element generated at random from the 1-pattern pattern and the generation
+ * parameters param. *)
 let mobiusation param pattern =
     let pattern' = Pattern.mirror pattern in
     let mpat = [pattern; pattern'] in

@@ -40,8 +40,8 @@ let is_beat a =
         |Rest -> false
         |Beat _ -> true
 
-(* Returns the degree associated with the atom a. If a not a beat, the exception Failure is
- * raised. *)
+(* Returns the degree associated with the atom a. If a not a beat, the exception
+ * Tools.BadValue is raised. *)
 let get_degree a =
     match a with
         |Rest -> raise Tools.BadValue
@@ -60,10 +60,4 @@ let mul a k =
     match a with
         |Rest -> Rest
         |Beat d -> Beat (d * k)
-
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test Atom\n";
-    true
 

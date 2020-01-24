@@ -3,7 +3,8 @@
  * Modifications: aug. 2019, dec. 2019, jan. 2020
  *)
 
-(* Returns the abc notation of the midi note note. *)
+(* Returns the abc notation of the MIDI note note. Raises Tools.BadValue if note is not
+ * between 0 and 127. *)
 let midi_to_abc_note note =
     match note with
         |0 -> "C,,,,,"   |1 -> "^C,,,,,"  |2 -> "D,,,,,"  |3 -> "^D,,,,,"  |4 -> "E,,,,,"
@@ -35,7 +36,7 @@ let midi_to_abc_note note =
         |_ -> raise Tools.BadValue
 
 (* Returns a string representing the pattern pat under the context context in the abc
- * notation. *)
+ * notation. Raises Tools.BadValue if a note encoded by pat is outside the MIDI range. *)
 let pattern_to_abc_string context pat =
     let l = Tools.length_start pat Atom.Rest in
     let first_rest_str =
@@ -53,10 +54,12 @@ let pattern_to_abc_string context pat =
     first_rest_str ^ (String.concat " " str)
 
 (* Returns a string representing the multi-pattern mpat under the context context in the abc
- * notation. The list midi_sounds contains the respective midi codes of the voices. *)
+ * notation. The list midi_sounds contains the respective MIDI codes of the voices. Raises
+ * Tools.BadValue if a note encoded by pat is outside the MIDI range. *)
 let multi_pattern_to_abc_string context midi_sounds mpat =
     assert (MultiPattern.is_multi_pattern mpat);
     assert ((List.length midi_sounds) >= (MultiPattern.multiplicity mpat));
+    assert (midi_sounds |> List.for_all (fun s -> 0 <= s && s < 128));
     let lst = mpat |> List.mapi
         (fun i pat ->
             Printf.sprintf "V:voice%d\n%%%%MIDI program %d\n%s\n"
@@ -67,10 +70,12 @@ let multi_pattern_to_abc_string context midi_sounds mpat =
 
 (* Returns a string in the abc notation representing the multi-pattern mpat under the
  * context context and with the midi sounds specified by the integer list midi_sounds. This
-  * string contains all the information to be a valid abc program. *)
+ * string contains all the information to be a valid abc program. Raises
+ * Tools.BadValue if a note encoded by pat is outside the MIDI range. *)
 let complete_abc_string context midi_sounds mpat =
     assert (MultiPattern.is_multi_pattern mpat);
     assert ((List.length midi_sounds) >= (MultiPattern.multiplicity mpat));
+    assert (midi_sounds |> List.for_all (fun s -> 0 <= s && s < 128));
     let res = "" in
     let res = res ^ "X:1\n" in
     let res = res ^ "T:Music\n" in
@@ -81,10 +86,4 @@ let complete_abc_string context midi_sounds mpat =
     let res = res ^ (Printf.sprintf "Q:1/8=%d\n" (Context.tempo context)) in
     let res = res ^ multi_pattern_to_abc_string context midi_sounds mpat in
     res
-
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test ABCNotation\n";
-    true
 

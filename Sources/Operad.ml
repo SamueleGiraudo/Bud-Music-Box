@@ -13,9 +13,7 @@ type 'a operad = {
 
 (* Returns the operad with the specified attributes. *)
 let create arity partial_composition one =
-    {arity = arity;
-    partial_composition = partial_composition;
-    one = one}
+    {arity = arity; partial_composition = partial_composition; one = one}
 
 (* Returns the unit of the operad op. *)
 let one op =
@@ -33,19 +31,12 @@ let partial_composition op x i y =
 (* Returns the full composition in the operad op of x and the list lst of elements. *)
 let full_composition op x lst =
     assert ((op.arity x) = (List.length lst));
-    let indexes = Tools.interval 1 (op.arity x) in
-    let indexed_elements = List.combine indexes lst |> List.rev in
+    let indexed_elements = lst |> List.mapi (fun i y -> (i + 1, y)) |> List.rev in
     indexed_elements |> List.fold_left (fun res (i, y) -> op.partial_composition res i y) x
 
 (* Returns the binary composition in the operad op of x and y. *)
 let binary_composition op x y =
     let ar = op.arity x in
-    let lst = (Tools.interval 1 ar) |> List.map (fun _ -> y) in
+    let lst = List.init ar (fun _ -> y) in
     full_composition op x lst
-
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test Operad\n";
-    true
 

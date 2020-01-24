@@ -286,7 +286,7 @@ let command_name_multi_pattern words env =
     else
         try
             let name = Tools.remove_first_char (List.hd words) in
-            let str_mpat = Tools.factor_list words 3 ((List.length words) - 3)
+            let str_mpat = Tools.list_factor words 3 ((List.length words) - 3)
                 |> String.concat " " in
             let mpat = MultiPattern.from_string str_mpat in
             let env' = add_multi_pattern env name mpat in
@@ -312,7 +312,7 @@ let command_name_colored_multi_pattern words env =
     else
         try
             let name = Tools.remove_first_char (List.hd words) in
-            let str_cpat = Tools.factor_list words 3 ((List.length words) - 3)
+            let str_cpat = Tools.list_factor words 3 ((List.length words) - 3)
                 |> String.concat " " in
             let cpat = BudGrammar.colored_element_from_string 
                 MultiPattern.from_string str_cpat in
@@ -386,7 +386,7 @@ let command_full_compose words env =
             let name = Tools.remove_first_char (List.hd words) in
             let name_1 = Tools.remove_first_char (List.nth words 3) in
             let mpat_1 = multi_pattern_with_name env name_1 in
-            let name_lst = Tools.factor_list words 4 ((List.length words) - 4) |> List.map
+            let name_lst = Tools.list_factor words 4 ((List.length words) - 4) |> List.map
                 Tools.remove_first_char in
             let mpat_lst = name_lst |> List.map (multi_pattern_with_name env) in
             if (List.length mpat_lst) <> (MultiPattern.arity mpat_1) then
@@ -467,7 +467,7 @@ let command_transform words env =
             let dilatation = int_of_string (List.nth words 3) in
             if dilatation < 0 then
                 raise ValueError;
-            let mul_lst = Tools.factor_list words 4 ((List.length words) - 5) |> List.map
+            let mul_lst = Tools.list_factor words 4 ((List.length words) - 5) |> List.map
                 int_of_string in
             if List.length mul_lst <> MultiPattern.multiplicity mpat_1 then
                 raise ValueError;
@@ -535,7 +535,7 @@ let command_generate words env =
             let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
             let size = int_of_string (List.nth words 4) in
             let initial_color = List.nth words 5 in
-            let colored_multi_patterns_names = Tools.factor_list
+            let colored_multi_patterns_names = Tools.list_factor
                 words 6 ((List.length words) - 6) in
             let colored_multi_patterns = colored_multi_patterns_names |> List.map
                 (fun name ->
@@ -969,10 +969,4 @@ let interpret_file path =
             Printf.printf "Error: the file must have %s as extension.\n" extension;
             false
         end
-
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test Interpreter\n";
-    true
 

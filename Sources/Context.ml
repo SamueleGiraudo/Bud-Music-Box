@@ -57,9 +57,3 @@ let set_tempo context tempo =
 let degree_to_midi_note context deg =
     context.root + (Scale.interval_from_root context.scale deg)
 
-
-(* The test function of the module. *)
-let test () =
-    print_string "Test Context\n";
-    true
-
