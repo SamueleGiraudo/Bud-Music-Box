@@ -1,0 +1,10 @@
+# Let a 1-multi-pattern.
+$p := multi_pattern 3 2 * 2 1 * 1 0 *
+
+# Let a rhythm-pattern (a 1-multi-pattern with only rests and degree 0).
+$r := multi_pattern 0 * 0 0
+
+# Creates and plays a random rhythmization of the pattern $p.
+$new := rhythmize full 4 $p $r
+play $new
+

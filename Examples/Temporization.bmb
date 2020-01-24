@@ -1,0 +1,7 @@
+# Let a 1-multi-pattern.
+$p := multi_pattern 3 2 * 2 1 * 1 0 *
+
+# Creates and plays a random temporization of this pattern.
+$new := temporize partial 16 $p 2
+play $new
+

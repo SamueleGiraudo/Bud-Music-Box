@@ -1,0 +1,10 @@
+# Let a 1-multi-pattern.
+$p := multi_pattern 3 2 * 2 1 * 1 0 *
+
+# Let a degree-pattern (a 1-multi-pattern without rests).
+$d := multi_pattern 0 2 4 7
+
+# Creates and plays a random harmonization of the pattern $p.
+$new := harmonize partial 8 $p $d
+play $new
+
