@@ -107,6 +107,25 @@ colors are, from left to right, `in_1`, `in_2`, and `in_2`.
   colored multi-patterns as arguments accept `$NAME` as argument.
 
 
+### Colorize a multi-pattern
+`$NAME := colorize OUT $PAT IN_1 ... IN_n`
+
++ `NAME` is an identifier.
++ `OUT` is a color.
++ `PAT` is a multi-pattern of arity $n$.
++ `IN_1 ... IN_n` is a list of colors.
++ Bounds the specified identifier to the colored multi-pattern obtained by surrounding the
+ multi-pattern `PAT` with the output color `OUT` and the input colors `IN_1 ... IN_n`.
+
+
+### Concatenate multi-patterns
+`$NAME := concatenate $PAT_1 ... $PAT_n`
+
++ `NAME` is an identifier.
++ `PAT_1 ... PAT_n` is a list a $m$-multi-patterns with $n \geq 2$.
++ Bounds `NAME` to the concatenation of `PAT_1 ... PAT_n`.
+
+
 ### Partially compose two multi-patterns
 `$NAME := partial_compose $PAT_1 POS $PAT_2`
 

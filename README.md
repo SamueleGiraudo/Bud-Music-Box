@@ -21,7 +21,7 @@ Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 
 ### Main functionalities
 1. [Multi-pattern creation](Examples/MultiPatternCreation.bmb)
-1. [Multi-pattern composition](Examples/MultiPatternComposition.bmb)
+1. [Multi-pattern operations](Examples/MultiPatternOperations.bmb)
 1. [Setting the ambient scale, root, and tempo](Examples/ScaleRootTempo.bmb)
 1. [Changing instruments](Examples/Sounds.bmb)
 1. [Colored multi-patterns and random generation](Examples/Generation.bmb)

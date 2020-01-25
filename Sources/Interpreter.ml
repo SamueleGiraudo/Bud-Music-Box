@@ -305,6 +305,37 @@ let command_name_multi_pattern words env =
                 Some env
             end
 
+let command_colorize words env =
+    if List.length words < 5 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 4))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "colorize" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let out_color = List.nth words 3 in
+            let name_1 = Tools.remove_first_char (List.nth words 4) in
+            let mpat_1 = multi_pattern_with_name env name_1 in
+            let in_colors = Tools.list_factor words 5 ((List.length words) - 5) in
+            if List.length in_colors <> (MultiPattern.arity mpat_1) then
+                raise ValueError;
+            let cpat = BudGrammar.create_colored_element out_color mpat_1 in_colors in
+            let env' = add_colored_multi_pattern env name cpat in
+            print_string "Colored multi-pattern added.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError | Tools.BadStringFormat | Tools.BadValue -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+
 let command_name_colored_multi_pattern words env =
     if List.length words < 3 || not (is_name (List.nth words 0))
             || List.nth words 1 <> ":=" || List.nth words 2 <> "colored_multi_pattern" then
@@ -333,6 +364,45 @@ let command_name_colored_multi_pattern words env =
             end
             |ValueError | Tools.BadStringFormat | Tools.BadValue -> begin
                 print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+
+let command_concatenate words env =
+    if List.length words < 5 || not (is_name (List.nth words 0))
+            || not (is_name (List.nth words 3)) || not (is_name (List.nth words 4))
+            || List.nth words 1 <> ":=" || List.nth words 2 <> "concatenate" then
+        None
+    else
+        try
+            let name = Tools.remove_first_char (List.hd words) in
+            let name_lst = Tools.list_factor words 3 ((List.length words) - 3) |> List.map
+                Tools.remove_first_char in
+            let mpat_lst = name_lst |> List.map (multi_pattern_with_name env) in
+            if mpat_lst = [] then
+                raise ValueError;
+            let m = MultiPattern.multiplicity (List.hd mpat_lst) in
+            if mpat_lst |> List.exists (fun mpat -> MultiPattern.multiplicity mpat <> m)
+                    then
+                raise ValueError;
+            let res = MultiPattern.concat mpat_lst in
+            let env' = add_multi_pattern env name res in
+            print_string "Concatenation computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _-> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
                 print_newline ();
                 Some env
             end
@@ -902,7 +972,11 @@ let execute_command cmd env =
         if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_name_multi_pattern words env in
         if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_colorize words env in
+        if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_name_colored_multi_pattern words env in
+        if Option.is_some env_opt then Option.get env_opt
+        else let env_opt = command_concatenate words env in
         if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_partial_compose words env in
         if Option.is_some env_opt then Option.get env_opt

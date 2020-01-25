@@ -134,6 +134,17 @@ let full_composition mpat mpat_lst =
     let m = multiplicity mpat in
     Operad.full_composition (operad m) mpat mpat_lst
 
+(* Returns the multi-pattern obtained by concatenating the multi-patterns of the list of
+ * multi-patterns mpat_lst. *)
+let concat mpat_lst =
+    let k = List.length mpat_lst in
+    let m = multiplicity (List.hd mpat_lst) in
+    let pat = List.init k (fun _ -> Atom.Beat 0) in
+    let mpat = List.init m (fun _ -> pat) in
+    full_composition mpat mpat_lst
+
+(* Returns the multi-pattern obtained by the binary composition of the multi-pattern mpat_1
+ * with the multi-pattern mpat_2. *)
 let binary_composition mpat_1 mpat_2 =
     assert (is_multi_pattern mpat_1);
     assert (is_multi_pattern mpat_2);
