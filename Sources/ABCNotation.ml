@@ -84,6 +84,7 @@ let complete_abc_string context midi_sounds mpat =
     let res = res ^ "M:8/8\n" in
     let res = res ^ "L:1/8\n" in
     let res = res ^ (Printf.sprintf "Q:1/8=%d\n" (Context.tempo context)) in
+    let res = res ^ "%%MIDI nobarlines\n" in
     let res = res ^ multi_pattern_to_abc_string context midi_sounds mpat in
     res
 

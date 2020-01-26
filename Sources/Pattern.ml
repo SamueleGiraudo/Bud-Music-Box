@@ -9,7 +9,10 @@ type pattern = Atom.atom list
 
 (* Returns a string representing the pattern pat. *)
 let to_string pat =
-    Tools.list_to_string Atom.to_string " " pat
+    if pat = [] then
+        ""
+    else
+        Tools.list_to_string Atom.to_string " " pat
 
 (* Returns the pattern encoded by the string str. Raises Tools.BadStringFormat if str does
  * no encode a pattern. For instance, "* 1 * * * 2 -1 8 * 12 0" encodes a pattern, where the

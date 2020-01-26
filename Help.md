@@ -5,7 +5,7 @@ This page describes all the instructions of the Bud Music Box language.
 Each single instruction fits on one line. All characters following a `#` in a given line are
 ignored and can therefore be treated as comments.
 
-Identifiers are strings made of the symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`.
+Identifiers are strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`.
 
 ## Syntax for multi-patterns
 A multi-pattern is specified by the sequence of its atoms, that are degrees (expressed by
@@ -81,7 +81,7 @@ that this multi-pattern lasts $7$ amounts of time.
 
 
 ### Colorize a multi-pattern
-colorize NAME PAT OUT IN_1 ... IN_n`
+`colorize NAME PAT OUT IN_1 ... IN_n`
 
 + `NAME` is an identifier.
 + `PAT` is a multi-pattern of arity $n$.
@@ -110,7 +110,7 @@ concatenate NAME PAT_1 ... PAT_n`
 
 
 ### Fully compose multi-patterns
-full_compose NAME PAT PAT_1 ... PAT_n`
+`full_compose NAME PAT PAT_1 ... PAT_n`
 
 + `NAME` is an identifier.
 + `PAT` is the name of an $m$-multi-pattern of arity $n$.
@@ -119,7 +119,7 @@ full_compose NAME PAT PAT_1 ... PAT_n`
 
 
 ### Binarily compose two multi-patterns
-`binarily_compose NAME PAT_1 PAT_2
+`binarily_compose NAME PAT_1 PAT_2`
 
 + `NAME` is an identifier.
 + `PAT_1` is the name of an $m$-multi-pattern.
@@ -128,7 +128,7 @@ full_compose NAME PAT PAT_1 ... PAT_n`
 
 
 ### Transform multi-patterns
-transform NAME PAT DIL M_1 ... M_m`
+`transform NAME PAT DIL M_1 ... M_m`
 
 + `NAME` is an identifier.
 + `PAT` is the name of an $m$-multi-pattern.
@@ -147,7 +147,7 @@ transform NAME PAT DIL M_1 ... M_m`
 
 
 ### Randomly generate a multi-pattern
-generate NAME SHAPE SIZE COL CPAT_1 ... CPAT_n`
+`generate NAME SHAPE SIZE COL CPAT_1 ... CPAT_n`
 
 + `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.
@@ -211,7 +211,7 @@ generate NAME SHAPE SIZE COL CPAT_1 ... CPAT_n`
 
 
 ### Mobiusate a $1$-multi-pattern
-`mobiusate NAME SHAPE SIZE PAT``
+`mobiusate NAME SHAPE SIZE PAT`
 
 + `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.

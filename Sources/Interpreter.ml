@@ -25,7 +25,12 @@ let environment_to_string env =
         ("    " ^ (Tools.list_to_string string_of_int " " env.midi_sounds))
         ("    " ^ (Tools.list_to_string
             (fun (name, mpat) ->
-                Printf.sprintf "%s = %s" name (MultiPattern.to_string mpat))
+                Printf.sprintf "%s = [multiplicity = %d, length = %d, arity = %d] %s"
+                name
+                (MultiPattern.multiplicity mpat)
+                (MultiPattern.length mpat)
+                (MultiPattern. arity mpat)
+                (MultiPattern.to_string mpat))
             "\n    "
             env.multi_patterns))
         ("    " ^ (Tools.list_to_string
@@ -59,6 +64,7 @@ let path_results = "Results"
 (* The prefix of all the generated temporary result files  *)
 let prefix_result = "Phrase_"
 
+(* The name of the help file. *)
 let help_file_path = "Help.md"
 
 (* Returns the default environment. *)
@@ -317,7 +323,7 @@ let command_name_multi_pattern words env =
         None
     else
         try
-            if List.length words < 3 then
+            if List.length words < 2 then
                 raise SyntaxError;
             let name_res = List.nth words 1 in
             if not (is_name name_res) then
