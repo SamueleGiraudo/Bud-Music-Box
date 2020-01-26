@@ -31,7 +31,6 @@ let rec list_factor lst start len =
 
 (* Returns the suffix of the list lst beginning at the index start. *)
 let rec list_suffix lst start =
-    assert (0 <= start && start < List.length lst);
     list_factor lst start ((List.length lst) - start)
 
 (* Returns the list obtained by inserting the list lst_2 at position i in the list lst_1.

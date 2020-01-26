@@ -92,7 +92,7 @@ that this multi-pattern lasts $7$ amounts of time.
 
 
 ### Concatenate multi-patterns
-concatenate NAME PAT_1 ... PAT_n`
+`concatenate NAME PAT_1 ... PAT_n`
 
 + `NAME` is an identifier.
 + `PAT_1 ... PAT_n` is a list a $m$-multi-patterns with $n \geq 2$.

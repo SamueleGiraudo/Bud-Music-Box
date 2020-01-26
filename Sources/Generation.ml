@@ -55,9 +55,9 @@ let temporization param pattern max_delay =
     let mpat = MultiPattern.from_pattern pattern 1 in
     let cpat_1 = BudGrammar.create_colored_element default_initial_color mpat in_colors in
     let cpat_2 = BudGrammar.create_colored_element transition_color_1 mpat in_colors in
-    let cpat_lst = Tools.interval 1 max_delay |> List.map
+    let cpat_lst = List.init max_delay
         (fun i ->
-            let pat = Pattern.beat 0 (i + 1) in
+            let pat = Pattern.beat 0 (i + 2) in
             let mpat = MultiPattern.from_pattern pat 1 in
             BudGrammar.create_colored_element transition_color_1 mpat [default_sink_color])
     in

@@ -1,0 +1,23 @@
+# A random calm music 
+set_scale 3 2 2 3 2
+
+set_root 57
+set_tempo 95
+set_sounds 24 35
+
+# Some 2-multi-patterns.
+multi_pattern p1 0 * 0 0 2 2 0 2 * 2 * 0 0 1 1 0 1 * 1 * ; -5 * -5 -5 0 0 -5 0 * 0 * -5 -5 0 0 -5 0 * 0 *
+multi_pattern p2 -2 -1 0 ; -2 -1 -5
+multi_pattern p3 0 * ; * 0
+
+# Some colored 2-multi-patterns.
+colorize c1 p1 a  b b b a a b a a b b a a b a a
+colorize c2 p2 a  a a b
+colorize c3 p3 a  a
+
+# Random generation.
+generate res partial 32 a c1 c2 c3
+
+show
+play res
+

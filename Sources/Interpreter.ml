@@ -328,8 +328,7 @@ let command_name_multi_pattern words env =
             let name_res = List.nth words 1 in
             if not (is_name name_res) then
                 raise ValueError;
-            let str_mpat = Tools.list_factor words 2 ((List.length words) - 2)
-                |> String.concat " " in
+            let str_mpat = Tools.list_suffix words 2 |> String.concat " " in
             let mpat = MultiPattern.from_string str_mpat in
             let env' = add_multi_pattern env name_res mpat in
             print_string "Multi-pattern added.";
@@ -362,7 +361,7 @@ let command_colorize words env =
                 raise ValueError;
             let mpat = multi_pattern_with_name env name_mpat in
             let out_color = List.nth words 3 in
-            let in_colors = Tools.list_factor words 4 ((List.length words) - 4) in
+            let in_colors = Tools.list_suffix words 4 in
             if List.length in_colors <> (MultiPattern.arity mpat) then
                 raise ValueError;
             let cpat = BudGrammar.create_colored_element out_color mpat in_colors in
@@ -397,7 +396,7 @@ let command_concatenate words env =
             let name_res = List.nth words 1 in
             if not (is_name name_res) then
                 raise ValueError;
-            let name_mpat_lst = Tools.list_factor words 2 ((List.length words) - 2) in
+            let name_mpat_lst = Tools.list_suffix words 2 in
             let mpat_lst = name_mpat_lst |> List.map (multi_pattern_with_name env) in
             if mpat_lst = [] then
                 raise ValueError;
@@ -432,7 +431,7 @@ let command_partial_compose words env =
         None
     else
         try
-            if List.length words < 5 then
+            if List.length words <> 5 then
                 raise SyntaxError;
             let name_res = List.nth words 1 in
             if not (is_name name_res) then
@@ -473,14 +472,14 @@ let command_full_compose words env =
         None
     else
         try
-            if List.length words < 4 then
+            if List.length words < 3 then
                 raise SyntaxError;
             let name_res = List.nth words 1 in
             if not (is_name name_res) then
                 raise ValueError;
             let name_mpat_1 = List.nth words 2 in
             let mpat_1 = multi_pattern_with_name env name_mpat_1 in
-            let name_mpat_lst = Tools.list_factor words 3 ((List.length words) - 3) in
+            let name_mpat_lst = Tools.list_suffix words 3 in
             let mpat_lst = name_mpat_lst |> List.map (multi_pattern_with_name env) in
             if (List.length mpat_lst) <> (MultiPattern.arity mpat_1) then
                 raise ValueError;
@@ -515,7 +514,7 @@ let command_binarily_compose words env =
         None
     else
         try
-            if List.length words < 4 then
+            if List.length words <> 4 then
                 raise SyntaxError;
             let name_res = List.nth words 1 in
             if not (is_name name_res) then
@@ -561,8 +560,7 @@ let command_transform words env =
             let dilatation = int_of_string (List.nth words 3) in
             if dilatation < 0 then
                 raise ValueError;
-            let mul_lst = Tools.list_factor words 4 ((List.length words) - 4) |> List.map
-                int_of_string in
+            let mul_lst = Tools.list_suffix words 4 |> List.map int_of_string in
             if List.length mul_lst <> MultiPattern.multiplicity mpat then
                 raise ValueError;
             let res = MultiPattern.transform dilatation mul_lst mpat in
@@ -636,8 +634,7 @@ let command_generate words env =
             let initial_color = List.nth words 4 in
             if not (is_name initial_color) then
                 raise ValueError;
-            let colored_multi_patterns_names = Tools.list_factor
-                words 5 ((List.length words) - 5) in
+            let colored_multi_patterns_names = Tools.list_suffix words 5 in
             let colored_multi_patterns = colored_multi_patterns_names |> List.map
                 (colored_multi_pattern_with_name env) in
             if colored_multi_patterns = [] then
@@ -949,6 +946,11 @@ let command_write words env =
                 print_newline ();
                 Some env
             end
+            |Tools.BadValue -> begin
+                print_string "Error: phrase not playable. Some note are outside the range.";
+                print_newline ();
+                Some env
+            end
 
 let command_play words env =
     if List.hd words <> "play" then
@@ -985,6 +987,11 @@ let command_play words env =
             end
             |Not_found -> begin
                 print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+            |Tools.BadValue -> begin
+                print_string "Error: phrase not playable. Some note are outside the range.";
                 print_newline ();
                 Some env
             end
