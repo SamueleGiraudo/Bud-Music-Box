@@ -6,6 +6,11 @@ Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
 ## Versions
++ `next`
+    + New language specification.
+    + Add instruction `concatenate`.
+    +
+    +
 + `0.11` (2020-01-24)
     + Add instructions `binarily_composition` and `mobiusation`.
     + Language and instructions redesign.
@@ -18,6 +23,10 @@ Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 
 
 ## Quick overview and examples
+This program offers functions allowing to represent musical patterns, to compute over them,
+and to randomly generate some of them. Results can be converted to files in the
+[abc format](http://abcnotation.com) and then into MIDI files.
+
 
 ### Main functionalities
 1. [Multi-pattern creation](Examples/MultiPatternCreation.bmb)

@@ -1,15 +1,21 @@
-$c1 := colored_multi_pattern a | 0 * ; * 0 | a
-$c2 := colored_multi_pattern c | -2 ; -2 | a
-$c3 := colored_multi_pattern a | 0 0 ; 0 0 | a b
-$c4 := colored_multi_pattern a | * 2 * 3 ; 0 * 1 * | c c
-$c5 := colored_multi_pattern b | -1 * ; * -2 | a
+multi_pattern p1 0 * ; * 0
+multi_pattern p2 -2 ; -2
+multi_pattern p3 0 0 ; 0 0
+multi_pattern p4 * 2 * 3 ; 0 * 1 *
+multi_pattern p5 -1 * ; * -2
+
+colorize c1 p1 a a
+colorize c2 p2 c a
+colorize c3 p3 a a b
+colorize c4 p4 a c c
+colorize c5 p5 b a
 
 set_scale 2 2 1 2 2 2 1
 set_root 60
 set_tempo 192
 set_sounds 34 35
 
-$res := generate partial 16 a $c1 $c2 $c3 $c4 $c5
+generate res partial 128 a c1 c2 c3 c4 c5
 show
-play $res
+play res
 

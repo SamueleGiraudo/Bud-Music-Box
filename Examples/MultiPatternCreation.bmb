@@ -1,12 +1,12 @@
 # Create a 1-multi-pattern.
-$mpat_1 := multi_pattern 0 * 1 2 * -1 0
+multi_pattern mpat_1 0 * 1 2 * -1 0
 
 # Play this multi-pattern.
-play $mpat_1
+play mpat_1
 
 # Create a 2-multi-pattern.
-$mpat_2 := multi_pattern 0 * * 1 ; 4 * -1 *
+multi_pattern mpat_2 0 * * 1 ; 4 * -1 *
 
 # Play this multi-pattern.
-play $mpat_2
+play mpat_2
 

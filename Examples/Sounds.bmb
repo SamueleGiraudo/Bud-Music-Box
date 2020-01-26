@@ -1,9 +1,9 @@
 # By default, the MIDI sound of all voices is the "Acoustic Grand Piano" of code 0.
-$p1 := multi_pattern 1 -1 0 * * 7 ; 3 * 2 * 0 0
-play $p1
+multi_pattern p1 1 -1 0 * * 7 ; 3 * 2 * 0 0
+play p1
 
 # Sets the MIDI sound of the first voice to the "Trombone" of code 58 and of the second
- # voice to the "Violin" of code 41.
+# voice to the "Violin" of code 41.
 set_sounds 58 41
-play $p1
+play p1
 

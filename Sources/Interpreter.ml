@@ -69,8 +69,17 @@ let default_environment =
     colored_multi_patterns = [];
     exit = false}
 
+(* Tests if str is a multi-pattern, a colored multi-pattern, or a color name. *)
 let is_name str =
-    String.get str 0 = '$'
+    let len = String.length str in
+    if len = 0 then
+        false
+    else
+        Tools.interval 0 (len - 1) |> List.for_all
+            (fun i ->
+                let a = String.get str i in
+                ('a' <= a && a <= 'z') ||  ('A' <= a && a <= 'Z')
+                    ||  ('0' <= a && a <= '9') || a = '_')
 
 (* Returns the multi-pattern of name name in the environment env. If there is no such
  * multi-pattern, the exception Not_found is raised. *)
@@ -150,32 +159,56 @@ let command_comment words env =
 let command_quit words env =
     if List.hd words <> "quit" then
         None
-    else begin
-        print_string "Quit.\n";
-        print_newline ();
-        let env' = {env with exit = true} in
-        Some env'
-    end
+    else
+        try
+            if List.length words <> 1 then
+                raise SyntaxError;
+            print_string "Quit.\n";
+            print_newline ();
+            let env' = {env with exit = true} in
+            Some env'
+        with
+            |SyntaxError -> begin
+                print_string "Error: syntax. Too much arguments.";
+                print_newline ();
+                Some env
+            end
 
 let command_help words env =
     if List.hd words <> "help" then
         None
-    else begin
-        print_string "Help.\n";
-        print_string help_string;
-        print_newline ();
-        Some env
-    end
+    else
+        try
+            if List.length words <> 1 then
+                raise SyntaxError;
+            print_string "Help.\n";
+            print_string help_string;
+            print_newline ();
+            Some env
+        with
+            |SyntaxError -> begin
+                print_string "Error: syntax. Too much arguments.";
+                print_newline ();
+                Some env
+            end
 
 let command_show words env =
     if List.hd words <> "show" then
         None
-    else begin
-        print_string "Current environment:\n";
-        print_string (environment_to_string env);
-        print_newline ();
-        Some env
-    end
+    else
+        try
+            if List.length words <> 1 then
+                raise SyntaxError;
+            print_string "Current environment:\n";
+            print_string (environment_to_string env);
+            print_newline ();
+            Some env
+        with
+            |SyntaxError -> begin
+                print_string "Error: syntax. Too much arguments.";
+                print_newline ();
+                Some env
+            end
 
 let command_set_scale words env =
     if List.hd words <> "set_scale" then
@@ -190,7 +223,7 @@ let command_set_scale words env =
             print_newline ();
             Some env'
         with
-            |Tools.BadStringFormat -> begin
+            |Tools.BadStringFormat | Failure _ -> begin
                 print_string "Error: input format. Integers expected.";
                 print_newline ();
                 Some env
@@ -280,21 +313,24 @@ let command_set_sounds words env =
             end
 
 let command_name_multi_pattern words env =
-    if List.length words < 3 || not (is_name (List.nth words 0))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "multi_pattern" then
+    if List.hd words <> "multi_pattern" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let str_mpat = Tools.list_factor words 3 ((List.length words) - 3)
+            if List.length words < 3 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let str_mpat = Tools.list_factor words 2 ((List.length words) - 2)
                 |> String.concat " " in
             let mpat = MultiPattern.from_string str_mpat in
-            let env' = add_multi_pattern env name mpat in
+            let env' = add_multi_pattern env name_res mpat in
             print_string "Multi-pattern added.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -306,26 +342,30 @@ let command_name_multi_pattern words env =
             end
 
 let command_colorize words env =
-    if List.length words < 5 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 4))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "colorize" then
+    if List.hd words <> "colorize" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
+            if List.length words < 4 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let name_mpat = List.nth words 2 in
+            if not (is_name name_mpat) then
+                raise ValueError;
+            let mpat = multi_pattern_with_name env name_mpat in
             let out_color = List.nth words 3 in
-            let name_1 = Tools.remove_first_char (List.nth words 4) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            let in_colors = Tools.list_factor words 5 ((List.length words) - 5) in
-            if List.length in_colors <> (MultiPattern.arity mpat_1) then
+            let in_colors = Tools.list_factor words 4 ((List.length words) - 4) in
+            if List.length in_colors <> (MultiPattern.arity mpat) then
                 raise ValueError;
-            let cpat = BudGrammar.create_colored_element out_color mpat_1 in_colors in
-            let env' = add_colored_multi_pattern env name cpat in
+            let cpat = BudGrammar.create_colored_element out_color mpat in_colors in
+            let env' = add_colored_multi_pattern env name_res cpat in
             print_string "Colored multi-pattern added.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -335,50 +375,24 @@ let command_colorize words env =
                 print_newline ();
                 Some env
             end
-
-let command_name_colored_multi_pattern words env =
-    if List.length words < 3 || not (is_name (List.nth words 0))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "colored_multi_pattern" then
-        None
-    else
-        try
-            let name = Tools.remove_first_char (List.hd words) in
-            let str_cpat = Tools.list_factor words 3 ((List.length words) - 3)
-                |> String.concat " " in
-            let cpat = BudGrammar.colored_element_from_string 
-                MultiPattern.from_string str_cpat in
-            if not (MultiPattern.is_multi_pattern (BudGrammar.get_element cpat)) then
-                raise ValueError;
-            let m = MultiPattern.multiplicity (BudGrammar.get_element cpat) in
-            if not (BudGrammar.is_colored_element (MultiPattern.operad m) cpat) then
-                raise ValueError;
-            let env' = add_colored_multi_pattern env name cpat in
-            print_string "Colored multi-pattern added.";
-            print_newline ();
-            Some env'
-        with
-            |Invalid_argument _ | Failure _-> begin
-                print_string "Error: bad formed instruction.";
-                print_newline ();
-                Some env
-            end
-            |ValueError | Tools.BadStringFormat | Tools.BadValue -> begin
-                print_string "Error: value.";
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
                 print_newline ();
                 Some env
             end
 
 let command_concatenate words env =
-    if List.length words < 5 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 3)) || not (is_name (List.nth words 4))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "concatenate" then
+    if List.hd words <> "concatenate" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let name_lst = Tools.list_factor words 3 ((List.length words) - 3) |> List.map
-                Tools.remove_first_char in
-            let mpat_lst = name_lst |> List.map (multi_pattern_with_name env) in
+            if List.length words < 3 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let name_mpat_lst = Tools.list_factor words 2 ((List.length words) - 2) in
+            let mpat_lst = name_mpat_lst |> List.map (multi_pattern_with_name env) in
             if mpat_lst = [] then
                 raise ValueError;
             let m = MultiPattern.multiplicity (List.hd mpat_lst) in
@@ -386,12 +400,12 @@ let command_concatenate words env =
                     then
                 raise ValueError;
             let res = MultiPattern.concat mpat_lst in
-            let env' = add_multi_pattern env name res in
+            let env' = add_multi_pattern env name_res res in
             print_string "Concatenation computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -408,29 +422,31 @@ let command_concatenate words env =
             end
 
 let command_partial_compose words env =
-    if List.length words < 6 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 3)) || not (is_name (List.nth words 5))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "partial_compose" then
+    if List.hd words <> "partial_compose" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let name_1 = Tools.remove_first_char (List.nth words 3) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            let pos = int_of_string (List.nth words 4) in
+            if List.length words < 5 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let name_mpat_1 = List.nth words 2 in
+            let mpat_1 = multi_pattern_with_name env name_mpat_1 in
+            let pos = int_of_string (List.nth words 3) in
             if not (1 <= pos && pos <= (MultiPattern.arity mpat_1)) then
                 raise ValueError;
-            let name_2 = Tools.remove_first_char (List.nth words 5) in
-            let mpat_2 = multi_pattern_with_name env name_2 in
+            let name_mpat_2 = List.nth words 4 in
+            let mpat_2 = multi_pattern_with_name env name_mpat_2 in
             if MultiPattern.multiplicity mpat_1 <> MultiPattern.multiplicity mpat_2 then
                 raise ValueError;
             let res = MultiPattern.partial_composition mpat_1 pos mpat_2 in
-            let env' = add_multi_pattern env name res in
+            let env' = add_multi_pattern env name_res res in
             print_string "Partial composition computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -447,18 +463,19 @@ let command_partial_compose words env =
             end
 
 let command_full_compose words env =
-    if List.length words < 5 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 3)) || not (is_name (List.nth words 4))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "full_compose" then
+    if List.hd words <> "full_compose" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let name_1 = Tools.remove_first_char (List.nth words 3) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            let name_lst = Tools.list_factor words 4 ((List.length words) - 4) |> List.map
-                Tools.remove_first_char in
-            let mpat_lst = name_lst |> List.map (multi_pattern_with_name env) in
+            if List.length words < 4 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let name_mpat_1 = List.nth words 2 in
+            let mpat_1 = multi_pattern_with_name env name_mpat_1 in
+            let name_mpat_lst = Tools.list_factor words 3 ((List.length words) - 3) in
+            let mpat_lst = name_mpat_lst |> List.map (multi_pattern_with_name env) in
             if (List.length mpat_lst) <> (MultiPattern.arity mpat_1) then
                 raise ValueError;
             if not (mpat_lst |> List.for_all
@@ -466,12 +483,12 @@ let command_full_compose words env =
                     MultiPattern.multiplicity mpat = MultiPattern.multiplicity mpat_1)) then
                 raise ValueError;
             let res = MultiPattern.full_composition mpat_1 mpat_lst in
-            let env' = add_multi_pattern env name res in
+            let env' = add_multi_pattern env name_res res in
             print_string "Full composition computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -488,26 +505,28 @@ let command_full_compose words env =
             end
 
 let command_binarily_compose words env =
-    if List.length words < 5 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 3)) || not (is_name (List.nth words 4))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "binarily_compose" then
+    if List.hd words <> "binarily_compose" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let name_1 = Tools.remove_first_char (List.nth words 3) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            let name_2 = Tools.remove_first_char (List.nth words 4) in
-            let mpat_2 = multi_pattern_with_name env name_2 in
+            if List.length words < 4 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let name_mpat_1 = List.nth words 2 in
+            let mpat_1 = multi_pattern_with_name env name_mpat_1 in
+            let name_mpat_2 = List.nth words 3 in
+            let mpat_2 = multi_pattern_with_name env name_mpat_2 in
             if MultiPattern.multiplicity mpat_1 <> MultiPattern.multiplicity mpat_2 then
                 raise ValueError;
             let res = MultiPattern.binary_composition mpat_1 mpat_2 in
-            let env' = add_multi_pattern env name res in
+            let env' = add_multi_pattern env name_res res in
             print_string "Binary composition computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -524,30 +543,29 @@ let command_binarily_compose words env =
             end
 
 let command_transform words env =
-    if List.length words < 6 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words ((List.length words) - 1)))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "transform" then
+    if List.hd words <> "transform" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let name_1 = Tools.remove_first_char
-                (List.nth words ((List.length words) - 1)) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
+            if List.length words < 5 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            let name_mpat = List.nth words 2 in
+            let mpat = multi_pattern_with_name env name_mpat in
             let dilatation = int_of_string (List.nth words 3) in
             if dilatation < 0 then
                 raise ValueError;
-            let mul_lst = Tools.list_factor words 4 ((List.length words) - 5) |> List.map
+            let mul_lst = Tools.list_factor words 4 ((List.length words) - 4) |> List.map
                 int_of_string in
-            if List.length mul_lst <> MultiPattern.multiplicity mpat_1 then
+            if List.length mul_lst <> MultiPattern.multiplicity mpat then
                 raise ValueError;
-            let mpat = MultiPattern.transform dilatation mul_lst mpat_1 in
-            let env' = add_multi_pattern env name mpat in
+            let res = MultiPattern.transform dilatation mul_lst mpat in
+            let env' = add_multi_pattern env name_res res in
             print_string "Transformation computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -564,22 +582,24 @@ let command_transform words env =
             end
 
 let command_mirror words env =
-    if List.length words <> 4 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 3)) || List.nth words 1 <> ":="
-            || List.nth words 2 <> "mirror" then
+    if List.hd words <> "mirror" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let name_1 = Tools.remove_first_char (List.nth words 3) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            let mpat = MultiPattern.mirror mpat_1 in
-            let env' = add_multi_pattern env name mpat in
+            if List.length words <> 3 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let name_mpat = List.nth words 2 in
+            let mpat = multi_pattern_with_name env name_mpat in
+            let res = MultiPattern.mirror mpat in
+            let env' = add_multi_pattern env name_res res in
             print_string "Mirror computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -596,21 +616,24 @@ let command_mirror words env =
             end
 
 let command_generate words env =
-    if List.length words < 6 || not (is_name (List.nth words 0))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "generate" then
+    if List.hd words <> "generate" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
-            let size = int_of_string (List.nth words 4) in
-            let initial_color = List.nth words 5 in
+            if List.length words < 6 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 2) in
+            let size = int_of_string (List.nth words 3) in
+            let initial_color = List.nth words 4 in
+            if not (is_name initial_color) then
+                raise ValueError;
             let colored_multi_patterns_names = Tools.list_factor
-                words 6 ((List.length words) - 6) in
+                words 5 ((List.length words) - 5) in
             let colored_multi_patterns = colored_multi_patterns_names |> List.map
-                (fun name ->
-                    let name' = Tools.remove_first_char name in
-                    colored_multi_pattern_with_name env name') in
+                (colored_multi_pattern_with_name env) in
             if colored_multi_patterns = [] then
                 raise ValueError;
             let m = MultiPattern.multiplicity
@@ -619,16 +642,16 @@ let command_generate words env =
                 (fun cm ->
                     (MultiPattern.multiplicity (BudGrammar.get_element cm)) = m)) then
                 raise ValueError;
-            let mpat = Generation.from_colored_multi_patterns
+            let res = Generation.from_colored_multi_patterns
                 (Generation.create_parameters initial_color size shape)
                 initial_color
                 colored_multi_patterns in
-            let env' = add_multi_pattern env name mpat in
+            let env' = add_multi_pattern env name_res res in
             print_string "Multi-pattern generated.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -645,34 +668,36 @@ let command_generate words env =
             end
 
 let command_temporize words env =
-    if List.length words < 7 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 5)) || List.nth words 1 <> ":="
-            || List.nth words 2 <> "temporize" then
+    if List.hd words <> "temporize" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
-            let size = int_of_string (List.nth words 4) in
+            if List.length words <> 6 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 2) in
+            let size = int_of_string (List.nth words 3) in
             if size < 0 then
                 raise ValueError;
-            let name_1 = Tools.remove_first_char (List.nth words 5) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            if MultiPattern.multiplicity mpat_1 <> 1 then
+            let mpat_name = List.nth words 4 in
+            let mpat = multi_pattern_with_name env mpat_name in
+            if MultiPattern.multiplicity mpat <> 1 then
                 raise ValueError;
-            let max_delay = int_of_string (List.nth words 6) in
+            let max_delay = int_of_string (List.nth words 5) in
             if max_delay < 0 then
                 raise ValueError;
             let param = Generation.create_parameters
                 Generation.default_initial_color size shape in
-            let mpat = Generation.temporization
-                param (MultiPattern.pattern mpat_1 1) max_delay in
-            let env' = add_multi_pattern env name mpat in
+            let res = Generation.temporization
+                param (MultiPattern.pattern mpat 1) max_delay in
+            let env' = add_multi_pattern env name_res res in
             print_string "Temporization computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -689,38 +714,40 @@ let command_temporize words env =
             end
 
 let command_rhythmize words env =
-    if List.length words < 7 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 5)) || not (is_name (List.nth words 6))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "rhythmize" then
+    if List.hd words <> "rhythmize" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
-            let size = int_of_string (List.nth words 4) in
+            if List.length words <> 6 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 2) in
+            let size = int_of_string (List.nth words 3) in
             if size < 0 then
                 raise ValueError;
-            let name_1 = Tools.remove_first_char (List.nth words 5) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            if MultiPattern.multiplicity mpat_1 <> 1 then
+            let pat_name = List.nth words 4 in
+            let pat = multi_pattern_with_name env pat_name in
+            if MultiPattern.multiplicity pat <> 1 then
                 raise ValueError;
-            let name_2 = Tools.remove_first_char (List.nth words 6) in
-            let mpat_2 = multi_pattern_with_name env name_2 in
-            if MultiPattern.multiplicity mpat_2 <> 1 then
+            let rpat_name = List.nth words 5 in
+            let rpat = multi_pattern_with_name env rpat_name in
+            if MultiPattern.multiplicity rpat <> 1 then
                 raise ValueError;
-            if MultiPattern.pattern mpat_2 1 |> Pattern.extract_degrees |> List.exists
+            if MultiPattern.pattern rpat 1 |> Pattern.extract_degrees |> List.exists
                     (fun d -> d <> 0) then
                 raise ValueError;
             let param = Generation.create_parameters
                 Generation.default_initial_color size shape in
-            let mpat = Generation.rhythmization
-                param (MultiPattern.pattern mpat_1 1) (MultiPattern.pattern mpat_2 1) in
-            let env' = add_multi_pattern env name mpat in
+            let res = Generation.rhythmization
+                param (MultiPattern.pattern pat 1) (MultiPattern.pattern rpat 1) in
+            let env' = add_multi_pattern env name_res res in
             print_string "Rhythmization computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -737,37 +764,88 @@ let command_rhythmize words env =
             end
 
 let command_harmonize words env =
-    if List.length words < 7 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 5)) || not (is_name (List.nth words 6))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "harmonize" then
+    if List.hd words <> "harmonize" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
-            let size = int_of_string (List.nth words 4) in
+            if List.length words <> 6 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 2) in
+            let size = int_of_string (List.nth words 3) in
             if size < 0 then
                 raise ValueError;
-            let name_1 = Tools.remove_first_char (List.nth words 5) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            if MultiPattern.multiplicity mpat_1 <> 1 then
+            let pat_name = List.nth words 4 in
+            let pat = multi_pattern_with_name env pat_name in
+            if MultiPattern.multiplicity pat <> 1 then
                 raise ValueError;
-            let name_2 = Tools.remove_first_char (List.nth words 6) in
-            let mpat_2 = multi_pattern_with_name env name_2 in
-            if MultiPattern.multiplicity mpat_2 <> 1 then
+            let dpat_name = List.nth words 5 in
+            let dpat = multi_pattern_with_name env dpat_name in
+            if MultiPattern.multiplicity dpat <> 1 then
                 raise ValueError;
-            if MultiPattern.length mpat_2 <> MultiPattern.arity mpat_2 then
+            if MultiPattern.length dpat <> MultiPattern.arity dpat then
                 raise ValueError;
             let param = Generation.create_parameters
                 Generation.default_initial_color size shape in
-            let mpat = Generation.harmonization
-                param (MultiPattern.pattern mpat_1 1) (MultiPattern.pattern mpat_2 1) in
-            let env' = add_multi_pattern env name mpat in
+            let res = Generation.harmonization
+                param (MultiPattern.pattern pat 1) (MultiPattern.pattern dpat 1) in
+            let env' = add_multi_pattern env name_res res in
             print_string "Harmonization computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError | Tools.BadStringFormat -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_arpeggiate words env =
+    if List.hd words <> "arpeggiate" then
+        None
+    else
+        try
+            if List.length words <> 6 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 2) in
+            let size = int_of_string (List.nth words 3) in
+            if size < 0 then
+                raise ValueError;
+            let pat_name = List.nth words 4 in
+            let pat = multi_pattern_with_name env pat_name in
+            if MultiPattern.multiplicity pat <> 1 then
+                raise ValueError;
+            let dpat_name = List.nth words 5 in
+            let dpat = multi_pattern_with_name env dpat_name in
+            if MultiPattern.multiplicity dpat <> 1 then
+                raise ValueError;
+            if MultiPattern.length dpat <> MultiPattern.arity dpat then
+                raise ValueError;
+            let param = Generation.create_parameters
+                Generation.default_initial_color size shape in
+            let res = Generation.arpeggiation
+                param (MultiPattern.pattern pat 1) (MultiPattern.pattern dpat 1) in
+            let env' = add_multi_pattern env name_res res in
+            print_string "Arpeggiation computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -784,79 +862,33 @@ let command_harmonize words env =
             end
 
 let command_mobiusate words env =
-    if List.length words < 6 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 5)) || List.nth words 1 <> ":="
-            || List.nth words 2 <> "mobiusate" then
+    if List.hd words <> "mobiusate" then
         None
     else
         try
-            let name = Tools.remove_first_char (List.hd words) in
-            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
-            let size = int_of_string (List.nth words 4) in
+            if List.length words <> 5 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            if not (is_name name_res) then
+                raise ValueError;
+            let shape = BudGrammar.generation_shape_from_string (List.nth words 2) in
+            let size = int_of_string (List.nth words 3) in
             if size < 0 then
                 raise ValueError;
-            let name_1 = Tools.remove_first_char (List.nth words 5) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            if MultiPattern.multiplicity mpat_1 <> 1 then
+            let pat_name = List.nth words 4 in
+            let pat = multi_pattern_with_name env pat_name in
+            if MultiPattern.multiplicity pat <> 1 then
                 raise ValueError;
             let param = Generation.create_parameters
                 Generation.default_initial_color size shape in
-            let mpat = Generation.mobiusation
-                param (MultiPattern.pattern mpat_1 1) in
-            let env' = add_multi_pattern env name mpat in
+            let res = Generation.mobiusation
+                param (MultiPattern.pattern pat 1) in
+            let env' = add_multi_pattern env name_res res in
             print_string "Mobiusation computed.";
             print_newline ();
             Some env'
         with
-            |Invalid_argument _ | Failure _-> begin
-                print_string "Error: bad formed instruction.";
-                print_newline ();
-                Some env
-            end
-            |ValueError | Tools.BadStringFormat -> begin
-                print_string "Error: value.";
-                print_newline ();
-                Some env
-            end
-            |Not_found -> begin
-                print_string "Error: name not bounded.";
-                print_newline ();
-                Some env
-            end
-
-
-let command_arpeggiate words env =
-    if List.length words < 7 || not (is_name (List.nth words 0))
-            || not (is_name (List.nth words 5)) || not (is_name (List.nth words 6))
-            || List.nth words 1 <> ":=" || List.nth words 2 <> "arpeggiate" then
-        None
-    else
-        try
-            let name = Tools.remove_first_char (List.hd words) in
-            let shape = BudGrammar.generation_shape_from_string (List.nth words 3) in
-            let size = int_of_string (List.nth words 4) in
-            if size < 0 then
-                raise ValueError;
-            let name_1 = Tools.remove_first_char (List.nth words 5) in
-            let mpat_1 = multi_pattern_with_name env name_1 in
-            if MultiPattern.multiplicity mpat_1 <> 1 then
-                raise ValueError;
-            let name_2 = Tools.remove_first_char (List.nth words 6) in
-            let mpat_2 = multi_pattern_with_name env name_2 in
-            if MultiPattern.multiplicity mpat_2 <> 1 then
-                raise ValueError;
-            if MultiPattern.length mpat_2 <> MultiPattern.arity mpat_2 then
-                raise ValueError;
-            let param = Generation.create_parameters
-                Generation.default_initial_color size shape in
-            let mpat = Generation.arpeggiation
-                param (MultiPattern.pattern mpat_1 1) (MultiPattern.pattern mpat_2 1) in
-            let env' = add_multi_pattern env name mpat in
-            print_string "Arpeggiation computed.";
-            print_newline ();
-            Some env'
-        with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -873,13 +905,16 @@ let command_arpeggiate words env =
             end
 
 let command_write words env =
-    if List.hd words <> "write" || List.length words < 3
-            || not (is_name (List.nth words 2)) then
+    if List.hd words <> "write" then
         None
     else
         try
+            if List.length words <> 3 then
+                raise SyntaxError;
             let file_name = List.nth words 1 in
-            let mpat_name = Tools.remove_first_char (List.nth words 2) in
+            let mpat_name = List.nth words 2 in
+            if not (is_name mpat_name) then
+                raise ValueError;
             let mpat = multi_pattern_with_name env mpat_name in
             let ok = create_files env mpat file_name in
             if not ok then
@@ -888,7 +923,7 @@ let command_write words env =
             print_newline ();
             Some env
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -910,12 +945,15 @@ let command_write words env =
             end
 
 let command_play words env =
-    if List.hd words <> "play" || List.length words < 2
-            || not (is_name (List.nth words 1)) then
+    if List.hd words <> "play" then
         None
     else
         try
-            let mpat_name = Tools.remove_first_char (List.nth words 1) in
+            if List.length words <> 2 then
+                raise SyntaxError;
+            let mpat_name = List.nth words 1 in
+            if not (is_name mpat_name) then
+                raise ValueError;
             let mpat = multi_pattern_with_name env mpat_name in
             let ok = play_phrase env mpat in
             if not ok then
@@ -924,7 +962,7 @@ let command_play words env =
             print_newline ();
             Some env
         with
-            |Invalid_argument _ | Failure _-> begin
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
                 print_string "Error: bad formed instruction.";
                 print_newline ();
                 Some env
@@ -973,8 +1011,6 @@ let execute_command cmd env =
         else let env_opt = command_name_multi_pattern words env in
         if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_colorize words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_name_colored_multi_pattern words env in
         if Option.is_some env_opt then Option.get env_opt
         else let env_opt = command_concatenate words env in
         if Option.is_some env_opt then Option.get env_opt

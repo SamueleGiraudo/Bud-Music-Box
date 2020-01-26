@@ -7,36 +7,18 @@ ignored and can therefore be treated as comments.
 
 Identifiers are strings made of the symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`.
 
-Spaces around the token `:=` are part of the syntax.
-
-
-## Syntax for multi-patterns and colored multi-patterns
+## Syntax for multi-patterns
 A multi-pattern is specified by the sequence of its atoms, that are degrees (expressed by
 signed decimal integers) of rests (expressed by `*`). Two voices of a multi-pattern are
 separated by a `;`.
 
 For instance,
-
 ```
 1 -1 * * 2 * 4 ; 0 * * 1 * -3 0 ; * * 2 2 2 2 *
 ```
-
 is a string specifying a $3$-multi-pattern. This multi-pattern has arity $4$ because each
 voice contains $4$ beats. Its length is $7$ since it contains additionally $3$ rests, so
 that this multi-pattern lasts $7$ amounts of time.
-
-A colored multi-pattern is specified by its output color (following the same rules as
-identifiers), a `|`, its underlying multi-pattern, a `|`, and finally the sequence of its
-input colors (following the same rules as identifiers).
-
-For instance,
-
-```
-out | 2 * * 0 1 ; 1 * 0 1 * ; 1 -1 3 * * | in_1 in_2 in_2
-```
-
-is a string specifying a colored $3$-multi-pattern. Its output color is `out` and its input
-colors are, from left to right, `in_1`, `in_2`, and `in_2`.
 
 
 ## Instruction set
@@ -90,36 +72,27 @@ colors are, from left to right, `in_1`, `in_2`, and `in_2`.
 
 
 ### Naming a multi-pattern
-`$NAME := multi_pattern PAT`
+`multi_pattern NAME PAT_STR`
 
 + `NAME` is an identifier.
-+ `PAT` is a multi-pattern.
++ `PAT_STR` is a string specifying a multi-pattern.
 + Bounds the specified identifier to the specified object. Any instruction having
-  multi-patterns as arguments accept `$NAME` as argument.
-
-
-### Naming a colored multi-pattern
-`$NAME := colored_multi_pattern CPAT`
-
-+ `NAME` is an identifier.
-+ `CPAT` is a colored multi-pattern.
-+ Bounds the specified identifier to the specified object. Any instruction having
-  colored multi-patterns as arguments accept `$NAME` as argument.
+  multi-patterns as arguments accept `NAME` as argument.
 
 
 ### Colorize a multi-pattern
-`$NAME := colorize OUT $PAT IN_1 ... IN_n`
+colorize NAME PAT OUT IN_1 ... IN_n`
 
 + `NAME` is an identifier.
-+ `OUT` is a color.
 + `PAT` is a multi-pattern of arity $n$.
++ `OUT` is a color.
 + `IN_1 ... IN_n` is a list of colors.
 + Bounds the specified identifier to the colored multi-pattern obtained by surrounding the
  multi-pattern `PAT` with the output color `OUT` and the input colors `IN_1 ... IN_n`.
 
 
 ### Concatenate multi-patterns
-`$NAME := concatenate $PAT_1 ... $PAT_n`
+concatenate NAME PAT_1 ... PAT_n`
 
 + `NAME` is an identifier.
 + `PAT_1 ... PAT_n` is a list a $m$-multi-patterns with $n \geq 2$.
@@ -127,122 +100,130 @@ colors are, from left to right, `in_1`, `in_2`, and `in_2`.
 
 
 ### Partially compose two multi-patterns
-`$NAME := partial_compose $PAT_1 POS $PAT_2`
+`partial_compose NAME PAT_1 POS PAT_2`
 
 + `NAME` is an identifier.
 + `PAT_1` is the name of an $m$-multi-pattern of arity $n$.
-+ `PAT_2` is the name an $m$-multi-pattern.
 + `POS` is an integer between $1$ and $n$.
++ `PAT_2` is the name an $m$-multi-pattern.
 + Bounds `NAME` to the partial composition of `PAT_2` at position `POS` in `PAT_1`.
 
 
 ### Fully compose multi-patterns
-`$NAME := full_compose $PAT $PAT_1 ... $PAT_n`
+full_compose NAME PAT PAT_1 ... PAT_n`
 
 + `NAME` is an identifier.
 + `PAT` is the name of an $m$-multi-pattern of arity $n$.
 + `PAT_1`, ..., `PAT_n` are names of $m$-multi-patterns.
-+ Returns the full composition of `PAT` with `PAT_1`, ..., `PAT_n`.
++ Bounds `NAME` to the full composition of `PAT` with `PAT_1`, ..., `PAT_n`.
 
 
 ### Binarily compose two multi-patterns
-`$NAME := binarily_compose $PAT_1 $PAT_2
+`binarily_compose NAME PAT_1 PAT_2
 
 + `NAME` is an identifier.
 + `PAT_1` is the name of an $m$-multi-pattern.
 + `PAT_2` is the name of an $m$-multi-pattern.
-+ Returns the binary composition of `PAT_1` with `PAT_2`
++ Bounds `NAME` to the binary composition of `PAT_1` with `PAT_2`
 
 
 ### Transform multi-patterns
-`$NAME := transform DIL M_1 ... M_m $PAT`
+transform NAME PAT DIL M_1 ... M_m`
 
++ `NAME` is an identifier.
++ `PAT` is the name of an $m$-multi-pattern.
 + `DIL` is a nonnegative integer.
 + `M_1 ... M_m` is a sequence of integers.
-+ `PAT` is the name of an $m$-multi-pattern.
-+ Returns the $m$-multi-pattern obtained by multiplying by `DIL` each rest and by
++ Bounds `NAME` to the $m$-multi-pattern obtained by multiplying by `DIL` each rest and by
   multiplying each degree of the $i$-th voice of `PAT` by `M_i`.
 
 
 ### Mirror image of a multi-pattern
-`$NAME := mirror $PAT`
+`mirror NAME PAT`
 
++ `NAME` is an identifier.
 + `PAT` is the name of a multi-pattern.
-+ Returns the multi-pattern defined as the mirror image of `PAT`.
++ Bounds `NAME` to the multi-pattern defined as the mirror image of `PAT`.
 
 
 ### Randomly generate a multi-pattern
-`$NAME := generate SHAPE SIZE COL $CPAT_1 ... $CPAT_n`
+generate NAME SHAPE SIZE COL CPAT_1 ... CPAT_n`
 
++ `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.
 + `SIZE` is a nonnegative integer value.
 + `COL` is a color.
-+ `$CPAT_1 ... $CPAT_n` is a list of names of colored multi-patterns.
-+ Returns a pattern randomly generated from the inputted colored patterns, with the
++ `CPAT_1 ... CPAT_n` is a list of names of colored multi-patterns.
++ Bounds `NAME` to a pattern randomly generated from the inputted colored patterns, with the
   specified size, the specified generation shape, and the specified initial color.
 
 
 ### Temporize a $1$-multi-pattern
-`$NAME := temporize SHAPE SIZE $PAT VAL`
+`temporize NAME SHAPE SIZE PAT VAL`
 
++ `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.
 + `SIZE` is a nonnegative integer value.
 + `PAT` is the name of a $1$-multi-pattern.
 + `VAL` is a nonnegative integer.
-+ Returns the $1$-multi-pattern obtained by randomly composing `PAT` with itself and by
-  incorporating some delays ranging between $1$ and `VAL`. This uses the generation algorithm
-  with the specified shape and the specified size.
++ Bounds `NAME` to the $1$-multi-pattern obtained by randomly composing `PAT` with itself
+  and by incorporating some delays ranging between $1$ and `VAL`. This uses the generation
+  algorithm with the specified shape and the specified size.
 
 
 ### Rhythmize a $1$-multi-pattern
-`$NAME := rhythmize SHAPE SIZE $PAT $R_PAT`
+`rhythmize NAME SHAPE SIZE PAT R_PAT`
 
++ `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.
 + `SIZE` is a nonnegative integer value.
 + `PAT` is the name of a $1$-multi-pattern
 + `R_PAT` is the name of a $1$-multi-pattern with only rests or beat having $0$ as degree.
-+ Returns the $1$-multi-pattern obtained by randomly composing `PAT` with itself and by
-  adding some repetitions of beats by following the specified rhythm pattern `R_PAT`. This
-  uses the generation algorithm with the specified shape and the specified size.
++ Bounds `NAME` to the $1$-multi-pattern obtained by randomly composing `PAT` with itself
+  and by adding some repetitions of beats by following the specified rhythm pattern `R_PAT`.
+  This uses the generation algorithm with the specified shape and the specified size.
 
 
 ### Harmonize a $1$-multi-pattern
-`$NAME := harmonize SHAPE SIZE $PAT $D_PAT`
+`harmonize NAME SHAPE SIZE PAT D_PAT`
 
++ `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.
 + `SIZE` is a nonnegative integer value.
 + `PAT` is the name of a $1$-multi-pattern, 
 + `D_PAT` is the name of a $1$-multi-pattern with no rest and of arity $m$.
-+ Returns the $m$-multi-pattern obtained by randomly composing `PAT` with itself and by
-  harmonizing some of its degrees according to the degree-pattern `D_PAT`. This uses the
-  generation algorithm with the specified shape and the specified size.
++ Bounds `NAME` to the $m$-multi-pattern obtained by randomly composing `PAT` with itself
+  and by harmonizing some of its degrees according to the degree-pattern `D_PAT`. This uses
+  the generation algorithm with the specified shape and the specified size.
 
 
 ### Arpeggiate a $1$-multi-pattern
-`$NAME := arpeggiate SHAPE SIZE $PAT $D_PAT`
+`arpeggiate NAME SHAPE SIZE PAT D_PAT`
 
++ `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.
 + `SIZE` is a nonnegative integer value.
 + `PAT` is the name of a $1$-multi-pattern.
 + `D_PAT` is the name of a $1$-multi-pattern with no rest and of arity $m$.
-+ Returns the $m$-multi-pattern obtained by randomly composing `PAT` with itself and by
-  arpeggiating some of its degrees according to the degree-pattern `D_PAT`. This use the
-  generation algorithm with the specified shape and the specified size.
++ Bounds `NAME` to the the $m$-multi-pattern obtained by randomly composing `PAT` with
+  itself and by arpeggiating some of its degrees according to the degree-pattern `D_PAT`.
+  This use the generation algorithm with the specified shape and the specified size.
 
 
 ### Mobiusate a $1$-multi-pattern
-`$NAME := mobiusate SHAPE SIZE $PAT``
+`mobiusate NAME SHAPE SIZE PAT``
 
++ `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.
 + `SIZE` is a nonnegative integer value.
 + `PAT` is the name of a $1$-multi-pattern.
-+ Returns the $2$-multi-pattern obtained by randomly composing the $2$-multi-pattern
-  obtained by stacking `PAT` with its mirror image. This use the generation algorithm with
-  the specified shape and the specified size.
++ Bounds `NAME` to the $2$-multi-pattern obtained by randomly composing the
+  $2$-multi-pattern obtained by stacking `PAT` with its mirror image. This use the
+  generation algorithm with the specified shape and the specified size.
 
 
 ### Write the associated files of a multi-pattern 
-`write FILE_NAME $PAT`
+`write FILE_NAME PAT`
 
 + `FILE_NAME` is a path to a non-existing file.
 + `PAT` is the name of a multi-pattern.
@@ -252,10 +233,9 @@ colors are, from left to right, `in_1`, `in_2`, and `in_2`.
 
 
 ### Play a multi-pattern
-`play $PAT`
+`play PAT`
 
 + `PAT` is the name of a multi-pattern.
 + Plays `PAT` according to the underlying context of scale, root note, tempo, and MIDI
   sounds.
-
 

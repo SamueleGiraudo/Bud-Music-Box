@@ -1,12 +1,15 @@
-$c1 := colored_multi_pattern a | 0 * 1 * 2 ; 0 0 * * -5 | a a b
-$c2 := colored_multi_pattern a | 0 * ; * 0 | a
+multi_pattern p1 0 * 1 * 2 ; 0 0 * * -5
+multi_pattern p2 0 * ; * 0
+
+colorize c1 p1 a a a b
+colorize c2 p2 a a
 
 set_scale 2 1 4 1 4
 set_root 57
 set_tempo 192
 set_sounds 107 107
 
-$res := generate partial 64 a $c1 $c2
+generate res partial 64 a c1 c2
 show
-play $res
+play res
 
