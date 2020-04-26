@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2020
  *)
 
 (* An exception raised in functions called with wrong arguments. *)
@@ -18,7 +18,7 @@ let int_to_bool x =
         true
 
 (* Returns the list of integers from a to b. *)
-let rec interval a b =
+let interval a b =
     List.init (b - a + 1) (fun x -> x + a);;
 
 (* Returns the factor of the list lst starting at position start and of length len. *)
@@ -30,7 +30,7 @@ let rec list_factor lst start len =
         |_ :: lst' -> list_factor lst' (start - 1) len
 
 (* Returns the suffix of the list lst beginning at the index start. *)
-let rec list_suffix lst start =
+let list_suffix lst start =
     list_factor lst start ((List.length lst) - start)
 
 (* Returns the list obtained by inserting the list lst_2 at position i in the list lst_1.
@@ -41,12 +41,12 @@ let partial_composition_lists lst_1 i lst_2 =
         lst_2 ;
         list_factor lst_1 i ((List.length lst_1) - i)]
 
-(* Returns the index of the ith element of the list lst satisfying the predicate pred. 
+(* Returns the index of the i-th element of the list lst satisfying the predicate pred.
  * Raises Not_found when there is no such element in lst. *)
 let rec index_ith_occurrence lst pred i =
     match lst with
         |[] -> raise Not_found
-        |x :: lst' when (pred x) && i = 1 -> 0
+        |x :: _ when (pred x) && i = 1 -> 0
         |x :: lst' when pred x -> 1 + (index_ith_occurrence lst' pred (i - 1))
         |_ :: lst' -> 1 + (index_ith_occurrence lst' pred i)
 

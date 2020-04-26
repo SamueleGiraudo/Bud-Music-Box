@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2019
- * Modifications: aug. 2019, sep. 2019, dec. 2019, jan. 2020
+ * Modifications: aug. 2019, sep. 2019, dec. 2019, jan. 2020, apr. 2020
  *)
 
 (* An environment contains all the data needed to represent an execution state. *)
@@ -107,7 +107,8 @@ let date_string () =
     let tmp = Unix.gettimeofday () in
     let t = Unix.localtime tmp in
     Printf.sprintf "%d-%d-%d_%d:%d:%d"
-        (t.tm_year + 1900) t.tm_mon t.tm_mday t.tm_hour t.tm_min t.tm_sec
+        (t.Unix.tm_year + 1900) t.Unix.tm_mon t.Unix.tm_mday t.Unix.tm_hour
+        t.Unix.tm_min t.Unix.tm_sec
 
 (* Create an ABC file, a postscript file, and a MIDI file of the multi-pattern mpat from the
  * environment env. All the generated files have as name file_name, augmented with their
@@ -131,8 +132,8 @@ let create_files env mpat file_name =
         let file_abc = open_out file_name_abc in
         Printf.fprintf file_abc "%s\n" str_abc;
         close_out file_abc;
-        Sys.command ("abcm2ps " ^ file_name_abc ^ " -O " ^ file_name_ps);
-        Sys.command ("abc2midi " ^ file_name_abc ^ " -o " ^ file_name_mid);
+        ignore (Sys.command ("abcm2ps " ^ file_name_abc ^ " -O " ^ file_name_ps));
+        ignore (Sys.command ("abc2midi " ^ file_name_abc ^ " -o " ^ file_name_mid));
         true
     end
 
@@ -619,6 +620,74 @@ let command_mirror words env =
                 Some env
             end
 
+let command_repeat words env =
+    if List.hd words <> "repeat" then
+        None
+    else
+        try
+            if List.length words < 4 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            let name_mpat = List.nth words 2 in
+            let mpat = multi_pattern_with_name env name_mpat in
+            let k = int_of_string (List.nth words 3) in
+            if k < 0 then
+                raise ValueError;
+            let res = MultiPattern.repeat mpat k in
+            let env' = add_multi_pattern env name_res res in
+            print_string "Repetition computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
+let command_transpose words env =
+    if List.hd words <> "transpose" then
+        None
+    else
+        try
+            if List.length words < 4 then
+                raise SyntaxError;
+            let name_res = List.nth words 1 in
+            let name_mpat = List.nth words 2 in
+            let mpat = multi_pattern_with_name env name_mpat in
+            let k = int_of_string (List.nth words 3) in
+            let res = MultiPattern.transpose mpat k in
+            let env' = add_multi_pattern env name_res res in
+            print_string "Transposition computed.";
+            print_newline ();
+            Some env'
+        with
+            |Invalid_argument _ | Failure _ | SyntaxError -> begin
+                print_string "Error: bad formed instruction.";
+                print_newline ();
+                Some env
+            end
+            |ValueError -> begin
+                print_string "Error: value.";
+                print_newline ();
+                Some env
+            end
+            |Not_found -> begin
+                print_string "Error: name not bounded.";
+                print_newline ();
+                Some env
+            end
+
 let command_generate words env =
     if List.hd words <> "generate" then
         None
@@ -646,7 +715,7 @@ let command_generate words env =
                     (MultiPattern.multiplicity (BudGrammar.get_element cm)) = m)) then
                 raise ValueError;
             let res = Generation.from_colored_multi_patterns
-                (Generation.create_parameters initial_color size shape)
+                (Generation.create_parameters size shape)
                 initial_color
                 colored_multi_patterns in
             let env' = add_multi_pattern env name_res res in
@@ -691,8 +760,7 @@ let command_temporize words env =
             let max_delay = int_of_string (List.nth words 5) in
             if max_delay < 0 then
                 raise ValueError;
-            let param = Generation.create_parameters
-                Generation.default_initial_color size shape in
+            let param = Generation.create_parameters size shape in
             let res = Generation.temporization
                 param (MultiPattern.pattern mpat 1) max_delay in
             let env' = add_multi_pattern env name_res res in
@@ -741,8 +809,7 @@ let command_rhythmize words env =
             if MultiPattern.pattern rpat 1 |> Pattern.extract_degrees |> List.exists
                     (fun d -> d <> 0) then
                 raise ValueError;
-            let param = Generation.create_parameters
-                Generation.default_initial_color size shape in
+            let param = Generation.create_parameters size shape in
             let res = Generation.rhythmization
                 param (MultiPattern.pattern pat 1) (MultiPattern.pattern rpat 1) in
             let env' = add_multi_pattern env name_res res in
@@ -790,8 +857,7 @@ let command_harmonize words env =
                 raise ValueError;
             if MultiPattern.length dpat <> MultiPattern.arity dpat then
                 raise ValueError;
-            let param = Generation.create_parameters
-                Generation.default_initial_color size shape in
+            let param = Generation.create_parameters size shape in
             let res = Generation.harmonization
                 param (MultiPattern.pattern pat 1) (MultiPattern.pattern dpat 1) in
             let env' = add_multi_pattern env name_res res in
@@ -839,8 +905,7 @@ let command_arpeggiate words env =
                 raise ValueError;
             if MultiPattern.length dpat <> MultiPattern.arity dpat then
                 raise ValueError;
-            let param = Generation.create_parameters
-                Generation.default_initial_color size shape in
+            let param = Generation.create_parameters size shape in
             let res = Generation.arpeggiation
                 param (MultiPattern.pattern pat 1) (MultiPattern.pattern dpat 1) in
             let env' = add_multi_pattern env name_res res in
@@ -882,8 +947,7 @@ let command_mobiusate words env =
             let pat = multi_pattern_with_name env pat_name in
             if MultiPattern.multiplicity pat <> 1 then
                 raise ValueError;
-            let param = Generation.create_parameters
-                Generation.default_initial_color size shape in
+            let param = Generation.create_parameters size shape in
             let res = Generation.mobiusation
                 param (MultiPattern.pattern pat 1) in
             let env' = add_multi_pattern env name_res res in
@@ -999,65 +1063,69 @@ let command_play words env =
 (* Returns the next version of the environment env, altered by the command cmd. As side
  * effect, the action of the command is performed. *)
 let execute_command cmd env =
-        let words = Str.split (Str.regexp "[ \t\n]+") cmd in
-        if words = [] then begin
-            print_string "Empty instruction.";
-            print_newline ();
-            env
-        end
-        else let env_opt = command_comment words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_quit words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_help words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_show words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_set_scale words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_set_root words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_set_tempo words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_set_sounds words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_name_multi_pattern words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_colorize words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_concatenate words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_partial_compose words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_full_compose words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_binarily_compose words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_transform words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_mirror words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_generate words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_temporize words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_rhythmize words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_harmonize words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_arpeggiate words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_mobiusate words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_write words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else let env_opt = command_play words env in
-        if Option.is_some env_opt then Option.get env_opt
-        else begin
-            print_string "Error: unknown command.";
-            print_newline ();
-            env
-        end
+    let words = Str.split (Str.regexp "[ \t\n]+") cmd in
+    if words = [] then begin
+        print_string "Empty instruction.";
+        print_newline ();
+        env
+    end
+    else let env_opt = command_comment words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_quit words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_help words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_show words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_set_scale words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_set_root words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_set_tempo words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_set_sounds words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_name_multi_pattern words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_colorize words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_concatenate words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_partial_compose words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_full_compose words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_binarily_compose words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_transform words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_mirror words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_repeat words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_transpose words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_generate words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_temporize words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_rhythmize words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_harmonize words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_arpeggiate words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_mobiusate words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_write words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else let env_opt = command_play words env in
+    if Option.is_some env_opt then Option.get env_opt
+    else begin
+        print_string "Error: unknown command.";
+        print_newline ();
+        env
+    end
 
 (* Launch the main interaction loop. *)
 let interaction_loop () =
@@ -1084,8 +1152,9 @@ let interpret_file path =
         if len >= 4 && String.sub path (len - 4) 4 = "." ^ extension then begin
             let commands = Std.input_list (open_in path)
                 |> List.filter (fun str -> str <> "") in
-            commands |> List.fold_left
-                (fun res cmd -> execute_command cmd res) default_environment;
+            let env = commands |> List.fold_left
+                (fun res cmd -> execute_command cmd res) default_environment in
+            ignore env;
             true
         end
         else begin

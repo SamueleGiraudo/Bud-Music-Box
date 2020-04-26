@@ -1,16 +1,18 @@
 # Bud Music Box language instruction set
 This page describes all the instructions of the Bud Music Box language.
 
+
 ## General conventions
 Each single instruction fits on one line. All characters following a `#` in a given line are
 ignored and can therefore be treated as comments.
 
 Identifiers are strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`.
 
+
 ## Syntax for multi-patterns
 A multi-pattern is specified by the sequence of its atoms, that are degrees (expressed by
-signed decimal integers) of rests (expressed by `*`). Two voices of a multi-pattern are
-separated by a `;`.
+signed decimal integers) or rests (expressed by `*`). The multiple voices of a multi-pattern
+are separated by a `;`.
 
 For instance,
 ```
@@ -23,39 +25,61 @@ that this multi-pattern lasts $7$ amounts of time.
 
 ## Instruction set
 
-### Quit
-`quit`
+### Control instructions
 
-+ Quits the application.
-
-
-### Help
+#### Help
 `help`
 
 + Prints the help.
 
 
-### Display information
+#### Quit
+`quit`
+
++ Quits the application.
+
+
+#### Display information
 `show`
 
 + Prints the current internal data (scale, tempo, patterns, _etc._).
 
 
-### Setting a scale
+#### Write the associated files of a multi-pattern 
+`write FILE_NAME PAT`
+
++ `FILE_NAME` is a path to a non-existing file.
++ `PAT` is the name of a multi-pattern.
++ Creates the ABC file, postscript file, and MIDI file for the musical phrase encoded by the
+  multi-pattern `PAT`, with the underlying context of scale, root note, tempo, and MIDI
+  sounds. The created files are obtained by adding an adequate extension to `FILE_NAME`.
+
+
+#### Play a multi-pattern
+`play PAT`
+
++ `PAT` is the name of a multi-pattern.
++ Plays `PAT` according to the underlying context of scale, root note, tempo, and MIDI
+  sounds.
+
+
+### Context management
+
+#### Setting a scale
 `set_scale STEP_1 ... STEP_k`
 
 + `STEP_1 ... STEP_k` is the integer composition of a $12$-scale.
 + Sets the underlying scale to the specified one.
 
 
-### Setting a root note
+#### Setting a root note
 `set_root NOTE`
 
 + `NOTE` is the midi code of a note between $0$ and $127$.
 + Sets the root of the underlying set of notes.
 
 
-### Setting a tempo
+#### Setting a tempo
 `set_tempo VAL`
 
 + `VAL` is a nonnegative integer.
@@ -63,7 +87,7 @@ that this multi-pattern lasts $7$ amounts of time.
   duration of a whole note.
 
 
-### Setting voice sounds
+#### Setting voice sounds
 `set_sounds SOUND_1 ... SOUND_m`
 
 + `SOUND_1 ... SOUND_m` is a sequence of General MIDI sounds, encoded as integers between
@@ -71,7 +95,9 @@ that this multi-pattern lasts $7$ amounts of time.
 + Allocates to each potential $i$-th voice of each multi-pattern the specified sound.
 
 
-### Naming a multi-pattern
+### Multi-pattern manipulation
+
+#### Naming a multi-pattern
 `multi_pattern NAME PAT_STR`
 
 + `NAME` is an identifier.
@@ -80,18 +106,25 @@ that this multi-pattern lasts $7$ amounts of time.
   multi-patterns as arguments accept `NAME` as argument.
 
 
-### Colorize a multi-pattern
-`colorize NAME PAT OUT IN_1 ... IN_n`
+#### Transpose a multi-pattern
+`transpose NAME PAT VAL`
 
 + `NAME` is an identifier.
-+ `PAT` is a multi-pattern of arity $n$.
-+ `OUT` is a color.
-+ `IN_1 ... IN_n` is a list of colors.
-+ Bounds the specified identifier to the colored multi-pattern obtained by surrounding the
- multi-pattern `PAT` with the output color `OUT` and the input colors `IN_1 ... IN_n`.
++ `PAT` is the name of a multi-pattern.
++ `VAL` is an integer.
++ Bounds `NAME` to the multi-pattern defined as the transposition of `PAT` of `VAL` degrees.
+  This value `VAL` can be negative.
 
 
-### Concatenate multi-patterns
+#### Mirror image of a multi-pattern
+`mirror NAME PAT`
+
++ `NAME` is an identifier.
++ `PAT` is the name of a multi-pattern.
++ Bounds `NAME` to the multi-pattern defined as the mirror image of `PAT`.
+
+
+#### Concatenate multi-patterns
 `concatenate NAME PAT_1 ... PAT_n`
 
 + `NAME` is an identifier.
@@ -99,35 +132,16 @@ that this multi-pattern lasts $7$ amounts of time.
 + Bounds `NAME` to the concatenation of `PAT_1 ... PAT_n`.
 
 
-### Partially compose two multi-patterns
-`partial_compose NAME PAT_1 POS PAT_2`
+#### Repeat a multi-pattern
+`repeat NAME PAT VAL`
 
 + `NAME` is an identifier.
-+ `PAT_1` is the name of an $m$-multi-pattern of arity $n$.
-+ `POS` is an integer between $1$ and $n$.
-+ `PAT_2` is the name an $m$-multi-pattern.
-+ Bounds `NAME` to the partial composition of `PAT_2` at position `POS` in `PAT_1`.
++ `PAT` is the name of a multi-pattern.
++ `VAL` is a nonnegative integer.
++ Bounds `NAME` to the multi-pattern defined as the `VAL` times repetition of `PAT`.
 
 
-### Fully compose multi-patterns
-`full_compose NAME PAT PAT_1 ... PAT_n`
-
-+ `NAME` is an identifier.
-+ `PAT` is the name of an $m$-multi-pattern of arity $n$.
-+ `PAT_1`, ..., `PAT_n` are names of $m$-multi-patterns.
-+ Bounds `NAME` to the full composition of `PAT` with `PAT_1`, ..., `PAT_n`.
-
-
-### Binarily compose two multi-patterns
-`binarily_compose NAME PAT_1 PAT_2`
-
-+ `NAME` is an identifier.
-+ `PAT_1` is the name of an $m$-multi-pattern.
-+ `PAT_2` is the name of an $m$-multi-pattern.
-+ Bounds `NAME` to the binary composition of `PAT_1` with `PAT_2`
-
-
-### Transform multi-patterns
+#### Transform multi-patterns
 `transform NAME PAT DIL M_1 ... M_m`
 
 + `NAME` is an identifier.
@@ -138,15 +152,47 @@ that this multi-pattern lasts $7$ amounts of time.
   multiplying each degree of the $i$-th voice of `PAT` by `M_i`.
 
 
-### Mirror image of a multi-pattern
-`mirror NAME PAT`
+#### Partially compose two multi-patterns
+`partial_compose NAME PAT_1 POS PAT_2`
 
 + `NAME` is an identifier.
-+ `PAT` is the name of a multi-pattern.
-+ Bounds `NAME` to the multi-pattern defined as the mirror image of `PAT`.
++ `PAT_1` is the name of an $m$-multi-pattern of arity $n$.
++ `POS` is an integer between $1$ and $n$.
++ `PAT_2` is the name an $m$-multi-pattern.
++ Bounds `NAME` to the partial composition of `PAT_2` at position `POS` in `PAT_1`.
 
 
-### Randomly generate a multi-pattern
+#### Fully compose multi-patterns
+`full_compose NAME PAT PAT_1 ... PAT_n`
+
++ `NAME` is an identifier.
++ `PAT` is the name of an $m$-multi-pattern of arity $n$.
++ `PAT_1`, ..., `PAT_n` are names of $m$-multi-patterns.
++ Bounds `NAME` to the full composition of `PAT` with `PAT_1`, ..., `PAT_n`.
+
+
+#### Binarily compose two multi-patterns
+`binarily_compose NAME PAT_1 PAT_2`
+
++ `NAME` is an identifier.
++ `PAT_1` is the name of an $m$-multi-pattern.
++ `PAT_2` is the name of an $m$-multi-pattern.
++ Bounds `NAME` to the binary composition of `PAT_1` with `PAT_2`.
+
+
+### Bud grammar manipulation
+
+#### Colorize a multi-pattern
+`colorize NAME PAT OUT IN_1 ... IN_n`
+
++ `NAME` is an identifier.
++ `PAT` is a multi-pattern of arity $n$.
++ `OUT` is a color.
++ `IN_1 ... IN_n` is a list of colors.
++ Bounds the specified identifier to the colored multi-pattern obtained by surrounding the
+ multi-pattern `PAT` with the output color `OUT` and the input colors `IN_1 ... IN_n`.
+
+#### Randomly generate a multi-pattern
 `generate NAME SHAPE SIZE COL CPAT_1 ... CPAT_n`
 
 + `NAME` is an identifier.
@@ -155,10 +201,13 @@ that this multi-pattern lasts $7$ amounts of time.
 + `COL` is a color.
 + `CPAT_1 ... CPAT_n` is a list of names of colored multi-patterns.
 + Bounds `NAME` to a pattern randomly generated from the inputted colored patterns, with the
-  specified size, the specified generation shape, and the specified initial color.
+  specified size, the specified generation shape, and the specified initial color. This uses
+  bug generating systems and random generation algorithms.
 
 
-### Temporize a $1$-multi-pattern
+### Specific random transformation of $1$-multi-patterns
+
+#### Temporize a $1$-multi-pattern
 `temporize NAME SHAPE SIZE PAT VAL`
 
 + `NAME` is an identifier.
@@ -171,7 +220,7 @@ that this multi-pattern lasts $7$ amounts of time.
   algorithm with the specified shape and the specified size.
 
 
-### Rhythmize a $1$-multi-pattern
+#### Rhythmize a $1$-multi-pattern
 `rhythmize NAME SHAPE SIZE PAT R_PAT`
 
 + `NAME` is an identifier.
@@ -184,7 +233,7 @@ that this multi-pattern lasts $7$ amounts of time.
   This uses the generation algorithm with the specified shape and the specified size.
 
 
-### Harmonize a $1$-multi-pattern
+#### Harmonize a $1$-multi-pattern
 `harmonize NAME SHAPE SIZE PAT D_PAT`
 
 + `NAME` is an identifier.
@@ -197,7 +246,7 @@ that this multi-pattern lasts $7$ amounts of time.
   the generation algorithm with the specified shape and the specified size.
 
 
-### Arpeggiate a $1$-multi-pattern
+#### Arpeggiate a $1$-multi-pattern
 `arpeggiate NAME SHAPE SIZE PAT D_PAT`
 
 + `NAME` is an identifier.
@@ -205,12 +254,12 @@ that this multi-pattern lasts $7$ amounts of time.
 + `SIZE` is a nonnegative integer value.
 + `PAT` is the name of a $1$-multi-pattern.
 + `D_PAT` is the name of a $1$-multi-pattern with no rest and of arity $m$.
-+ Bounds `NAME` to the the $m$-multi-pattern obtained by randomly composing `PAT` with
-  itself and by arpeggiating some of its degrees according to the degree-pattern `D_PAT`.
-  This use the generation algorithm with the specified shape and the specified size.
++ Bounds `NAME` to the $m$-multi-pattern obtained by randomly composing `PAT` with itself
+  and by arpeggiating some of its degrees according to the degree-pattern `D_PAT`. This uses
+  the generation algorithm with the specified shape and the specified size.
 
 
-### Mobiusate a $1$-multi-pattern
+#### Mobiusate a $1$-multi-pattern
 `mobiusate NAME SHAPE SIZE PAT`
 
 + `NAME` is an identifier.
@@ -218,24 +267,6 @@ that this multi-pattern lasts $7$ amounts of time.
 + `SIZE` is a nonnegative integer value.
 + `PAT` is the name of a $1$-multi-pattern.
 + Bounds `NAME` to the $2$-multi-pattern obtained by randomly composing the
-  $2$-multi-pattern obtained by stacking `PAT` with its mirror image. This use the
+  $2$-multi-pattern obtained by stacking `PAT` with its mirror image. This uses the
   generation algorithm with the specified shape and the specified size.
-
-
-### Write the associated files of a multi-pattern 
-`write FILE_NAME PAT`
-
-+ `FILE_NAME` is a path to a non-existing file.
-+ `PAT` is the name of a multi-pattern.
-+ Creates the ABC file, postscript file, and MIDI file for the musical phrase encoded by the
-  multi-pattern `PAT`, with the underlying context of scale, root note, tempo, and MIDI
-  sounds. The created files are obtained by adding an adequate extension to `FILE_NAME`.
-
-
-### Play a multi-pattern
-`play PAT`
-
-+ `PAT` is the name of a multi-pattern.
-+ Plays `PAT` according to the underlying context of scale, root note, tempo, and MIDI
-  sounds.
 

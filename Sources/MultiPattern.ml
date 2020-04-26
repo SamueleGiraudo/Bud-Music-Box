@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020
+ * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020, apr. 2020
  *)
 
 (* A multi-pattern is a nonempty list of patterns such that all its patterns have the same
@@ -157,4 +157,18 @@ let binary_composition mpat_1 mpat_2 =
     assert ((multiplicity mpat_1) = (multiplicity mpat_2));
     let m = multiplicity mpat_1 in
     Operad.binary_composition (operad m) mpat_1 mpat_2
+
+(* Returns the multi-pattern obtained by repeating k times the multi-pattern pmat. *)
+let repeat mpat k =
+    assert (k >= 0);
+    let m = multiplicity mpat in
+    let mpat' = List.init m (fun _ -> List.init k (fun _ -> Atom.Beat 0)) in
+    let mpat_lst = List.init k (fun _ -> mpat) in
+    full_composition mpat' mpat_lst
+
+(* Returns the multi-pattern obtained by transposing by k degrees the multi-pattern mpat. *)
+let transpose mpat k =
+    let m = multiplicity mpat in
+    let mpat' = List.init m (fun _ -> [Atom.Beat k]) in
+    partial_composition mpat' 1 mpat
 

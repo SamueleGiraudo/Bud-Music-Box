@@ -5,15 +5,17 @@ generating systems.
 Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
+
 ## Versions
-+ `next`
++ `0.111` (2020-04-26)
     + New language specification.
+    + Documentation improvements.
     + Add instruction `concatenate`.
-    +
-    +
+    + Add instruction `repeat`.
+    + Add instruction `transpose`.
 + `0.11` (2020-01-24)
     + Add instructions `binarily_composition` and `mobiusation`.
-    + Language and instructions redesign.
+    + Language and instruction redesign.
 + `0.10` (2020-01-01)
     + Several improvements.
     + Add instructions `morphism` and `mirror`.
@@ -23,8 +25,8 @@ Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 
 
 ## Quick overview and examples
-This program offers functions allowing to represent musical patterns, to compute over them,
-and to randomly generate some of them. Results can be converted to files in the
+This program offers a complete language allowing to represent musical patterns, to compute
+over them, and to randomly generate some of them. Results can be converted to files in the
 [abc format](http://abcnotation.com) and then into MIDI files.
 
 

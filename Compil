@@ -2,7 +2,7 @@
 
 # To obtain an executable.
 ocamlbuild -r\
-    -cflags -w,a\
+    -cflags -w,A-4\
     -verbose 0\
     -lib str\
     -lib unix\
@@ -11,6 +11,9 @@ ocamlbuild -r\
     Sources/Main.native
 
 mv Main.native bmb
+
+
+# -cflags -noassert\
 
 # To profile
 # ocamlbuild Main.p.native

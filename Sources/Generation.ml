@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: dec. 2019
- * Modifications: dec. 2019, jan. 2020
+ * Modifications: dec. 2019, jan. 2020, apr. 2020
  *)
 
 (* A set of parameters for the pattern generation from bud grammars. *)
@@ -23,7 +23,7 @@ let transition_color_2 = "c"
 let default_sink_color = "z"
 
 (* Returns the parameters with the specified information. *)
-let create_parameters initial_color nb_steps shape =
+let create_parameters nb_steps shape =
     assert (nb_steps >= 0);
     {nb_steps = nb_steps; shape = shape}
 

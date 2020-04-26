@@ -1,6 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020
+ * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020,
+ * apr. 2020
  *)
 
 (* A color is a name (string). *)
@@ -83,7 +84,7 @@ let create operad generators initial_color =
 
 (* Returns the arity of the colored element ce in the bud grammar budg. *)
 let arity budg ce =
-    budg.operad.arity ce.element
+    (Operad.arity budg.operad) ce.element
 
 (* Returns the colored one of color of the bud grammar budg. *)
 let colored_one budg color =

@@ -1,12 +1,15 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, may 2019, aug. 2019, dec. 2019, jan. 2020
+ * apr. 2020
  *)
 
 let name = "Bud Music Box"
-let version = "0.01"
-let version = "0.10"
-let version = "0.11"
+(* let version = "0.01"
+ * let version = "0.10"
+ * let version = "0.11"
+ *)
+let version = "0.111"
 let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 
@@ -20,6 +23,8 @@ let help_string =
         ^ "    -> Print the version of the application.\n"
         ^ "-h\n"
         ^ "    -> Print the help.\n"
+        ^ "-hi\n"
+        ^ "    -> Print the help about the instruction set.\n"
         ^ "-i\n"
         ^ "    -> Launch the interpreter.\n"
         ^ "-f PATH\n"
@@ -49,7 +54,9 @@ end
 else if has_argument "-h" then begin
     print_string "Help:\n\n";
     print_string help_string;
-    print_newline ();
+end
+else if has_argument "-hi" then begin
+    print_string "Help on instructions:\n\n";
     print_string Interpreter.help_string
 end
 else if has_argument "-i" then begin

@@ -1,6 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020
+ * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020,
+ * apr. 2020
  *)
 
 (* A pattern is a list of atoms. There is no condition: all lists are valid patterns, even
@@ -62,7 +63,7 @@ let extract_durations pat =
         match lst with
             |[] -> []
             |Atom.Rest :: lst' -> aux lst'
-            |(Atom.Beat d) :: lst' -> (1 + (Tools.length_start lst' Rest)) :: aux lst'
+            |(Atom.Beat _) :: lst' -> (1 + (Tools.length_start lst' Atom.Rest)) :: aux lst'
     in
     aux pat
 
@@ -93,4 +94,16 @@ let mirror pat =
 (* Returns the operad of patterns. *)
 let operad =
     Operad.create arity partial_composition one
+
+(* Returns the pattern obtained by repeating k times the pattern pat. *)
+let repeat pat k =
+    assert (k >= 0);
+    let pat' = List.init k (fun _ -> Atom.Beat 0) in
+    let pat_lst = List.init k (fun _ -> pat) in
+    Operad.full_composition operad pat' pat_lst
+
+(* Returns the pattern obtained by transposing by k degrees the pattern pat. *)
+let transpose pat k =
+    let pat' = [Atom.Beat k] in
+    partial_composition pat' 1 pat
 
