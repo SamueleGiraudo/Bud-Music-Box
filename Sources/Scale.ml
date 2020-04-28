@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2020
  *)
 
 (* A degree is a (possibly negative) integer. *)
@@ -66,10 +66,15 @@ let nb_notes_by_octave scale =
  * scale. *)
 let next_interval scale deg =
     assert (is_scale scale);
-    List.nth scale (deg mod (List.length scale))
+    let nb_no = nb_notes_by_octave scale in
+    let deg' = deg mod nb_no in
+    if deg' >= 0 then
+        List.nth scale deg'
+    else
+        List.nth scale (deg' + nb_no)
 
 (* Returns the interval in steps between the root and the degree deg in the scale scale. The
- * interval is negative if the deg is negative. *)
+ * interval is negative if the degree is negative. *)
 let rec interval_from_root scale deg =
     assert (is_scale scale);
     if deg = 0 then
