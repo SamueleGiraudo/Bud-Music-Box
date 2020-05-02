@@ -9,7 +9,7 @@ type atom =
     |Rest
     |Beat of Scale.degree
 
-(* Returns a string representing the atom a. A rest is represented by a start "*" and a beat
+(* Returns a string representing the atom a. A rest is represented by a star "*" and a beat
  * is represented by the value of its degree in base ten. *)
 let to_string a =
     match a with
