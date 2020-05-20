@@ -16,11 +16,12 @@ are separated by a `;`.
 
 For instance,
 ```
-1 -1 * * 2 * 4 ; 0 * * 1 * -3 0 ; * * 2 2 2 2 *
+1 -1 * * 2 * 4 ; 0 0 * 1 * -3 0 ; * * 2 * 2 2 * ; * 0 * 0 * * 0
 ```
-is a string specifying a $3$-multi-pattern. This multi-pattern has arity $4$ because each
-voice contains $4$ beats. Its length is $7$ since it contains additionally $3$ rests, so
-that this multi-pattern lasts $7$ amounts of time.
+is a string specifying a $4$-multi-pattern. This multi-pattern has arity $3$ because $3$
+is the minimal number of beats among all the four voices. The length of this multi-pattern
+is $7$ since each voice has seven atom, where an atom is either a beat or a rest. Therefore,
+this multi-pattern lasts $7$ amounts of time.
 
 
 ## Instruction set

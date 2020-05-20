@@ -1,15 +1,16 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, may 2019, aug. 2019, dec. 2019, jan. 2020
- * apr. 2020
+ * apr. 2020, may 2020
  *)
 
 let name = "Bud Music Box"
 (* let version = "0.01"
  * let version = "0.10"
  * let version = "0.11"
- *)
-let version = "0.111"
+ * let version = "0.111"
+*)
+let version = "0.1111"
 let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 

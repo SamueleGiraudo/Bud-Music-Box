@@ -7,6 +7,9 @@ Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 
 
 ## Versions
++ `0.1111` (2020-05-20)
+    + Improved efficiency of partial composition of patterns.
+    + The patterns forming a multi-pattern can now have different arities.
 + `0.111` (2020-04-26)
     + New language specification.
     + Documentation improvements.

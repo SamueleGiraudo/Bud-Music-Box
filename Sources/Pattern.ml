@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020,
- * apr. 2020
+ * apr. 2020, may 2020
  *)
 
 (* A pattern is a list of atoms. There is no condition: all lists are valid patterns, even

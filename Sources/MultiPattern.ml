@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020, apr. 2020
+ * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020, apr. 2020, may 2020
  *)
 
 (* A multi-pattern is a nonempty list of patterns such that all its patterns have the same
@@ -17,9 +17,8 @@ let is_multi_pattern lst =
     if lst = [] then
         false
     else
-        let pat = List.hd lst in
-        let len = Pattern.length pat and ar = Pattern.arity pat in
-        lst |> List.for_all (fun p -> Pattern.length p = len && Pattern.arity p = ar)
+        let len = Pattern.length (List.hd lst) in
+        lst |> List.for_all (fun p -> Pattern.length p = len)
 
 (* Returns the m-multi-pattern obtained by stacking the pattern pat with m copies of
  * itself. *)
@@ -62,10 +61,12 @@ let one m =
     assert (m >= 1);
     List.init m (fun _ -> Pattern.one)
 
-(* Returns the arity of the multi-pattern mpat. *)
+(* Returns the arity of the multi-pattern p. This is the minimal arity among its
+ * patterns. *)
 let arity mpat =
     assert (is_multi_pattern mpat);
-    Pattern.arity (List.hd mpat)
+    List.tl mpat |> List.map Pattern.arity
+        |> List.fold_left min (Pattern.arity (List.hd mpat))
 
 (* Returns the length of the multi-pattern mpat. *)
 let length mpat =
