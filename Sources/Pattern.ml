@@ -69,12 +69,16 @@ let extract_durations pat =
 
 (* Returns the pattern obtained by the partial composition of the patterns pat_1 and pat_2
  * at position i. *)
-let partial_composition pat_1 i pat_2 =
-    assert ((1 <= i) && (i <= (arity pat_1)));
-    let j = Tools.index_ith_occurrence pat_1 Atom.is_beat i in
-    let d = Atom.get_degree (List.nth pat_1 j) in
-    let pat_2' = pat_2 |> List.map (fun a -> Atom.incr a d) in
-    Tools.partial_composition_lists pat_1 (j + 1) pat_2'
+let rec partial_composition pat_1 i pat_2 =
+    assert ((1 <= i) && (i <= arity pat_1));
+    match pat_1, i with
+        |(Atom.Beat d) :: pat_1', 1 ->
+            let pat_2' = pat_2 |> List.map (fun a -> Atom.incr a d) in
+            List.append pat_2' pat_1'
+        |Atom.Rest :: pat_1', i -> Rest :: (partial_composition pat_1' i pat_2)
+        |(Atom.Beat d) :: pat_1', i ->
+            (Atom.Beat d) :: (partial_composition pat_1' (i - 1) pat_2)
+        |[], _ -> []
 
 (* Returns the pattern obtained by replacing each rest of the pattern pat by a sequence of
  * dilatation rests and by multiplying each degree by mul. *)

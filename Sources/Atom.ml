@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, may. 2020
  *)
 
 (* An atom is an indivisible element of a musical pattern. It can be a rest or a beat
@@ -45,7 +45,7 @@ let is_beat a =
 let get_degree a =
     match a with
         |Rest -> raise Tools.BadValue
-        |Beat a -> a
+        |Beat d -> d
 
 (* Returns the atom obtained from the atom a by incrementing it by k if it is a beat. When a
  * is a rest, a is returned. *)
