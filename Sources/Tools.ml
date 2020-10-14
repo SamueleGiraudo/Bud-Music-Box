@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2020
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2020, oct. 2020
  *)
 
 (* An exception raised in functions called with wrong arguments. *)
@@ -9,6 +9,10 @@ exception BadValue
 (* An exception raised in function taking at input strings to convert them when these
  * string have a wrong format. *)
 exception BadStringFormat
+
+exception SyntaxError of string
+exception ArgumentError of string
+exception Error of string
 
 (* Tests if the integer value x is different from 0.*)
 let int_to_bool x =
@@ -89,4 +93,51 @@ let remove_first_char s =
 let remove_blank_characters s =
     let preprocess = Str.split (Str.regexp "[ \t\n]+") s in
     String.concat "" preprocess
+
+let next_line lexbuf =
+    let pos = lexbuf.Lexing.lex_curr_p in
+    lexbuf.Lexing.lex_curr_p <-
+        {pos with
+            Lexing.pos_bol = lexbuf.Lexing.lex_curr_pos;
+            Lexing.pos_lnum = pos.Lexing.pos_lnum + 1}
+
+let unexpected_character_error c =
+    raise (SyntaxError (Printf.sprintf "unexpected character %c" c))
+
+let unclosed_comment_error () =
+    raise (SyntaxError "unclosed comment")
+
+let argument_error name index_arg msg =
+    let str = Printf.sprintf "the arg. %d of [%s] %s" index_arg name msg in
+    raise (ArgumentError str)
+
+let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
+    let position lexbuf =
+        let pos = lexbuf.Lexing.lex_curr_p in
+        Printf.sprintf "file %s, line %d, column %d"
+            pos.Lexing.pos_fname
+            pos.Lexing.pos_lnum
+            (pos.Lexing.pos_cnum - pos.Lexing.pos_bol + 1)
+    in
+    try
+        parser_axiom lexer_axiom lexbuf
+    with
+        |SyntaxError msg -> begin
+            let str = Printf.sprintf "Syntax error in %s: %s \n" (position lexbuf) msg in
+            raise (Error str)
+        end
+        |ArgumentError msg -> begin
+            let str = Printf.sprintf "Argument error in %s: %s\n" (position lexbuf) msg in
+            raise (Error str)
+        end
+        |_ -> begin
+            let str = Printf.sprintf "Error in %s\n" (position lexbuf) in
+            raise (Error str)
+        end
+
+let value_from_file_path parser_axiom lexer_axiom path =
+    assert (Sys.file_exists path);
+    let lexbuf = Lexing.from_channel (open_in path) in
+    lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
+    parse_lexer_buffer parser_axiom lexer_axiom lexbuf
 
