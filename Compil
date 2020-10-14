@@ -7,6 +7,7 @@ ocamlbuild -r\
     -lib str\
     -lib unix\
     -package extlib\
+    -use-menhir\
     -r\
     Sources/Main.native
 

@@ -129,7 +129,7 @@ this multi-pattern lasts $7$ amounts of time.
 `concatenate NAME PAT_1 ... PAT_n`
 
 + `NAME` is an identifier.
-+ `PAT_1 ... PAT_n` is a list a $m$-multi-patterns with $n \geq 2$.
++ `PAT_1 ... PAT_n` is a list of $m$-multi-patterns names with $n \geq 2$.
 + Bounds `NAME` to the concatenation of `PAT_1 ... PAT_n`.
 
 
