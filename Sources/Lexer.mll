@@ -19,10 +19,6 @@ rule read = parse
         {Parser.SEMICOLON}
     |'*'
         {Parser.STAR}
-    |"help"
-        {Parser.HELP}
-    |"quit"
-        {Parser.QUIT}
     |"show"
         {Parser.SHOW}
     |"write"
@@ -45,11 +41,36 @@ rule read = parse
         {Parser.MIRROR}
     |"concatenate"
         {Parser.CONCATENATE}
-
-
-
-
-
+    |"repeat"
+        {Parser.REPEAT}
+    |"transform"
+        {Parser.TRANSFORM}
+    |"partial_compose"
+        {Parser.PARTIAL_COMPOSE}
+    |"full_compose"
+        {Parser.FULL_COMPOSE}
+    |"binarily_compose"
+        {Parser.BINARILY_COMPOSE}
+    |"colorize"
+        {Parser.COLORIZE}
+    |"generate"
+        {Parser.GENERATE}
+    |"partial"
+        {Parser.PARTIAL}
+    |"full"
+        {Parser.FULL}
+    |"colored"
+        {Parser.COLORED}
+    |"temporize"
+        {Parser.TEMPORIZE}
+    |"rhythmize"
+        {Parser.RHYTHMIZE}
+    |"harmonize"
+        {Parser.HARMONIZE}
+    |"arpeggiate"
+        {Parser.ARPEGGIATE}
+    |"mobiusate"
+        {Parser.MOBIUSATE}
     |integer
         {Parser.INTEGER (int_of_string (Lexing.lexeme lexbuf))}
     |name

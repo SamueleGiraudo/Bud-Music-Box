@@ -3,10 +3,10 @@ This page describes all the instructions of the Bud Music Box language.
 
 
 ## General conventions
-Each single instruction fits on one line. All characters following a `#` in a given line are
-ignored and can therefore be treated as comments.
+Comments are enclosed into symbols `{` and `}`. Nested comments are allowed.
 
-Identifiers are strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`.
+Identifiers are strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, and starting
+with an alphabetic symbol or `_`.
 
 
 ## Syntax for multi-patterns

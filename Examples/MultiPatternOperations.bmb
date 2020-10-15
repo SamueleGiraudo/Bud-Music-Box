@@ -1,22 +1,22 @@
-# A first 1-multi-patten.
+{A first 1-multi-patten.}
 multi_pattern mpat_1 0 1 2 3
 
-# A second 1-multi-pattern.
+{A second 1-multi-pattern.}
 multi_pattern mpat_2 0 2 4
 
-# A third 1-multi-pattern.
+{A third 1-multi-pattern.}
 multi_pattern mpat_3 -1 -3 -5
 
-# The concatenation of the three 1-multi-patterns.
+{The concatenation of the three 1-multi-patterns.}
 concatenate res_1 mpat_1 mpat_2 mpat_3
 
-# The partial composition of the second multi-pattern into the first one at position 2.
+{The partial composition of the second multi-pattern into the first one at position 2.}
 partial_compose res_2 mpat_1 2 mpat_2
 
-# The full composition of the second multi-pattern with the third, the third, and the first.
+{The full composition of the second multi-pattern with the third, the third, and the first.}
 full_compose res_3 mpat_2 mpat_3 mpat_3 mpat_1
 
-# Print the internal state of the machine (scale, root note, tempo, MIDI sounds,
-# multi-patterns, and colored multi-patterns).
+{Print the internal state of the machine (scale, root note, tempo, MIDI sounds,
+ multi-patterns, and colored multi-patterns).}
 show
 

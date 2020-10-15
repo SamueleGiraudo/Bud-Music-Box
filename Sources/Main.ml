@@ -26,11 +26,12 @@ let help_string =
         ^ "    -> Print the help.\n"
         ^ "-hi\n"
         ^ "    -> Print the help about the instruction set.\n"
-        ^ "-i\n"
-        ^ "    -> Launch the interpreter.\n"
         ^ "-f PATH\n"
         ^ (Printf.sprintf "    -> Interpret the file PATH having %s as extension.\n"
-            Interpreter.extension)
+            Program.extension)
+
+(* The name of the help file. *)
+let help_file_path = "Help.md"
 
 let has_argument arg =
     Array.mem arg Sys.argv
@@ -58,26 +59,11 @@ else if has_argument "-h" then begin
 end
 else if has_argument "-hi" then begin
     print_string "Help on instructions:\n\n";
-    print_string Interpreter.help_string
+    let help_file = open_in help_file_path in
+    print_string (Std.input_list help_file |> String.concat "\n")
 end
-else if has_argument "-i" then begin
-    print_string "Interpreter\n";
-    Interpreter.interaction_loop ()
-end
-else if has_argument "-f" then begin
-    let path = next_argument "-f" in
-    if Option.is_none path then begin
-        print_string "Error: a path must follow the -f argument.\n";
-        exit 1
-    end
-    else begin
-        let path = Option.get path in
-        Printf.printf "Interpretation of %s...\n" path;
-        let _ = Interpreter.interpret_file path in ()
-    end
-end
-else if Tools.has_argument "-ff" then begin
-    let path = Tools.next_argument "-ff" in
+else if Tools.has_argument "-f" then begin
+    let path = Tools.next_argument "-f" in
     if Option.is_none path then begin
         print_string "Error: a path must follow the -f argument.\n";
         exit 1

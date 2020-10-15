@@ -1,7 +1,7 @@
-# Let a 1-multi-pattern.
+{Let a 1-multi-pattern.}
 multi_pattern p 2 0 * 1 -1 * *
 
-# Creates and plays a random mobiusation of this pattern.
+{Creates and plays a random mobiusation of this pattern.}
 mobiusate new full 4 p
 play new
 

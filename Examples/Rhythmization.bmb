@@ -1,10 +1,10 @@
-# Let a 1-multi-pattern.
+{Let a 1-multi-pattern.}
 multi_pattern p 3 2 * 2 1 * 1 0 *
 
-# Let a rhythm-pattern (a 1-multi-pattern with only rests and degree 0).
+{Let a rhythm-pattern (a 1-multi-pattern with only rests and degree 0).}
 multi_pattern r 0 * 0 0
 
-# Creates and plays a random rhythmization of the pattern $p.
+{Creates and plays a random rhythmization of the pattern $p.}
 rhythmize new full 4 p r
 play new
 

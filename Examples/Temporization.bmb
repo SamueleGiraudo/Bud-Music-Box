@@ -1,7 +1,7 @@
-# Let a 1-multi-pattern.
+{Let a 1-multi-pattern.}
 multi_pattern p 3 2 * 2 1 * 1 0 *
 
-# Creates and plays a random temporization of this pattern.
+{Creates and plays a random temporization of this pattern.}
 temporize new partial 16 p 2
 play new
 

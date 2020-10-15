@@ -8,8 +8,6 @@ type multi_pattern_name = string
 type colored_multi_pattern_name = string
 
 type instruction =
-    |Help
-    |Quit
     |Show
     |Write of multi_pattern_name * file_name
     |Play of multi_pattern_name
@@ -63,9 +61,6 @@ let path_results = "Results"
 
 (* The prefix of all the generated temporary result files. *)
 let prefix_result = "Phrase_"
-
-(* The name of the help file. *)
-let help_file_path = "Help.md"
 
 let output_mark =
     ">>"
@@ -185,17 +180,6 @@ let play_phrase st mpat =
  * execution of instr. Produces also the specified side effect by instr. *)
 let execute_instruction instr st =
     match instr with
-        |Help -> begin
-            let help_file = open_in help_file_path in
-            print_string (Std.input_list help_file |> String.concat "\n");
-            print_newline ();
-            st
-        end
-        |Quit -> begin
-            Printf.printf "%s Goodbye!" output_mark;
-            print_newline ();
-            st
-        end
         |Show -> begin
             Printf.printf "%s Current environment:\n" output_mark;
             print_string (state_to_string st);
