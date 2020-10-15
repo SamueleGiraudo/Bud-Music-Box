@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020,
- * apr. 2020
+ * apr. 2020, oct. 2020
  *)
 
 (* A color is a name (string). *)
@@ -27,15 +27,6 @@ type generation_shape =
     |Full
     |Colored
 
-(* Returns the generation shape encoded by the string str. Raises Tools.BadStringFormat if
- *  str does not encode any generation shape. *)
-let generation_shape_from_string str =
-    match str with
-        |"partial" -> Partial
-        |"full" -> Full
-        |"colored" -> Colored
-        |_ -> raise Tools.BadStringFormat
-
 (* Tests if ce is a well-formed colored element. This is the case if and only if the number
  * of input colors is the same as the arity of the underlying element of ce. *)
 let is_colored_element operad ce =
@@ -53,21 +44,6 @@ let get_element ce =
 let in_color ce i =
     assert ((1 <= i) && (i <= List.length ce.in_colors));
     List.nth ce.in_colors (i - 1)
-
-(* Returns the colored element represented by the string str where element_from_string is a
- * map returning an underlying element from a string. Raises Tools.BadStringFormat if
- * str does not encode a colored element. For instance, "a | 1 * 2 ; * 0 0 | b a" encodes a
- * colored  2-multi-pattern with a as output color and b a as input colors. *)
-let colored_element_from_string element_from_string str =
-    let tokens = String.split_on_char '|' str in
-    match tokens with
-        |[str_output_color; str_object; str_input_colors] ->
-            let str_output_color' = Str.global_replace
-                (Str.regexp_string " ") "" str_output_color in
-            let str_input_colors' = Tools.list_from_string Fun.id ' ' str_input_colors in
-            let x = element_from_string str_object in
-            create_colored_element str_output_color' x str_input_colors'
-        |_ -> raise Tools.BadStringFormat
 
 (* Returns a string representing the colored element ce, where element_to_string is a map
  * sending any underlying object to a string representing it. *)

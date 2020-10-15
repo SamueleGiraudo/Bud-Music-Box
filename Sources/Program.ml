@@ -12,7 +12,7 @@ type instruction =
     |Write of multi_pattern_name * file_name
     |Play of multi_pattern_name
     |SetScale of Scale.scale
-    |SetRoot of int
+    |SetRoot of Context.midi_note
     |SetTempo of int
     |SetSounds of int list
     |MultiPattern of multi_pattern_name * MultiPattern.multi_pattern
@@ -48,7 +48,7 @@ type state = {
     colored_multi_patterns : (string * MultiPattern.colored_multi_pattern) list;
 }
 
-exception ExecutionError
+exception ExecutionError of string
 
 (* Returns the default midi sound (Acoustic Grand Piano). *)
 let default_midi_sound = 0
@@ -189,10 +189,10 @@ let execute_instruction instr st =
         |Write (mpat_name, file_name) -> begin
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let ok = create_files st (Option.get mpat) file_name in
             if not ok then
-                raise ExecutionError;
+                raise (ExecutionError "Error in file creations.");
             Printf.printf "%s The files %s has been generated." output_mark file_name;
             print_newline ();
             st
@@ -200,17 +200,19 @@ let execute_instruction instr st =
         |Play mpat_name -> begin
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let ok = play_phrase st (Option.get mpat) in
             if not ok then
-                raise ExecutionError;
+                raise (ExecutionError "Error in playing.");
             Printf.printf "%s Phrase played." output_mark;
             print_newline ();
             st
         end
         |SetScale scale -> begin
+            if not (Scale.is_scale scale) then
+                raise (ExecutionError "This is not a scale.");
             if not ((Scale.nb_steps_by_octave scale) = 12) then
-                raise ExecutionError;
+                raise (ExecutionError "This is not a 12-TET scale");
             let st' = {st with context = Context.set_scale st.context scale} in
             Printf.printf "%s Scale set to %s." output_mark (Scale.to_string scale);
             print_newline ();
@@ -218,7 +220,7 @@ let execute_instruction instr st =
         end
         |SetRoot midi_note -> begin
             if not ((0 <= midi_note) && (midi_note < 128)) then
-                raise ExecutionError;
+                raise (ExecutionError "This is not a MIDI note.");
             let st' = {st with context = Context.set_root st.context midi_note} in
             Printf.printf "%s Root note set to %d." output_mark midi_note;
             print_newline ();
@@ -226,7 +228,7 @@ let execute_instruction instr st =
         end
         |SetTempo tempo -> begin
             if not (tempo >= 1) then
-                raise ExecutionError;
+                raise (ExecutionError "This is not a valid tempo.");
             let st' = {st with context = Context.set_tempo st.context tempo} in
             Printf.printf "%s Tempo set to %d." output_mark tempo;
             print_newline ();
@@ -234,7 +236,7 @@ let execute_instruction instr st =
         end
         |SetSounds midi_sounds -> begin
             if midi_sounds |> List.exists (fun s -> s < 0 || s > 127) then
-                raise ExecutionError;
+                raise (ExecutionError "These MIDI sounds are not correct.");
             let st' = {st with midi_sounds = midi_sounds} in
             Printf.printf "%s MIDI sounds set" output_mark;
             print_newline ();
@@ -242,7 +244,7 @@ let execute_instruction instr st =
         end
         |MultiPattern (name, mpat) -> begin
             if not (is_name name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let st' = add_multi_pattern st name mpat in
             Printf.printf "%s Multi-pattern added." output_mark;
             print_newline ();
@@ -250,10 +252,10 @@ let execute_instruction instr st =
         end
         |Transpose (res_name, mpat_name, k) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let res = MultiPattern.transpose (Option.get mpat) k in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Transposition computed." output_mark;
@@ -262,10 +264,10 @@ let execute_instruction instr st =
         end
         |Mirror (res_name, mpat_name) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let res = MultiPattern.mirror (Option.get mpat) in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Mirror computed." output_mark;
@@ -274,17 +276,17 @@ let execute_instruction instr st =
         end
         |Concatenate (res_name, mpat_names_lst) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             if mpat_names_lst = [] then
-                raise ExecutionError;
+                raise (ExecutionError "Empty list of multi-patterns.");
             let mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
             if mpat_lst |> List.exists Option.is_none then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let mpat_lst' = mpat_lst |> List.map Option.get in
             let m = MultiPattern.multiplicity (List.hd mpat_lst') in
             if mpat_lst' |> List.exists (fun mpat -> MultiPattern.multiplicity mpat <> m)
                     then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multiplicity of multi-patterns.");
             let res = MultiPattern.concat mpat_lst' in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Concatenation computed." output_mark;
@@ -293,12 +295,12 @@ let execute_instruction instr st =
         end
         |Repeat (res_name, mpat_name, k) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if k < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad number of repetitions.");
             let res = MultiPattern.repeat (Option.get mpat) k in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Repetition computed." output_mark;
@@ -307,15 +309,15 @@ let execute_instruction instr st =
         end
         |Transform (res_name, mpat_name, dilatation, mul_lst) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if dilatation < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad dilatation.");
             let m = MultiPattern.multiplicity (Option.get mpat) in
             if List.length mul_lst <> m then
-                raise ExecutionError;
+                raise (ExecutionError "Bad number of coefficients.");
             let res = MultiPattern.transform dilatation mul_lst (Option.get mpat) in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Transformation computed." output_mark;
@@ -324,18 +326,18 @@ let execute_instruction instr st =
         end
         |PartialCompose (res_name, mpat_name_1, pos, mpat_name_2) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let mpat_1 = multi_pattern_with_name st mpat_name_1 in
             if Option.is_none mpat_1 then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let mpat_2 = multi_pattern_with_name st mpat_name_2 in
             if Option.is_none mpat_2 then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get mpat_1)
                     <> MultiPattern.multiplicity (Option.get mpat_2) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multiplicity of multi-patterns.\n");
             if pos < 1 || pos > MultiPattern.arity (Option.get mpat_1) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad partial composition position.");
             let res = MultiPattern.partial_composition
                 (Option.get mpat_1) pos (Option.get mpat_2) in
             let st' = add_multi_pattern st res_name res in
@@ -345,18 +347,18 @@ let execute_instruction instr st =
         end
         |FullCompose (res_name, mpat_name, mpat_names_lst) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
             if mpat_lst |> List.exists Option.is_none then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let mpat_lst' = mpat_lst |> List.map Option.get in
             let m = MultiPattern.multiplicity (List.hd mpat_lst') in
             if mpat_lst' |> List.exists (fun mpat -> MultiPattern.multiplicity mpat <> m)
                     then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multiplicity of multi-patterns.\n");
             let res = MultiPattern.full_composition (Option.get mpat) mpat_lst' in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Full composition computed." output_mark;
@@ -365,16 +367,16 @@ let execute_instruction instr st =
         end
         |BinarilyCompose (res_name, mpat_name_1, mpat_name_2) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let mpat_1 = multi_pattern_with_name st mpat_name_1 in
             if Option.is_none mpat_1 then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             let mpat_2 = multi_pattern_with_name st mpat_name_2 in
             if Option.is_none mpat_2 then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get mpat_1)
                     <> MultiPattern.multiplicity (Option.get mpat_2) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multiplicity of multi-patterns.\n");
             let res = MultiPattern.binary_composition
                 (Option.get mpat_1) (Option.get mpat_2) in
             let st' = add_multi_pattern st res_name res in
@@ -384,12 +386,12 @@ let execute_instruction instr st =
         end
         |Colorize (res_name, mpat_name, out_color, in_colors) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if List.length in_colors <> (MultiPattern.arity (Option.get mpat)) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad number of input colors.");
             let cpat = BudGrammar.create_colored_element out_color (Option.get mpat)
                 in_colors in
             let st' = add_colored_multi_pattern st res_name cpat in
@@ -399,15 +401,15 @@ let execute_instruction instr st =
         end
         |Generate (res_name, shape, size, color, cpat_names_lst) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             if size < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad size for the generation.");
             if not (is_name color) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad color name.");
             let cpat_lst = cpat_names_lst |> List.map (colored_multi_pattern_with_name st)
             in
             if cpat_lst |> List.exists Option.is_none then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown colored multi-pattern name.");
             let cpat_lst' = cpat_lst |> List.map Option.get in
             let m = MultiPattern.multiplicity (BudGrammar.get_element (List.hd cpat_lst'))
             in
@@ -415,7 +417,7 @@ let execute_instruction instr st =
                     (fun cpat ->
                         MultiPattern.multiplicity (BudGrammar.get_element cpat) <> m)
                     then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multiplicity of colored multi-patterns.\n");
             let res = Generation.from_colored_multi_patterns
                 (Generation.create_parameters size shape)
                 color
@@ -427,16 +429,16 @@ let execute_instruction instr st =
         end
         |Temporize (res_name, shape, size, pat_name, max_delay) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             if size < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad size for the generation.");
             let pat = multi_pattern_with_name st pat_name in
             if Option.is_none pat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get pat) <> 1 then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             if max_delay < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad max delay.");
             let res = Generation.temporization
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1)
@@ -448,23 +450,23 @@ let execute_instruction instr st =
         end
         |Rhythmize (res_name, shape, size, pat_name, rpat_name) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             if size < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad size for the generation.");
             let pat = multi_pattern_with_name st pat_name in
             if Option.is_none pat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get pat) <> 1 then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             let rpat = multi_pattern_with_name st rpat_name in
             if Option.is_none rpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get rpat) <> 1 then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             if MultiPattern.pattern (Option.get rpat) 1 |> Pattern.extract_degrees
                     |> List.exists
                     (fun d -> d <> 0) then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have 0 degrees.");
             let res = Generation.rhythmization
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1)
@@ -476,22 +478,22 @@ let execute_instruction instr st =
         end
         |Harmonize (res_name, shape, size, pat_name, dpat_name) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             if size < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad size for the generation.");
             let pat = multi_pattern_with_name st pat_name in
             if Option.is_none pat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get pat) <> 1 then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             let dpat = multi_pattern_with_name st dpat_name in
             if Option.is_none dpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get dpat) <> 1 then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             if MultiPattern.length (Option.get dpat) <> MultiPattern.arity (Option.get dpat)
                     then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have no rests.");
             let res = Generation.harmonization
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1)
@@ -503,22 +505,22 @@ let execute_instruction instr st =
         end
         |Arpeggiate (res_name, shape, size, pat_name, dpat_name) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             if size < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad size for the generation.");
             let pat = multi_pattern_with_name st pat_name in
             if Option.is_none pat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get pat) <> 1 then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             let dpat = multi_pattern_with_name st dpat_name in
             if Option.is_none dpat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get dpat) <> 1 then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             if MultiPattern.length (Option.get dpat) <> MultiPattern.arity (Option.get dpat)
                     then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have no rests.");
             let res = Generation.arpeggiation
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1)
@@ -530,14 +532,14 @@ let execute_instruction instr st =
         end
         |Mobiusate (res_name, shape, size, pat_name) -> begin
             if not (is_name res_name) then
-                raise ExecutionError;
+                raise (ExecutionError "Bad multi-pattern name.");
             if size < 0 then
-                raise ExecutionError;
+                raise (ExecutionError "Bad size for the generation.");
             let pat = multi_pattern_with_name st pat_name in
             if Option.is_none pat then
-                raise ExecutionError;
+                raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get pat) <> 1 then
-                raise ExecutionError;
+                raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             let res = Generation.mobiusation
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1) in
@@ -548,7 +550,10 @@ let execute_instruction instr st =
         end
 
 let execute prgm =
-    prgm |> List.fold_left
-        (fun res instr -> execute_instruction instr res)
-        initial_state
+    try
+        prgm |> List.fold_left
+            (fun res instr -> execute_instruction instr res)
+            initial_state
+    with
+        |ExecutionError msg -> raise (Tools.ExecutionError msg)
 

@@ -1,6 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020, apr. 2020, may 2020
+ * oct. 2020
  *)
 
 (* A multi-pattern is a nonempty list of patterns such that all its patterns have the same
@@ -35,26 +36,6 @@ let empty m =
 let to_string mpat =
     assert (is_multi_pattern mpat);
     Tools.list_to_string Pattern.to_string " ; " mpat
-
-(* Returns the multi-pattern encoded by the string str. For instance, "* 1 * 2 ; * * 0 -1"
- * is a 2-multi-pattern. Raises Tools.BadStringFormat if str does no encode a
- * multi-pattern and raises Tools.BadValue if str encodes a list of patterns which does not
- * form a multi-pattern. *)
-let from_string str =
-    let len = String.length str in
-    let is_empty = Tools.interval 0 (len - 1) |> List.for_all
-        (fun i -> let a = String.get str i in a = ';' || a = ' ') in
-    if is_empty then
-        let m = Tools.interval 0 (len - 1) |> List.fold_left
-            (fun res i -> if String.get str i = ';' then 1 + res else res)
-            1 in
-        empty m
-    else
-        let mpat = Tools.list_from_string Pattern.from_string ';' str in
-        if is_multi_pattern mpat then
-            mpat
-        else
-            raise Tools.BadValue
 
 (* Returns the m-multi-pattern consisting in m voices of the unit pattern. *)
 let one m =

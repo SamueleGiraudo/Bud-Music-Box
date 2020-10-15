@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020,
- * apr. 2020, may 2020
+ * apr. 2020, may 2020, oct. 2020
  *)
 
 (* A pattern is a list of atoms. There is no condition: all lists are valid patterns, even
@@ -14,12 +14,6 @@ let to_string pat =
         ""
     else
         Tools.list_to_string Atom.to_string " " pat
-
-(* Returns the pattern encoded by the string str. Raises Tools.BadStringFormat if str does
- * no encode a pattern. For instance, "* 1 * * * 2 -1 8 * 12 0" encodes a pattern, where the
- * "*" are rests. Each beat or rest must be separated by at least one space.  *)
-let from_string str =
-    Tools.list_from_string Atom.from_string ' ' str
 
 (* Returns the empty pattern. *)
 let empty =
@@ -40,10 +34,12 @@ let beat deg duration =
     assert (duration >= 1);
     (Atom.Beat deg) :: (rest (duration - 1))
 
+(*
 (* Returns the pattern obtained by concatenating the patterns of the list of patterns
  * pattern_lst. *)
 let concat pattern_lst =
     List.concat pattern_lst
+*)
 
 (* Returns the arity of the pattern pat. This is the number of beats of the pattern. *)
 let arity pat =
@@ -75,7 +71,7 @@ let rec partial_composition pat_1 i pat_2 =
         |(Atom.Beat d) :: pat_1', 1 ->
             let pat_2' = pat_2 |> List.map (fun a -> Atom.incr a d) in
             List.append pat_2' pat_1'
-        |Atom.Rest :: pat_1', i -> Rest :: (partial_composition pat_1' i pat_2)
+        |Atom.Rest :: pat_1', i -> Atom.Rest :: (partial_composition pat_1' i pat_2)
         |(Atom.Beat d) :: pat_1', i ->
             (Atom.Beat d) :: (partial_composition pat_1' (i - 1) pat_2)
         |[], _ -> []
@@ -84,27 +80,26 @@ let rec partial_composition pat_1 i pat_2 =
  * dilatation rests and by multiplying each degree by mul. *)
 let transform dilatation mul pat =
     assert (dilatation >= 0);
-    pat |> List.map
-        (fun a ->
-            match a with
-                |Atom.Rest -> List.init dilatation (fun _ -> Atom.Rest)
-                |Atom.Beat d -> [Atom.Beat (d * mul)])
-        |> List.flatten
+    let rest_seq = rest dilatation in
+    let action a =
+        match a with
+            |Atom.Rest -> rest_seq
+            |Atom.Beat d -> [Atom.Beat (d * mul)]
+    in
+    pat |> List.map action |> List.flatten
 
 (* Returns the mirror image of the pattern pat. *)
 let mirror pat =
     List.rev pat
 
-(* Returns the operad of patterns. *)
-let operad =
-    Operad.create arity partial_composition one
-
 (* Returns the pattern obtained by repeating k times the pattern pat. *)
 let repeat pat k =
     assert (k >= 0);
-    let pat' = List.init k (fun _ -> Atom.Beat 0) in
-    let pat_lst = List.init k (fun _ -> pat) in
-    Operad.full_composition operad pat' pat_lst
+    List.init k (fun _ -> pat) |> List.flatten
+
+(* Returns the operad of patterns. *)
+let operad =
+    Operad.create arity partial_composition one
 
 (* Returns the pattern obtained by transposing by k degrees the pattern pat. *)
 let transpose pat k =

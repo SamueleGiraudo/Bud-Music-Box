@@ -6,13 +6,8 @@
 (* An exception raised in functions called with wrong arguments. *)
 exception BadValue
 
-(* An exception raised in function taking at input strings to convert them when these
- * string have a wrong format. *)
-exception BadStringFormat
-
 exception SyntaxError of string
-exception ArgumentError of string
-exception Error of string
+exception ExecutionError of string
 
 (* Tests if the integer value x is different from 0.*)
 let int_to_bool x =
@@ -45,22 +40,6 @@ let partial_composition_lists lst_1 i lst_2 =
         lst_2 ;
         list_factor lst_1 i ((List.length lst_1) - i)]
 
-(* Returns the index of the i-th element of the list lst satisfying the predicate pred.
- * Raises Not_found when there is no such element in lst. *)
-let rec index_ith_occurrence lst pred i =
-    match lst with
-        |[] -> raise Not_found
-        |x :: _ when (pred x) && i = 1 -> 0
-        |x :: lst' when pred x -> 1 + (index_ith_occurrence lst' pred (i - 1))
-        |_ :: lst' -> 1 + (index_ith_occurrence lst' pred i)
-
-(* Returns the positions of the elements of the list lst that satisfy the predicate pred. *)
-let positions_satisfying pred lst =
-    let lst' = List.combine (interval 0 ((List.length lst) - 1)) lst in
-    lst' |> List.fold_left
-        (fun res (i, x) -> if pred x then i :: res else res)
-        []
-
 (* Returns the number of elements a starting the list lst. *)
 let rec length_start lst a =
     match lst with
@@ -75,24 +54,6 @@ let pick_random lst =
  * each element to a string representing it, and sep is a separating string. *)
 let list_to_string element_to_string sep lst =
     lst |> List.map element_to_string |> String.concat sep
-
-(* Returns the list made of the elements separated by the char sep in the string str, where
- * string_to_element is a map constructing an element from a string. Raises an
- * exception from the map string_to_element if a string has a wrong format. *)
-let list_from_string string_to_element sep str =
-    let tokens = String.split_on_char sep str |> List.filter (fun str -> str <> "") in
-    tokens |> List.map string_to_element
-
-(* Returns the string obtained by suppressing the first character of the string s. *)
-let remove_first_char s =
-    assert (s <> "");
-    String.sub s 1 ((String.length s) - 1)
-
-(* Returns the version of the string s obtained by remove spaces, tabs, and newline
- * characters. *)
-let remove_blank_characters s =
-    let preprocess = Str.split (Str.regexp "[ \t\n]+") s in
-    String.concat "" preprocess
 
 (* Tests if the current execution environment admits the string arg as argument. *)
 let has_argument arg =
@@ -121,10 +82,6 @@ let unexpected_character_error c =
 let unclosed_comment_error () =
     raise (SyntaxError "unclosed comment")
 
-let argument_error name index_arg msg =
-    let str = Printf.sprintf "the arg. %d of [%s] %s" index_arg name msg in
-    raise (ArgumentError str)
-
 let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
     let position lexbuf =
         let pos = lexbuf.Lexing.lex_curr_p in
@@ -138,15 +95,7 @@ let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
     with
         |SyntaxError msg -> begin
             let str = Printf.sprintf "Syntax error in %s: %s \n" (position lexbuf) msg in
-            raise (Error str)
-        end
-        |ArgumentError msg -> begin
-            let str = Printf.sprintf "Argument error in %s: %s\n" (position lexbuf) msg in
-            raise (Error str)
-        end
-        |_ -> begin
-            let str = Printf.sprintf "Error in %s\n" (position lexbuf) in
-            raise (Error str)
+            raise (SyntaxError str)
         end
 
 let value_from_file_path parser_axiom lexer_axiom path =
@@ -167,8 +116,12 @@ let interpret_file_path path parser_axiom lexer_axiom execute error_test =
             Printf.printf "End of execution.\n"
         end
     with
-        |Error msg -> begin
+        |SyntaxError msg -> begin
             Printf.printf "Errors:\n";
+            Printf.printf "%s\n" msg
+        end
+        |ExecutionError msg -> begin
+            Printf.printf "Execution errors:\n";
             Printf.printf "%s\n" msg
         end
 

@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, may. 2020
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, may. 2020, oct. 2020
  *)
 
 (* An atom is an indivisible element of a musical pattern. It can be a rest or a beat
@@ -15,18 +15,6 @@ let to_string a =
     match a with
         |Rest -> "*"
         |Beat d -> string_of_int d
-
-(* Returns the atom encoded by the string str. Raises Tools.BadStringFormat if str does not
- * encode an atom. For instance, "*" encodes a rest and "6" encodes the beat having 6 as
- * degree.  *)
-let from_string str =
-    if str = "*" then
-        Rest
-    else
-        try
-            Beat (int_of_string str)
-        with
-            |Failure _ -> raise Tools.BadStringFormat
 
 (* Tests if the atom a is a rest. *)
 let is_rest a =

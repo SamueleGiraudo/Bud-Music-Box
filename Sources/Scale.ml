@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2020
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2020, oct. 2020
  *)
 
 (* A degree is a (possibly negative) integer. *)
@@ -17,40 +17,14 @@ let is_scale lst =
     else
         lst |> List.for_all (fun x -> x >= 1)
 
-(* Some scales. *)
+(* The harmonic minor scale. *)
 let minor_harmonic = [2; 1; 2; 2; 1; 3; 1]
-
-let minor_pentatonic = [3; 2; 2; 3; 2]
-
-let blues = [3; 2; 1; 1; 3; 2]
-
-let major_natural = [2; 2; 1; 2; 2; 2; 1]
-
-let minor_natural = [2; 1; 2; 2; 1; 2; 2]
-
-let phrygian_dominant = [1; 3; 1; 2; 1; 2; 2]
-
-let hirajoshi = [2; 1; 4; 1; 4]
-
-let insen = [1; 4; 2; 3; 2]
-
-let ryukyu = [4; 1; 2; 4; 1]
 
 (* Returns the string representing the scale scale. For instance, the minor pentatonic scale
  * is represented by "3 2 2 3 2". *)
 let to_string scale =
     assert (is_scale scale);
     Tools.list_to_string string_of_int " " scale
-
-(* Returns the scale encoded by the string str. Raises Tools.BadStringFormat if str does not
- * encode a scale. Raises Tools.BadValue if str encodes an integer list which is not a
- * scale. For instance, "3 2 2 3 2" encodes the minor pentatonic scale. *)
-let from_string str =
-    let lst = Tools.list_from_string int_of_string ' ' str in
-    if not (is_scale lst) then
-        raise Tools.BadValue
-    else
-        lst
 
 (* Returns the number of steps by octave in the scale scale. *)
 let nb_steps_by_octave scale =

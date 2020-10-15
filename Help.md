@@ -28,17 +28,6 @@ this multi-pattern lasts $7$ amounts of time.
 
 ### Control instructions
 
-#### Help
-`help`
-
-+ Prints the help.
-
-
-#### Quit
-`quit`
-
-+ Quits the application.
-
 
 #### Display information
 `show`
