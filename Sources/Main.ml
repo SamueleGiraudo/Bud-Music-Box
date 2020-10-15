@@ -4,8 +4,6 @@
  * apr. 2020, may 2020, oct. 2020
  *)
 
-open Program
-
 let name = "Bud Music Box"
 (* let version = "0.01"
  * let version = "0.10"
@@ -76,6 +74,29 @@ else if has_argument "-f" then begin
         let path = Option.get path in
         Printf.printf "Interpretation of %s...\n" path;
         let _ = Interpreter.interpret_file path in ()
+    end
+end
+else if Tools.has_argument "-ff" then begin
+    let path = Tools.next_argument "-ff" in
+    if Option.is_none path then begin
+        print_string "Error: a path must follow the -f argument.\n";
+        exit 1
+    end
+    else begin
+        let path = Option.get path in
+        if not (Sys.file_exists path) then begin
+            Printf.printf "Error: there is no file %s.\n" path;
+            exit 1
+        end
+        else begin
+            Tools.interpret_file_path
+                path
+                Parser.program
+                Lexer.read
+                Program.execute
+                (fun _ -> true);
+            exit 0
+        end
     end
 end
 else

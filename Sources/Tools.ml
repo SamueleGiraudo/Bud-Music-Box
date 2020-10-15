@@ -94,6 +94,20 @@ let remove_blank_characters s =
     let preprocess = Str.split (Str.regexp "[ \t\n]+") s in
     String.concat "" preprocess
 
+(* Tests if the current execution environment admits the string arg as argument. *)
+let has_argument arg =
+    Array.mem arg Sys.argv
+
+(* Returns an option of the argument following the argument arg of the current execution
+ * environment. Returns None if arg is not an argument or if there is no argument following
+ * it. *)
+let next_argument arg =
+    let len = Array.length Sys.argv in
+    let tmp = List.init (len - 1) Fun.id |> List.find_opt (fun i -> Sys.argv.(i) = arg) in
+    match tmp with
+        |None -> None
+        |Some i -> if i + 1 < len then Some Sys.argv.(i + 1) else None
+
 let next_line lexbuf =
     let pos = lexbuf.Lexing.lex_curr_p in
     lexbuf.Lexing.lex_curr_p <-
@@ -140,4 +154,21 @@ let value_from_file_path parser_axiom lexer_axiom path =
     let lexbuf = Lexing.from_channel (open_in path) in
     lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
     parse_lexer_buffer parser_axiom lexer_axiom lexbuf
+
+let interpret_file_path path parser_axiom lexer_axiom execute error_test =
+    try
+        let t = value_from_file_path parser_axiom lexer_axiom path in
+        if not (error_test t) then
+            Printf.printf "There are errors in the program.\n"
+        else begin
+            Printf.printf "The program as no errors.\n";
+            Printf.printf "Execution...\n";
+            execute t;
+            Printf.printf "End of execution.\n"
+        end
+    with
+        |Error msg -> begin
+            Printf.printf "Errors:\n";
+            Printf.printf "%s\n" msg
+        end
 

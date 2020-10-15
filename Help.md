@@ -203,7 +203,7 @@ this multi-pattern lasts $7$ amounts of time.
 + `CPAT_1 ... CPAT_n` is a list of names of colored multi-patterns.
 + Bounds `NAME` to a pattern randomly generated from the inputted colored patterns, with the
   specified size, the specified generation shape, and the specified initial color. This uses
-  bug generating systems and random generation algorithms.
+  bud generating systems and random generation algorithms.
 
 
 ### Specific random transformation of $1$-multi-patterns

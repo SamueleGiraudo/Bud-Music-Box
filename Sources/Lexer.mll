@@ -9,81 +9,49 @@ let plain_character = letter | digits
 
 let name = letter plain_character*
 let integer = '-'? digits+
-let pos_float = integer '.' digits+
 
 rule read = parse
     |' ' |'\t'
         {read lexbuf}
     |'\n'
         {Tools.next_line lexbuf; read lexbuf}
-    |'('
-        {Parser.PAR_L}
-    |')'
-        {Parser.PAR_R}
-    |'.'
-        {Parser.POINT}
-    |':'
-        {Parser.COLON}
-    |'<'
-        {Parser.LT}
-    |'>'
-        {Parser.GT}
+    |';'
+        {Parser.SEMICOLON}
     |'*'
         {Parser.STAR}
-    |'#'
-        {Parser.SHARP}
-    |'@' integer
-        {Parser.AT_INTEGER (int_of_string (ExtLib.String.lchop (Lexing.lexeme lexbuf)))}
-    |'@' name
-        {Parser.AT_LABEL (ExtLib.String.lchop (Lexing.lexeme lexbuf))}
-    |"@@"
-        {Parser.AT_AT}
-    |'='
-        {Parser.EQUALS}
-    |'\''
-        {Parser.PRIME}
-    |','
-        {Parser.COMMA}
-    |"begin"
-        {Parser.BEGIN}
-    |"end"
-        {Parser.END}
-    |"repeat"
-        {Parser.REPEAT}
-    |"reverse"
-        {Parser.REVERSE}
-    |"complement"
-        {Parser.COMPLEMENT}
-    |"let"
-        {Parser.LET}
-    |"put"
-        {Parser.PUT}
-    |"in"
-        {Parser.IN}
-    |"layout"
-        {Parser.LAYOUT}
-    |"root"
-        {Parser.ROOT}
-    |"time"
-        {Parser.TIME}
-    |"duration"
-        {Parser.DURATION}
-    |"synthesizer"
-        {Parser.SYNTHESIZER}
-    |"effect"
-        {Parser.EFFECT}
-    |"scale"
-        {Parser.SCALE}
-    |"delay"
-        {Parser.DELAY}
-    |"clip"
-        {Parser.CLIP}
-    |"tremolo"
-        {Parser.TREMOLO}
+    |"help"
+        {Parser.HELP}
+    |"quit"
+        {Parser.QUIT}
+    |"show"
+        {Parser.SHOW}
+    |"write"
+        {Parser.WRITE}
+    |"play"
+        {Parser.PLAY}
+    |"set_scale"
+        {Parser.SET_SCALE}
+    |"set_root"
+        {Parser.SET_ROOT}
+    |"set_tempo"
+        {Parser.SET_TEMPO}
+    |"set_sounds"
+        {Parser.SET_SOUNDS}
+    |"multi_pattern"
+        {Parser.MULTI_PATTERN}
+    |"transpose"
+        {Parser.TRANSPOSE}
+    |"mirror"
+        {Parser.MIRROR}
+    |"concatenate"
+        {Parser.CONCATENATE}
+
+
+
+
+
     |integer
         {Parser.INTEGER (int_of_string (Lexing.lexeme lexbuf))}
-    |pos_float
-        {Parser.POS_FLOAT (float_of_string (Lexing.lexeme lexbuf))}
     |name
         {Parser.NAME (Lexing.lexeme lexbuf)}
     |'{'
