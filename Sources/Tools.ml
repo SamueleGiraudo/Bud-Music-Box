@@ -6,9 +6,6 @@
 (* An exception raised in functions called with wrong arguments. *)
 exception BadValue
 
-exception SyntaxError of string
-exception ExecutionError of string
-
 (* Tests if the integer value x is different from 0.*)
 let int_to_bool x =
     if x = 0 then
@@ -68,60 +65,4 @@ let next_argument arg =
     match tmp with
         |None -> None
         |Some i -> if i + 1 < len then Some Sys.argv.(i + 1) else None
-
-let next_line lexbuf =
-    let pos = lexbuf.Lexing.lex_curr_p in
-    lexbuf.Lexing.lex_curr_p <-
-        {pos with
-            Lexing.pos_bol = lexbuf.Lexing.lex_curr_pos;
-            Lexing.pos_lnum = pos.Lexing.pos_lnum + 1}
-
-let unexpected_character_error c =
-    raise (SyntaxError (Printf.sprintf "unexpected character %c" c))
-
-let unclosed_comment_error () =
-    raise (SyntaxError "unclosed comment")
-
-let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
-    let position lexbuf =
-        let pos = lexbuf.Lexing.lex_curr_p in
-        Printf.sprintf "file %s, line %d, column %d"
-            pos.Lexing.pos_fname
-            pos.Lexing.pos_lnum
-            (pos.Lexing.pos_cnum - pos.Lexing.pos_bol + 1)
-    in
-    try
-        parser_axiom lexer_axiom lexbuf
-    with
-        |SyntaxError msg -> begin
-            let str = Printf.sprintf "Syntax error in %s: %s \n" (position lexbuf) msg in
-            raise (SyntaxError str)
-        end
-
-let value_from_file_path parser_axiom lexer_axiom path =
-    assert (Sys.file_exists path);
-    let lexbuf = Lexing.from_channel (open_in path) in
-    lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
-    parse_lexer_buffer parser_axiom lexer_axiom lexbuf
-
-let interpret_file_path path parser_axiom lexer_axiom execute error_test =
-    try
-        let t = value_from_file_path parser_axiom lexer_axiom path in
-        if not (error_test t) then
-            Printf.printf "There are errors in the program.\n"
-        else begin
-            Printf.printf "The program as no errors.\n";
-            Printf.printf "Execution...\n";
-            execute t;
-            Printf.printf "End of execution.\n"
-        end
-    with
-        |SyntaxError msg -> begin
-            Printf.printf "Errors:\n";
-            Printf.printf "%s\n" msg
-        end
-        |ExecutionError msg -> begin
-            Printf.printf "Execution errors:\n";
-            Printf.printf "%s\n" msg
-        end
 

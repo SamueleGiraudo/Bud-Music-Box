@@ -75,7 +75,7 @@ else if Tools.has_argument "-f" then begin
             exit 1
         end
         else begin
-            Tools.interpret_file_path
+            Lexer.interpret_file_path
                 path
                 Parser.program
                 Lexer.read

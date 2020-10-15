@@ -550,10 +550,7 @@ let execute_instruction instr st =
         end
 
 let execute prgm =
-    try
-        prgm |> List.fold_left
-            (fun res instr -> execute_instruction instr res)
-            initial_state
-    with
-        |ExecutionError msg -> raise (Tools.ExecutionError msg)
+    prgm |> List.fold_left
+        (fun res instr -> execute_instruction instr res)
+        initial_state
 

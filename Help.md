@@ -38,7 +38,7 @@ this multi-pattern lasts $7$ amounts of time.
 #### Write the associated files of a multi-pattern 
 `write FILE_NAME PAT`
 
-+ `FILE_NAME` is a path to a non-existing file.
++ `FILE_NAME` is a path to a non-existing file without extension.
 + `PAT` is the name of a multi-pattern.
 + Creates the ABC file, postscript file, and MIDI file for the musical phrase encoded by the
   multi-pattern `PAT`, with the underlying context of scale, root note, tempo, and MIDI
