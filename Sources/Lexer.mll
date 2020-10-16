@@ -5,8 +5,18 @@
 
 {
 
+(* An exception raised when a syntax error is encountered. *)
 exception SyntaxError of string
 
+(* Raise SyntaxError with information about the unexpected character c. *)
+let unexpected_character_error c =
+    raise (SyntaxError (Printf.sprintf "unexpected character %c" c))
+
+(* Raise SyntaxError with information about an unclosed comment. *)
+let unclosed_comment_error () =
+    raise (SyntaxError "unclosed comment")
+
+(* Modifies the buffer lexbuf so that it contains the next line. *)
 let next_line lexbuf =
     let pos = lexbuf.Lexing.lex_curr_p in
     lexbuf.Lexing.lex_curr_p <-
@@ -14,12 +24,7 @@ let next_line lexbuf =
             Lexing.pos_bol = lexbuf.Lexing.lex_curr_pos;
             Lexing.pos_lnum = pos.Lexing.pos_lnum + 1}
 
-let unexpected_character_error c =
-    raise (SyntaxError (Printf.sprintf "unexpected character %c" c))
-
-let unclosed_comment_error () =
-    raise (SyntaxError "unclosed comment")
-
+(* Returns a string giving information about the position contained in the buffer lexbuf. *)
 let position lexbuf =
     let pos = lexbuf.Lexing.lex_curr_p in
     Printf.sprintf "file %s, line %d, column %d"
@@ -27,6 +32,8 @@ let position lexbuf =
         pos.Lexing.pos_lnum
         (pos.Lexing.pos_cnum - pos.Lexing.pos_bol + 1)
 
+(* Returns the value computed by the parser parser_axiom, with the lexer lexer_axiom, and
+ * with the buffer lexbuf. *)
 let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
     try
         parser_axiom lexer_axiom lexbuf
@@ -39,21 +46,26 @@ let parse_lexer_buffer parser_axiom lexer_axiom lexbuf =
             let str = Printf.sprintf "Syntax error in %s\n" (position lexbuf) in
             raise (SyntaxError str)
 
+(* Returns the value contained in the file at path path, interpreted with the parser
+ * parser_axiom, and with the lexer lexer_axiom. *)
 let value_from_file_path parser_axiom lexer_axiom path =
     assert (Sys.file_exists path);
     let lexbuf = Lexing.from_channel (open_in path) in
     lexbuf.Lexing.lex_curr_p <- {lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = path};
     parse_lexer_buffer parser_axiom lexer_axiom lexbuf
 
+(* Executes the file at path path, interpreted with the parser parser_axiom, with the lexer
+ * lexer_axiom, the map execute to execute it, and the map error_test to check if it
+ * contains static errors. *)
 let interpret_file_path path parser_axiom lexer_axiom execute error_test =
     try
-        let t = value_from_file_path parser_axiom lexer_axiom path in
-        if not (error_test t) then
+        let x = value_from_file_path parser_axiom lexer_axiom path in
+        if not (error_test x) then
             Printf.printf "There are errors in the program.\n"
         else begin
             Printf.printf "The program as no errors.\n";
             Printf.printf "Execution...\n";
-            execute t;
+            execute x;
             Printf.printf "End of execution.\n"
         end
     with

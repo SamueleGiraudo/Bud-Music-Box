@@ -3,10 +3,16 @@
  * Modifications: oct. 2020
  *)
 
+(* Names for files. *)
 type file_name = string
+
+(* Names for multi-patterns. *)
 type multi_pattern_name = string
+
+(* Names for colored multi-patterns. *)
 type colored_multi_pattern_name = string
 
+(* All the possible program instructions. *)
 type instruction =
     |Show
     |Write of multi_pattern_name * file_name
@@ -39,8 +45,10 @@ type instruction =
     |Mobiusate of multi_pattern_name * BudGrammar.generation_shape * int
         * multi_pattern_name
 
+(* A program is a list of instructions. *)
 type program = instruction list
 
+(* The state is the internal memory during the execution of a program. *)
 type state = {
     context : Context.context;
     midi_sounds : int list;
@@ -48,6 +56,7 @@ type state = {
     colored_multi_patterns : (string * MultiPattern.colored_multi_pattern) list;
 }
 
+(* Exception raised when a dynamic error is encountered. *)
 exception ExecutionError of string
 
 (* Returns the default midi sound (Acoustic Grand Piano). *)
@@ -62,6 +71,7 @@ let path_results = "Results"
 (* The prefix of all the generated temporary result files. *)
 let prefix_result = "Phrase_"
 
+(* The symbol to print before printed information. *)
 let output_mark =
     ">>"
 
@@ -549,8 +559,8 @@ let execute_instruction instr st =
             st'
         end
 
+(* Executes the program prgm and returns its final state. If some errors are encountered
+ * during the execution, ExecutionError is raised. *)
 let execute prgm =
-    prgm |> List.fold_left
-        (fun res instr -> execute_instruction instr res)
-        initial_state
+    prgm |> List.fold_left (fun res instr -> execute_instruction instr res) initial_state
 

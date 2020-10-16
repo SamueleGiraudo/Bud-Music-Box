@@ -7,6 +7,8 @@ Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 
 
 ## Versions
++ `1.001` (2020-10-16)
+    + Improved parsing and error messages.
 + `0.1111` (2020-05-20)
     + Improved efficiency of partial composition of patterns.
     + The patterns forming a multi-pattern can now have different arities.
@@ -122,7 +124,7 @@ these patterns.
 + About the operad of patterns:
     + S. Giraudo.
       Generation of musical pattern through operads.
-      Preprint, 2020.
+      To appear in [JIM 2020](https://jim2020.sciencesconf.org/).
 
     + S. Giraudo.
       The music box operad: random generation of musical phrases from patterns.

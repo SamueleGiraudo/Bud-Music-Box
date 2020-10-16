@@ -9,8 +9,9 @@ let name = "Bud Music Box"
  * let version = "0.10"
  * let version = "0.11"
  * let version = "0.111"
-*)
 let version = "0.1111"
+*)
+let version = "1.001"
 let author = "Samuele Giraudo"
 let email = "samuele.giraudo@u-pem.fr"
 
