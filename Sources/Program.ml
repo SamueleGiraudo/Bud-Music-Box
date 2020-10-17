@@ -255,6 +255,8 @@ let execute_instruction instr st =
         |MultiPattern (name, mpat) -> begin
             if not (is_name name) then
                 raise (ExecutionError "Bad multi-pattern name.");
+            if not (MultiPattern.is_multi_pattern mpat) then
+                raise (ExecutionError "Bad multi-pattern.");
             let st' = add_multi_pattern st name mpat in
             Printf.printf "%s Multi-pattern added." output_mark;
             print_newline ();
