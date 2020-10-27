@@ -160,13 +160,16 @@ let create_files st mpat file_name =
         else
             List.append st.midi_sounds (List.init diff_m (fun _ -> default_midi_sound))
         in
-        let str_abc = ABCNotation.complete_abc_string st.context midi_sounds mpat in
-        let file_abc = open_out file_name_abc in
-        Printf.fprintf file_abc "%s\n" str_abc;
-        close_out file_abc;
-        ignore (Sys.command ("abcm2ps " ^ file_name_abc ^ " -O " ^ file_name_ps));
-        ignore (Sys.command ("abc2midi " ^ file_name_abc ^ " -o " ^ file_name_mid));
-        true
+        try
+            let str_abc = ABCNotation.complete_abc_string st.context midi_sounds mpat in
+            let file_abc = open_out file_name_abc in
+            Printf.fprintf file_abc "%s\n" str_abc;
+            close_out file_abc;
+            ignore (Sys.command ("abcm2ps " ^ file_name_abc ^ " -O " ^ file_name_ps));
+            ignore (Sys.command ("abc2midi " ^ file_name_abc ^ " -o " ^ file_name_mid));
+            true
+        with
+            |Tools.BadValue -> false
     end
 
 (* Play the phrase from the state st. Returns true if the playing is possible and false
