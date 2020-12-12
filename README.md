@@ -124,7 +124,7 @@ these patterns.
 + About the operad of patterns:
     + S. Giraudo.
       Generation of musical pattern through operads.
-      [Journées d'informatique musicale 2020](https://jim2020.sciencesconf.org/).
+      [Journées d'informatique musicale](https://jim2020.sciencesconf.org/), 2020.
 
     + S. Giraudo.
       The music box operad: random generation of musical phrases from patterns.
