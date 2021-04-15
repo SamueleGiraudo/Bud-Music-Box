@@ -37,6 +37,7 @@ let get_degree a =
 
 (* Returns the atom obtained from the atom a by incrementing it by k if it is a beat. When a
  * is a rest, a is returned. *)
+(* TODO: remove. *)
 let incr a k =
     match a with
         |Rest -> Rest
@@ -44,8 +45,21 @@ let incr a k =
 
 (* Returns the atom obtained from the atom a by multiplying it by k if it is a beat. When a
  * is a rest, a is returned. *)
+(* TODO: remove. *)
 let mul a k =
     match a with
         |Rest -> Rest
         |Beat d -> Beat (d * k)
+
+let product dm a1 a2 =
+    match a1, a2 with
+        |Rest, Rest -> Rest
+        |Rest, Beat _ -> Rest
+        |Beat _, Rest -> Rest
+        |Beat d1, Beat d2 -> Beat (DegreeMonoid.product dm d1 d2)
+
+let map f a =
+    match a with
+        |Rest -> Rest
+        |Beat d -> Beat (f d)
 

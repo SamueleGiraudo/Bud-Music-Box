@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020, apr. 2020, may 2020
- * oct. 2020
+ * oct. 2020, apr. 2021
  *)
 
 (* A multi-pattern is a nonempty list of patterns such that all its patterns have the same
@@ -18,19 +18,15 @@ let is_multi_pattern lst =
     if lst = [] then
         false
     else
-        let len = Pattern.length (List.hd lst) in
-        lst |> List.for_all (fun p -> Pattern.length p = len)
+        let len = Pattern.length (List.hd lst) and ar = Pattern.arity (List.hd lst) in
+        lst |> List.for_all (fun p -> Pattern.length p = len && Pattern.arity p = ar)
 
-(* Returns the m-multi-pattern obtained by stacking the pattern pat with m copies of
- * itself. *)
+(* Returns the multi-pattern of multiplicity m obtained by stacking the pattern pat with m
+ * copies of itself. *)
 let from_pattern pat m =
+    assert (is_valid pat);
     assert (m >= 1);
     List.init m (fun _ -> pat)
-
-(* Returns the m-multi-pattern consisting in m voices of the empty pattern. *)
-let empty m =
-    assert (m >= 1);
-    from_pattern Pattern.empty m
 
 (* Returns a string representing the multi-pattern mpat. *)
 let to_string mpat =
@@ -42,12 +38,10 @@ let one m =
     assert (m >= 1);
     List.init m (fun _ -> Pattern.one)
 
-(* Returns the arity of the multi-pattern p. This is the minimal arity among its
- * patterns. *)
+(* Returns the arity of the multi-pattern mpat. *)
 let arity mpat =
     assert (is_multi_pattern mpat);
-    List.tl mpat |> List.map Pattern.arity
-        |> List.fold_left min (Pattern.arity (List.hd mpat))
+    Pattern.arity (List.hd mpat)
 
 (* Returns the length of the multi-pattern mpat. *)
 let length mpat =
@@ -75,15 +69,35 @@ let partial_composition mpat_1 i mpat_2 =
     let pairs = List.combine mpat_1 mpat_2 in
     pairs |> List.map (fun (seq_1, seq_2) -> Pattern.partial_composition seq_1 i seq_2)
 
+let partial_composition_ dm mpat_1 i mpat_2 =
+    assert (is_multi_pattern mpat_1);
+    assert (is_multi_pattern mpat_2);
+    assert ((multiplicity mpat_1) = (multiplicity mpat_2));
+    assert ((1 <= i) && (i <= (arity mpat_1)));
+    let pairs = List.combine mpat_1 mpat_2 in
+    pairs |> List.map (fun (seq_1, seq_2) -> Pattern.partial_composition_ dm seq_1 i seq_2)
+
 (* Returns the pattern obtained by replacing each rest of the multi-pattern mpat by a
  * sequence of mul rests and by multiplying each degree by mul. *)
 let transform dilatation mul_lst mpat =
+    assert (is_multi_pattern mpat);
     assert (dilatation >= 0);
     assert ((multiplicity mpat) = List.length mul_lst);
     List.map2 (fun mul pat -> Pattern.transform dilatation mul pat) mul_lst mpat
 
+(* new *)
+let dilatation coeff mpat =
+    assert (is_multi_pattern mpat);
+    assert (coeff >= 0);
+    mpat |> List.map (Pattern.dilatation coeff)
+
+let map f mpat =
+    assert (is_multi_pattern mpat);
+    mpat |> List.map (Pattern.map f)
+
 (* Returns the mirror image of the multi-pattern mpat. *)
 let mirror mpat =
+    assert (is_multi_pattern mpat);
     mpat |> List.map Pattern.mirror
 
 (* Returns the m-multi-pattern, where m is the arity of the degree pattern deg_pattern
