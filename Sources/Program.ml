@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: oct. 2020
- * Modifications: oct. 2020
+ * Modifications: oct. 2020, apr. 2021
  *)
 
 (* Names for files. *)
@@ -21,6 +21,9 @@ type instruction =
     |SetRoot of Context.midi_note
     |SetTempo of int
     |SetSounds of int list
+    |SetMonoidAddInt
+    |SetMonoidCyclic of int
+    |SetMonoidMax of int
     |MultiPattern of multi_pattern_name * MultiPattern.multi_pattern
     |Transpose of multi_pattern_name * multi_pattern_name * int
     |Mirror of multi_pattern_name * multi_pattern_name
@@ -52,8 +55,9 @@ type program = instruction list
 type state = {
     context : Context.context;
     midi_sounds : int list;
+    degree_monoid : DegreeMonoid.degree_monoid;
     multi_patterns : (string * MultiPattern.multi_pattern) list;
-    colored_multi_patterns : (string * MultiPattern.colored_multi_pattern) list;
+    colored_multi_patterns : (string * MultiPattern.colored_multi_pattern) list
 }
 
 (* Exception raised when a dynamic error is encountered. *)
@@ -79,6 +83,7 @@ let output_mark =
 let initial_state =
     {context = Context.create Scale.minor_harmonic 57 192;
     midi_sounds = [];
+    degree_monoid = DegreeMonoid.add_int;
     multi_patterns = [];
     colored_multi_patterns = []}
 
@@ -252,6 +257,28 @@ let execute_instruction instr st =
                 raise (ExecutionError "These MIDI sounds are not correct.");
             let st' = {st with midi_sounds = midi_sounds} in
             Printf.printf "%s MIDI sounds set" output_mark;
+            print_newline ();
+            st'
+        end
+        |SetMonoidAddInt -> begin
+            let st' = {st with degree_monoid = DegreeMonoid.add_int} in
+            Printf.printf "%s Degree monoid set to the additive monoid." output_mark;
+            print_newline ();
+            st'
+        end
+        |SetMonoidCyclic k -> begin
+            if k <= 0 then
+                raise (ExecutionError "The order of the cyclic monoid is not correct.");
+            let st' = {st with degree_monoid = DegreeMonoid.cyclic k} in
+            Printf.printf "%s Degree monoid set to the cyclic monoid of order %d."
+                output_mark k;
+            print_newline ();
+            st'
+        end
+        |SetMonoidMax z -> begin
+            let st' = {st with degree_monoid = DegreeMonoid.max z} in
+            Printf.printf "%s Degree monoid set to the max monoid with %d as unit."
+                output_mark z;
             print_newline ();
             st'
         end

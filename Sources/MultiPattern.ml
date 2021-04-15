@@ -24,7 +24,7 @@ let is_multi_pattern lst =
 (* Returns the multi-pattern of multiplicity m obtained by stacking the pattern pat with m
  * copies of itself. *)
 let from_pattern pat m =
-    assert (is_valid pat);
+    assert (Pattern.is_valid pat);
     assert (m >= 1);
     List.init m (fun _ -> pat)
 
