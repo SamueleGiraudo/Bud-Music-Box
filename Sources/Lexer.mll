@@ -104,6 +104,14 @@ rule read = parse
         {Parser.SET_TEMPO}
     |"set_sounds"
         {Parser.SET_SOUNDS}
+    |"set_monoid"
+        {Parser.SET_MONOID}
+    |"add_int"
+        {Parser.ADD_INT}
+    |"cyclic"
+        {Parser.CYCLIC}
+    |"max"
+        {Parser.MAX}
     |"multi_pattern"
         {Parser.MULTI_PATTERN}
     (*
@@ -112,12 +120,10 @@ rule read = parse
     *)
     |"mirror"
         {Parser.MIRROR}
-    (*
     |"concatenate"
         {Parser.CONCATENATE}
     |"repeat"
         {Parser.REPEAT}
-    *)
     (*
     |"transform"
         {Parser.TRANSFORM}
@@ -138,6 +144,7 @@ rule read = parse
         {Parser.FULL}
     |"colored"
         {Parser.COLORED}
+    (*
     |"temporize"
         {Parser.TEMPORIZE}
     |"rhythmize"
@@ -148,6 +155,7 @@ rule read = parse
         {Parser.ARPEGGIATE}
     |"mobiusate"
         {Parser.MOBIUSATE}
+    *)
     |integer
         {Parser.INTEGER (int_of_string (Lexing.lexeme lexbuf))}
     |name

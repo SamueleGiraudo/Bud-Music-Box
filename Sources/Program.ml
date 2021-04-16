@@ -33,9 +33,10 @@ type instruction =
     |Mirror of multi_pattern_name * multi_pattern_name
     (*
     |Transpose of multi_pattern_name * multi_pattern_name * int
+    *)
     |Concatenate of multi_pattern_name * (multi_pattern_name list)
     |Repeat of multi_pattern_name * multi_pattern_name * int
-    *)
+    |Stack of multi_pattern_name * (multi_pattern_name list)
     (*|Transform of multi_pattern_name * multi_pattern_name * int * (int list)*)
     |PartialCompose of multi_pattern_name * multi_pattern_name * int * multi_pattern_name
     |FullCompose of multi_pattern_name * multi_pattern_name * (multi_pattern_name list)
@@ -44,6 +45,7 @@ type instruction =
         * (BudGrammar.color list)
     |Generate of multi_pattern_name * BudGrammar.generation_shape * int * BudGrammar.color
         * (colored_multi_pattern_name list)
+    (*
     |Temporize of multi_pattern_name * BudGrammar.generation_shape * int
         * multi_pattern_name * int
     |Rhythmize of multi_pattern_name * BudGrammar.generation_shape * int
@@ -54,6 +56,7 @@ type instruction =
         * multi_pattern_name * multi_pattern_name
     |Mobiusate of multi_pattern_name * BudGrammar.generation_shape * int
         * multi_pattern_name
+    *)
 
 (* A program is a list of instructions. *)
 type program = instruction list
@@ -94,16 +97,30 @@ let initial_state =
     multi_patterns = [];
     colored_multi_patterns = []}
 
+let state_to_degree_monoid st =
+    match st.degree_monoid with
+        |AddInt -> DegreeMonoid.add_int
+        |Cyclic k -> DegreeMonoid.cyclic k
+        |Max z -> DegreeMonoid.max z
+
+let degree_monoid_to_string dg =
+    match dg with
+        |AddInt -> "Z"
+        |Cyclic k -> Printf.sprintf "Z_%d" k
+        |Max z -> Printf.sprintf "M_%d" z
+
 (* Returns a string representing the state st. *)
 (* TODO: write degree monoid. *)
 let state_to_string st =
     Printf.sprintf
         "# Context:\n%s\n\
          # MIDI sounds:\n%s\n\
+         # Monoid:\n%s\n\
          # Multi-patterns:\n%s\n\
          # Colored multi-patterns:\n%s"
         (Context.to_string st.context)
         ("    " ^ (Tools.list_to_string string_of_int " " st.midi_sounds))
+        ("    " ^ (degree_monoid_to_string st.degree_monoid))
         ("    " ^ (Tools.list_to_string
             (fun (name, mpat) ->
                 Printf.sprintf "%s = [multiplicity = %d, length = %d, arity = %d] %s"
@@ -120,12 +137,6 @@ let state_to_string st =
                     (BudGrammar.colored_element_to_string MultiPattern.to_string cpat))
             "\n    "
             st.colored_multi_patterns))
-
-let state_to_degree_monoid st =
-    match st.degree_monoid with
-        |AddInt -> DegreeMonoid.add_int
-        |Cyclic k -> DegreeMonoid.cyclic k
-        |Max z -> DegreeMonoid.max z
 
 (* Tests if str is a multi-pattern, a colored multi-pattern, or a color name. *)
 let is_name str =
@@ -332,7 +343,6 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
-        (*
         |Concatenate (res_name, mpat_names_lst) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -346,21 +356,19 @@ let execute_instruction instr st =
             if mpat_lst' |> List.exists (fun mpat -> MultiPattern.multiplicity mpat <> m)
                     then
                 raise (ExecutionError "Bad multiplicity of multi-patterns.");
-            let res = MultiPattern.concat mpat_lst' in
+            let res = MultiPattern.concatenate_list mpat_lst' in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Concatenation computed." output_mark;
             print_newline ();
             st'
         end
-        *)
-        (*
         |Repeat (res_name, mpat_name, k) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
                 raise (ExecutionError "Unknown multi-pattern name.");
-            if k < 0 then
+            if k <= 0 then
                 raise (ExecutionError "Bad number of repetitions.");
             let res = MultiPattern.repeat (Option.get mpat) k in
             let st' = add_multi_pattern st res_name res in
@@ -368,7 +376,32 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
-        *)
+
+        (* TODO *)
+        |Stack (res_name, mpat_names_lst) -> begin
+            if not (is_name res_name) then
+                raise (ExecutionError "Bad multi-pattern name.");
+            if mpat_names_lst = [] then
+                raise (ExecutionError "Empty list of multi-patterns.");
+            let mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
+            if mpat_lst |> List.exists Option.is_none then
+                raise (ExecutionError "Unknown multi-pattern name.");
+
+            let mpat_lst' = mpat_lst |> List.map Option.get in
+            let ar = MultiPattern.arity (List.hd mpat_lst')
+            and len = MultiPattern.length (List.hd mpat_lst') in
+            if mpat_lst' |> List.exists
+                (fun mpat ->
+                    MultiPattern.arity mpat <> ar || MultiPattern.length mpat <> len)
+                    then
+                raise (ExecutionError "Bad arity or length of multi-patterns.");
+            let res = MultiPattern.concatenate_list mpat_lst' in
+            let st' = add_multi_pattern st res_name res in
+            Printf.printf "%s Concatenation computed." output_mark;
+            print_newline ();
+            st'
+        end
+
         (*
         |Transform (res_name, mpat_name, dilatation, mul_lst) -> begin
             if not (is_name res_name) then
@@ -493,6 +526,7 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        (*
         |Temporize (res_name, shape, size, pat_name, max_delay) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -515,6 +549,8 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
+        (*
         |Rhythmize (res_name, shape, size, pat_name, rpat_name) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -544,6 +580,8 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
+        (*
         |Harmonize (res_name, shape, size, pat_name, dpat_name) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -572,6 +610,8 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
+        (*
         |Arpeggiate (res_name, shape, size, pat_name, dpat_name) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -600,6 +640,8 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
+        (*
         |Mobiusate (res_name, shape, size, pat_name) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -619,6 +661,7 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
 
 (* Executes the program prgm and returns its final state. If some errors are encountered
  * during the execution, ExecutionError is raised. *)

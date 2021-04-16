@@ -79,6 +79,7 @@ let map f pat =
 
 (* Returns the pattern obtained by replacing each rest of the pattern pat by a sequence of
  * coeff rests. *)
+(*
 let dilatation coeff pat =
     assert (is_valid pat);
     assert (coeff >= 0);
@@ -89,26 +90,19 @@ let dilatation coeff pat =
             |Atom.Beat _ -> [a]
     in
     pat |> List.map change |> List.flatten
+*)
 
 (* Returns the mirror image of the pattern pat. *)
 let mirror pat =
     assert (is_valid pat);
     List.rev pat
 
-(* Returns the pattern obtained by repeating k times the pattern pat. *)
-(*
-let repeat pat k =
-    assert (is_valid pat);
-    assert (k >= 1);
-    List.init k (fun _ -> pat) |> List.flatten
-*)
-
-(* Returns the pattern obtained by transposing by k degrees the pattern pat. *)
-(*
-let transpose pat k =
-    assert (is_valid pat);
-    map (fun d -> d + k) pat
-*)
+(* Returns the pattern obtained by concatenating the pattern pat_1 with the pattern
+ * pat_2. *)
+let concatenate pat_1 pat_2 =
+    assert (is_valid pat_1);
+    assert (is_valid pat_2);
+    List.append pat_1 pat_2
 
 (* Returns the operad of patterns on the degree monoid dm. *)
 let operad dm =

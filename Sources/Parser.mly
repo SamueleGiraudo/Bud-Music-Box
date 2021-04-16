@@ -13,11 +13,15 @@
 %token SET_ROOT
 %token SET_TEMPO
 %token SET_SOUNDS
+%token SET_MONOID
+%token ADD_INT
+%token CYCLIC
+%token MAX
 %token MULTI_PATTERN
 (*%token TRANSPOSE*)
 %token MIRROR
-(*%token CONCATENATE*)
-(*%token REPEAT*)
+%token CONCATENATE
+%token REPEAT
 (*%token TRANSFORM*)
 %token PARTIAL_COMPOSE
 %token FULL_COMPOSE
@@ -27,11 +31,13 @@
 %token PARTIAL
 %token FULL
 %token COLORED
+(*
 %token TEMPORIZE
 %token RHYTHMIZE
 %token HARMONIZE
 %token ARPEGGIATE
 %token MOBIUSATE
+*)
 
 %token <int> INTEGER
 %token <string> NAME
@@ -61,6 +67,12 @@ instruction:
         {Program.SetTempo tempo}
     |SET_SOUNDS midi_sounds=nonempty_list(INTEGER)
         {Program.SetSounds midi_sounds}
+    |SET_MONOID ADD_INT
+        {Program.SetMonoidAddInt}
+    |SET_MONOID CYCLIC k=INTEGER
+        {Program.SetMonoidCyclic k}
+    |SET_MONOID MAX z=INTEGER
+        {Program.SetMonoidMax z}
     |MULTI_PATTERN mpat_name=NAME mpat=multi_pattern
         {Program.MultiPattern (mpat_name, mpat)}
     (*
@@ -69,12 +81,10 @@ instruction:
     *)
     |MIRROR res_name=NAME mpat_name=NAME
         {Program.Mirror (res_name, mpat_name)}
-    (*
     |CONCATENATE res_name=NAME mpat_names_lst=nonempty_list(NAME)
         {Program.Concatenate (res_name, mpat_names_lst)}
     |REPEAT res_name=NAME mpat_name=NAME k=INTEGER
         {Program.Repeat (res_name, mpat_name, k)}
-    *)
     (*
     |TRANSFORM res_name=NAME mpat_name=NAME dilatation=INTEGER
             mul_lst=nonempty_list(INTEGER)
@@ -91,6 +101,7 @@ instruction:
     |GENERATE res_name=NAME shape=shape size=INTEGER color=NAME
             cpat_names_lst=nonempty_list(NAME)
         {Program.Generate (res_name, shape, size, color, cpat_names_lst)}
+    (*
     |TEMPORIZE res_name=NAME shape=shape size=INTEGER pat_name=NAME max_delay=INTEGER
         {Program.Temporize (res_name, shape, size, pat_name, max_delay)}
     |RHYTHMIZE res_name=NAME shape=shape size=INTEGER pat_name=NAME rpat_name=NAME
@@ -101,6 +112,7 @@ instruction:
         {Program.Arpeggiate (res_name, shape, size, pat_name, dpat_name)}
     |MOBIUSATE res_name=NAME shape=shape size=INTEGER pat_name=NAME
         {Program.Mobiusate (res_name, shape, size, pat_name)}
+    *)
 
 multi_pattern:
     |pat_lst=separated_nonempty_list(SEMICOLON, pattern)
