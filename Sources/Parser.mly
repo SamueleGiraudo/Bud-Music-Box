@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: oct. 2020
- * Modifications: oct. 2020
+ * Modifications: oct. 2020, apr. 2021
  *)
 
 %token SEMICOLON
@@ -14,14 +14,14 @@
 %token SET_TEMPO
 %token SET_SOUNDS
 %token MULTI_PATTERN
-%token TRANSPOSE
+(*%token TRANSPOSE*)
 %token MIRROR
-%token CONCATENATE
-%token REPEAT
-%token TRANSFORM
+(*%token CONCATENATE*)
+(*%token REPEAT*)
+(*%token TRANSFORM*)
 %token PARTIAL_COMPOSE
 %token FULL_COMPOSE
-%token BINARILY_COMPOSE
+%token HOMOGENEOUS_COMPOSE
 %token COLORIZE
 %token GENERATE
 %token PARTIAL
@@ -63,23 +63,29 @@ instruction:
         {Program.SetSounds midi_sounds}
     |MULTI_PATTERN mpat_name=NAME mpat=multi_pattern
         {Program.MultiPattern (mpat_name, mpat)}
+    (*
     |TRANSPOSE res_name=NAME mpat_name=NAME k=INTEGER
         {Program.Transpose (res_name, mpat_name, k)}
+    *)
     |MIRROR res_name=NAME mpat_name=NAME
         {Program.Mirror (res_name, mpat_name)}
+    (*
     |CONCATENATE res_name=NAME mpat_names_lst=nonempty_list(NAME)
         {Program.Concatenate (res_name, mpat_names_lst)}
     |REPEAT res_name=NAME mpat_name=NAME k=INTEGER
         {Program.Repeat (res_name, mpat_name, k)}
+    *)
+    (*
     |TRANSFORM res_name=NAME mpat_name=NAME dilatation=INTEGER
             mul_lst=nonempty_list(INTEGER)
         {Program.Transform (res_name, mpat_name, dilatation, mul_lst)}
+    *)
     |PARTIAL_COMPOSE res_name=NAME mpat_name_1=NAME pos=INTEGER mpat_name_2=NAME
         {Program.PartialCompose (res_name, mpat_name_1, pos, mpat_name_2)}
     |FULL_COMPOSE res_name=NAME mpat_name=NAME mpat_names_lst=nonempty_list(NAME)
         {Program.FullCompose (res_name, mpat_name, mpat_names_lst)}
-    |BINARILY_COMPOSE res_name=NAME mpat_name_1=NAME mpat_name_2=NAME
-        {Program.BinarilyCompose (res_name, mpat_name_1, mpat_name_2)}
+    |HOMOGENEOUS_COMPOSE res_name=NAME mpat_name_1=NAME mpat_name_2=NAME
+        {Program.HomogeneousCompose (res_name, mpat_name_1, mpat_name_2)}
     |COLORIZE res_name=NAME mpat_name=NAME out_color=NAME in_colors=nonempty_list(NAME)
         {Program.Colorize (res_name, mpat_name, out_color, in_colors)}
     |GENERATE res_name=NAME shape=shape size=INTEGER color=NAME

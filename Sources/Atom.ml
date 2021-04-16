@@ -35,22 +35,7 @@ let get_degree a =
         |Rest -> raise Tools.BadValue
         |Beat d -> d
 
-(* Returns the atom obtained from the atom a by incrementing it by k if it is a beat. When a
- * is a rest, a is returned. *)
-(* TODO: remove. *)
-let incr a k =
-    match a with
-        |Rest -> Rest
-        |Beat d -> Beat (d + k)
-
-(* Returns the atom obtained from the atom a by multiplying it by k if it is a beat. When a
- * is a rest, a is returned. *)
-(* TODO: remove. *)
-let mul a k =
-    match a with
-        |Rest -> Rest
-        |Beat d -> Beat (d * k)
-
+(* Returns the product of the atoms a1 and a2 w.r.t. the degree monoid dm. *)
 let product dm a1 a2 =
     match a1, a2 with
         |Rest, Rest -> Rest
@@ -58,6 +43,8 @@ let product dm a1 a2 =
         |Beat _, Rest -> Rest
         |Beat d1, Beat d2 -> Beat (DegreeMonoid.product dm d1 d2)
 
+(* Returns Rest if the atom a is a rest and otherwise returns the atom having as degree the
+ * image by f of the degree of a. *)
 let map f a =
     match a with
         |Rest -> Rest

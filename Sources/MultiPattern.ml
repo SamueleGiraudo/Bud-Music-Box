@@ -33,10 +33,10 @@ let to_string mpat =
     assert (is_multi_pattern mpat);
     Tools.list_to_string Pattern.to_string " ; " mpat
 
-(* Returns the m-multi-pattern consisting in m voices of the unit pattern. *)
-let one m =
+(* Returns the multi-pattern consisting in m voices of the unity pattern. *)
+let unity m =
     assert (m >= 1);
-    List.init m (fun _ -> Pattern.one)
+    List.init m (fun _ -> Pattern.unity)
 
 (* Returns the arity of the multi-pattern mpat. *)
 let arity mpat =
@@ -59,41 +59,37 @@ let pattern mpat i =
     assert ((1 <= i) && (i <= (multiplicity mpat)));
     List.nth mpat (i - 1)
 
-(* Returns the multi-pattern obtained by the partial composition of the multi-patterns
- * mpat_1 and mpat_2 at position i. *)
-let partial_composition mpat_1 i mpat_2 =
+(* Returns the multi-pattern obtained by stacking the two multi-patterns mpat_1 and mpat_2.
+ * They must have the same arity and the same length. *)
+let stack mpat_1 mpat_2 =
     assert (is_multi_pattern mpat_1);
     assert (is_multi_pattern mpat_2);
-    assert ((multiplicity mpat_1) = (multiplicity mpat_2));
-    assert ((1 <= i) && (i <= (arity mpat_1)));
-    let pairs = List.combine mpat_1 mpat_2 in
-    pairs |> List.map (fun (seq_1, seq_2) -> Pattern.partial_composition seq_1 i seq_2)
+    assert (arity mpat_1 = arity mpat_2);
+    assert (length mpat_1 = length mpat_2);
+    List.append mpat_1 mpat_2
 
-let partial_composition_ dm mpat_1 i mpat_2 =
+(* Returns the multi-pattern obtained by the partial composition of the multi-patterns
+ * mpat_1 and mpat_2 at position i w.r.t. the degree monoid dm. *)
+let partial_composition dm mpat_1 i mpat_2 =
     assert (is_multi_pattern mpat_1);
     assert (is_multi_pattern mpat_2);
     assert ((multiplicity mpat_1) = (multiplicity mpat_2));
     assert ((1 <= i) && (i <= (arity mpat_1)));
     let pairs = List.combine mpat_1 mpat_2 in
-    pairs |> List.map (fun (seq_1, seq_2) -> Pattern.partial_composition_ dm seq_1 i seq_2)
+    pairs |> List.map (fun (seq_1, seq_2) -> Pattern.partial_composition dm seq_1 i seq_2)
+
+(* Returns the multi-pattern obtained by replacing each degree of the multi-pattern pat by
+ * its image by the map f. *)
+let map f mpat =
+    assert (is_multi_pattern mpat);
+    mpat |> List.map (Pattern.map f)
 
 (* Returns the pattern obtained by replacing each rest of the multi-pattern mpat by a
- * sequence of mul rests and by multiplying each degree by mul. *)
-let transform dilatation mul_lst mpat =
-    assert (is_multi_pattern mpat);
-    assert (dilatation >= 0);
-    assert ((multiplicity mpat) = List.length mul_lst);
-    List.map2 (fun mul pat -> Pattern.transform dilatation mul pat) mul_lst mpat
-
-(* new *)
+ * sequence of coeff rests. *)
 let dilatation coeff mpat =
     assert (is_multi_pattern mpat);
     assert (coeff >= 0);
     mpat |> List.map (Pattern.dilatation coeff)
-
-let map f mpat =
-    assert (is_multi_pattern mpat);
-    mpat |> List.map (Pattern.map f)
 
 (* Returns the mirror image of the multi-pattern mpat. *)
 let mirror mpat =
@@ -121,50 +117,55 @@ let arpeggio deg_pattern =
     pairs |> List.map
         (fun (i, d) -> List.init len (fun j -> if j = i then d else Atom.Rest))
 
-(* Returns the operad of m-multi-patterns. *)
-let operad m =
+(* Returns the operad of multi-patterns of multiplicity m on the degree monoid dm. *)
+let operad dm m =
     assert (m >= 1);
-    Operad.create arity partial_composition (one m)
+    Operad.create arity (partial_composition dm) (unity m)
 
 (* Returns the multi-pattern obtained by the full composition of the multi-pattern mpat
- * with the multi-pattern of the list mpat_lst. *)
-let full_composition mpat mpat_lst =
+ * with the multi-pattern of the list mpat_lst w.r.t. the degree monoid dm. *)
+let full_composition dm mpat mpat_lst =
     assert (is_multi_pattern mpat);
     assert (mpat_lst |> List.for_all is_multi_pattern);
     assert (mpat_lst |> List.for_all
         (fun mpat' -> (multiplicity mpat) = (multiplicity mpat')));
     let m = multiplicity mpat in
-    Operad.full_composition (operad m) mpat mpat_lst
+    Operad.full_composition (operad dm m) mpat mpat_lst
 
 (* Returns the multi-pattern obtained by concatenating the multi-patterns of the list of
  * multi-patterns mpat_lst. *)
+(*
 let concat mpat_lst =
     let k = List.length mpat_lst in
     let m = multiplicity (List.hd mpat_lst) in
     let pat = List.init k (fun _ -> Atom.Beat 0) in
     let mpat = List.init m (fun _ -> pat) in
-    full_composition mpat mpat_lst
+    full_composition (DegreeMonoid.add_int) mpat mpat_lst
+*)
 
-(* Returns the multi-pattern obtained by the binary composition of the multi-pattern mpat_1
- * with the multi-pattern mpat_2. *)
-let binary_composition mpat_1 mpat_2 =
+(* Returns the multi-pattern obtained by the homogeneous composition of the multi-pattern
+ * mpat_1 with the multi-pattern mpat_2. *)
+let homogeneous_composition dm mpat_1 mpat_2 =
     assert (is_multi_pattern mpat_1);
     assert (is_multi_pattern mpat_2);
     assert ((multiplicity mpat_1) = (multiplicity mpat_2));
     let m = multiplicity mpat_1 in
-    Operad.binary_composition (operad m) mpat_1 mpat_2
+    Operad.binary_composition (operad dm m) mpat_1 mpat_2
 
 (* Returns the multi-pattern obtained by repeating k times the multi-pattern pmat. *)
+(*
 let repeat mpat k =
     assert (k >= 0);
     let m = multiplicity mpat in
     let mpat' = List.init m (fun _ -> List.init k (fun _ -> Atom.Beat 0)) in
     let mpat_lst = List.init k (fun _ -> mpat) in
-    full_composition mpat' mpat_lst
+    full_composition DegreeMonoid.add_int mpat' mpat_lst
+*)
 
 (* Returns the multi-pattern obtained by transposing by k degrees the multi-pattern mpat. *)
+(*
 let transpose mpat k =
-    let m = multiplicity mpat in
-    let mpat' = List.init m (fun _ -> [Atom.Beat k]) in
-    partial_composition mpat' 1 mpat
+    assert (is_multi_pattern mpat);
+    map (fun d -> d + k) mpat
+*)
 

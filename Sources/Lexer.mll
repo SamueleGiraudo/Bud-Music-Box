@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: oct. 2020
- * Modifications: oct. 2020
+ * Modifications: oct. 2020, apr. 2021
  *)
 
 {
@@ -106,22 +106,28 @@ rule read = parse
         {Parser.SET_SOUNDS}
     |"multi_pattern"
         {Parser.MULTI_PATTERN}
+    (*
     |"transpose"
         {Parser.TRANSPOSE}
+    *)
     |"mirror"
         {Parser.MIRROR}
+    (*
     |"concatenate"
         {Parser.CONCATENATE}
     |"repeat"
         {Parser.REPEAT}
+    *)
+    (*
     |"transform"
         {Parser.TRANSFORM}
+    *)
     |"partial_compose"
         {Parser.PARTIAL_COMPOSE}
     |"full_compose"
         {Parser.FULL_COMPOSE}
-    |"binarily_compose"
-        {Parser.BINARILY_COMPOSE}
+    |"homogeneous_compose"
+        {Parser.HOMOGENEOUS_COMPOSE}
     |"colorize"
         {Parser.COLORIZE}
     |"generate"

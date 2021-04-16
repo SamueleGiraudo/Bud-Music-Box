@@ -12,6 +12,11 @@ type multi_pattern_name = string
 (* Names for colored multi-patterns. *)
 type colored_multi_pattern_name = string
 
+type degree_monoid =
+    |AddInt
+    |Cyclic of int
+    |Max of int
+
 (* All the possible program instructions. *)
 type instruction =
     |Show
@@ -25,14 +30,16 @@ type instruction =
     |SetMonoidCyclic of int
     |SetMonoidMax of int
     |MultiPattern of multi_pattern_name * MultiPattern.multi_pattern
-    |Transpose of multi_pattern_name * multi_pattern_name * int
     |Mirror of multi_pattern_name * multi_pattern_name
+    (*
+    |Transpose of multi_pattern_name * multi_pattern_name * int
     |Concatenate of multi_pattern_name * (multi_pattern_name list)
     |Repeat of multi_pattern_name * multi_pattern_name * int
-    |Transform of multi_pattern_name * multi_pattern_name * int * (int list)
+    *)
+    (*|Transform of multi_pattern_name * multi_pattern_name * int * (int list)*)
     |PartialCompose of multi_pattern_name * multi_pattern_name * int * multi_pattern_name
     |FullCompose of multi_pattern_name * multi_pattern_name * (multi_pattern_name list)
-    |BinarilyCompose of multi_pattern_name * multi_pattern_name * multi_pattern_name
+    |HomogeneousCompose of multi_pattern_name * multi_pattern_name * multi_pattern_name
     |Colorize of colored_multi_pattern_name * multi_pattern_name * BudGrammar.color
         * (BudGrammar.color list)
     |Generate of multi_pattern_name * BudGrammar.generation_shape * int * BudGrammar.color
@@ -55,7 +62,7 @@ type program = instruction list
 type state = {
     context : Context.context;
     midi_sounds : int list;
-    degree_monoid : DegreeMonoid.degree_monoid;
+    degree_monoid : degree_monoid;
     multi_patterns : (string * MultiPattern.multi_pattern) list;
     colored_multi_patterns : (string * MultiPattern.colored_multi_pattern) list
 }
@@ -83,11 +90,12 @@ let output_mark =
 let initial_state =
     {context = Context.create Scale.minor_harmonic 57 192;
     midi_sounds = [];
-    degree_monoid = DegreeMonoid.add_int;
+    degree_monoid = AddInt;
     multi_patterns = [];
     colored_multi_patterns = []}
 
 (* Returns a string representing the state st. *)
+(* TODO: write degree monoid. *)
 let state_to_string st =
     Printf.sprintf
         "# Context:\n%s\n\
@@ -112,6 +120,12 @@ let state_to_string st =
                     (BudGrammar.colored_element_to_string MultiPattern.to_string cpat))
             "\n    "
             st.colored_multi_patterns))
+
+let state_to_degree_monoid st =
+    match st.degree_monoid with
+        |AddInt -> DegreeMonoid.add_int
+        |Cyclic k -> DegreeMonoid.cyclic k
+        |Max z -> DegreeMonoid.max z
 
 (* Tests if str is a multi-pattern, a colored multi-pattern, or a color name. *)
 let is_name str =
@@ -261,7 +275,7 @@ let execute_instruction instr st =
             st'
         end
         |SetMonoidAddInt -> begin
-            let st' = {st with degree_monoid = DegreeMonoid.add_int} in
+            let st' = {st with degree_monoid = AddInt} in
             Printf.printf "%s Degree monoid set to the additive monoid." output_mark;
             print_newline ();
             st'
@@ -269,14 +283,14 @@ let execute_instruction instr st =
         |SetMonoidCyclic k -> begin
             if k <= 0 then
                 raise (ExecutionError "The order of the cyclic monoid is not correct.");
-            let st' = {st with degree_monoid = DegreeMonoid.cyclic k} in
+            let st' = {st with degree_monoid = Cyclic k} in
             Printf.printf "%s Degree monoid set to the cyclic monoid of order %d."
                 output_mark k;
             print_newline ();
             st'
         end
         |SetMonoidMax z -> begin
-            let st' = {st with degree_monoid = DegreeMonoid.max z} in
+            let st' = {st with degree_monoid = Max z} in
             Printf.printf "%s Degree monoid set to the max monoid with %d as unit."
                 output_mark z;
             print_newline ();
@@ -292,6 +306,7 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        (*
         |Transpose (res_name, mpat_name, k) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -304,6 +319,7 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
         |Mirror (res_name, mpat_name) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -316,6 +332,7 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        (*
         |Concatenate (res_name, mpat_names_lst) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -335,6 +352,8 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
+        (*
         |Repeat (res_name, mpat_name, k) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -349,6 +368,8 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
+        (*
         |Transform (res_name, mpat_name, dilatation, mul_lst) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -366,6 +387,7 @@ let execute_instruction instr st =
             print_newline ();
             st'
         end
+        *)
         |PartialCompose (res_name, mpat_name_1, pos, mpat_name_2) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
@@ -380,7 +402,7 @@ let execute_instruction instr st =
                 raise (ExecutionError "Bad multiplicity of multi-patterns.\n");
             if pos < 1 || pos > MultiPattern.arity (Option.get mpat_1) then
                 raise (ExecutionError "Bad partial composition position.");
-            let res = MultiPattern.partial_composition
+            let res = MultiPattern.partial_composition (state_to_degree_monoid st)
                 (Option.get mpat_1) pos (Option.get mpat_2) in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Partial composition computed." output_mark;
@@ -401,13 +423,14 @@ let execute_instruction instr st =
             if mpat_lst' |> List.exists (fun mpat -> MultiPattern.multiplicity mpat <> m)
                     then
                 raise (ExecutionError "Bad multiplicity of multi-patterns.\n");
-            let res = MultiPattern.full_composition (Option.get mpat) mpat_lst' in
+            let res = MultiPattern.full_composition
+                (state_to_degree_monoid st) (Option.get mpat) mpat_lst' in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Full composition computed." output_mark;
             print_newline ();
             st'
         end
-        |BinarilyCompose (res_name, mpat_name_1, mpat_name_2) -> begin
+        |HomogeneousCompose (res_name, mpat_name_1, mpat_name_2) -> begin
             if not (is_name res_name) then
                 raise (ExecutionError "Bad multi-pattern name.");
             let mpat_1 = multi_pattern_with_name st mpat_name_1 in
@@ -419,8 +442,8 @@ let execute_instruction instr st =
             if MultiPattern.multiplicity (Option.get mpat_1)
                     <> MultiPattern.multiplicity (Option.get mpat_2) then
                 raise (ExecutionError "Bad multiplicity of multi-patterns.\n");
-            let res = MultiPattern.binary_composition
-                (Option.get mpat_1) (Option.get mpat_2) in
+            let res = MultiPattern.homogeneous_composition
+                (state_to_degree_monoid st) (Option.get mpat_1) (Option.get mpat_2) in
             let st' = add_multi_pattern st res_name res in
             Printf.printf "%s Binary composition computed." output_mark;
             print_newline ();
@@ -461,6 +484,7 @@ let execute_instruction instr st =
                     then
                 raise (ExecutionError "Bad multiplicity of colored multi-patterns.\n");
             let res = Generation.from_colored_multi_patterns
+                (state_to_degree_monoid st)
                 (Generation.create_parameters size shape)
                 color
                 cpat_lst' in
@@ -482,6 +506,7 @@ let execute_instruction instr st =
             if max_delay < 0 then
                 raise (ExecutionError "Bad max delay.");
             let res = Generation.temporization
+                (state_to_degree_monoid st)
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1)
                 max_delay in
@@ -505,11 +530,12 @@ let execute_instruction instr st =
                 raise (ExecutionError "Unknown multi-pattern name.");
             if MultiPattern.multiplicity (Option.get rpat) <> 1 then
                 raise (ExecutionError "This multi-pattern must have multiplicity 1.");
-            if MultiPattern.pattern (Option.get rpat) 1 |> Pattern.extract_degrees
+            if MultiPattern.pattern (Option.get rpat) 1 |> Pattern.degrees
                     |> List.exists
                     (fun d -> d <> 0) then
                 raise (ExecutionError "This multi-pattern must have 0 degrees.");
             let res = Generation.rhythmization
+                (state_to_degree_monoid st)
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1)
                 (MultiPattern.pattern (Option.get rpat) 1) in
@@ -537,6 +563,7 @@ let execute_instruction instr st =
                     then
                 raise (ExecutionError "This multi-pattern must have no rests.");
             let res = Generation.harmonization
+                (state_to_degree_monoid st)
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1)
                 (MultiPattern.pattern (Option.get dpat) 1) in
@@ -564,6 +591,7 @@ let execute_instruction instr st =
                     then
                 raise (ExecutionError "This multi-pattern must have no rests.");
             let res = Generation.arpeggiation
+                (state_to_degree_monoid st)
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1)
                 (MultiPattern.pattern (Option.get dpat) 1) in
@@ -583,6 +611,7 @@ let execute_instruction instr st =
             if MultiPattern.multiplicity (Option.get pat) <> 1 then
                 raise (ExecutionError "This multi-pattern must have multiplicity 1.");
             let res = Generation.mobiusation
+                (state_to_degree_monoid st)
                 (Generation.create_parameters size shape)
                 (MultiPattern.pattern (Option.get pat) 1) in
             let st' = add_multi_pattern st res_name res in

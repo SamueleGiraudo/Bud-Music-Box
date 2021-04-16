@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: dec. 2019
- * Modifications: dec. 2019, jan. 2020, apr. 2020
+ * Modifications: dec. 2019, jan. 2020, apr. 2020, apr. 2021
  *)
 
 (* A set of parameters for the pattern generation from bud grammars. *)
@@ -36,19 +36,19 @@ let shape param =
     param.shape
 
 (* Returns the element generated at random from the colored multi-patterns of the list
- * colored_multi-patterns with the generation parameters param. *)
-let from_colored_multi_patterns param initial_color colored_multi_patterns =
+ * colored multi-patterns with the generation parameters param. *)
+let from_colored_multi_patterns dm param initial_color colored_multi_patterns =
     assert (colored_multi_patterns <> []);
     let m = MultiPattern.multiplicity (BudGrammar.get_element
         (List.hd colored_multi_patterns)) in
     let budg = BudGrammar.create
-        (MultiPattern.operad m) colored_multi_patterns initial_color in
+        (MultiPattern.operad dm m) colored_multi_patterns initial_color in
     let res = BudGrammar.random_generator budg param.nb_steps param.shape in
     BudGrammar.get_element res
 
 (* Returns the element generated at random from the 1-pattern pattern together with the 
  * nonnegative integer max_delay and the generation parameters param. *)
-let temporization param pattern max_delay =
+let temporization dm param pattern max_delay =
     assert (max_delay >= 0);
     let n = Pattern.arity pattern in
     let in_colors = List.init n (fun _ -> transition_color_1) in
@@ -61,13 +61,14 @@ let temporization param pattern max_delay =
             let mpat = MultiPattern.from_pattern pat 1 in
             BudGrammar.create_colored_element transition_color_1 mpat [default_sink_color])
     in
-    from_colored_multi_patterns param default_initial_color (cpat_1 :: cpat_2 :: cpat_lst)
+    from_colored_multi_patterns
+        dm param default_initial_color (cpat_1 :: cpat_2 :: cpat_lst)
 
 (* Returns the element generated at random from the 1-pattern pattern together with the
  * 1-pattern rhythm consisting only in beats 0 and rests and the generation parameters
  * param. *)
-let rhythmization param pattern rhythm =
-    assert (Pattern.extract_degrees rhythm |> List.for_all (fun d -> d = 0));
+let rhythmization dm param pattern rhythm =
+    assert (Pattern.degrees rhythm |> List.for_all (fun d -> d = 0));
     let n = Pattern.arity pattern in
     let mpat = MultiPattern.from_pattern pattern 1 in
     let in_colors = List.init n (fun _ -> transition_color_1) in
@@ -76,11 +77,11 @@ let rhythmization param pattern rhythm =
     let mpat_3 = MultiPattern.from_pattern rhythm 1 in
     let in_colors' = List.init (Pattern.arity rhythm) (fun _ -> default_sink_color) in
     let cpat_3 = BudGrammar.create_colored_element transition_color_1 mpat_3 in_colors' in
-    from_colored_multi_patterns param default_initial_color [cpat_1; cpat_2; cpat_3]
+    from_colored_multi_patterns dm param default_initial_color [cpat_1; cpat_2; cpat_3]
 
 (* Returns the element generated at random from the 1-pattern pattern together with the
  * degree pattern deg_pattern and the generation parameters param. *)
-let harmonization param pattern deg_pattern =
+let harmonization dm param pattern deg_pattern =
     assert (deg_pattern <> []);
     assert (deg_pattern |> List.for_all Atom.is_beat);
     let m = List.length deg_pattern in
@@ -92,11 +93,11 @@ let harmonization param pattern deg_pattern =
     let mpat_3 = MultiPattern.chord deg_pattern in
     let cpat_3 = BudGrammar.create_colored_element
         transition_color_1 mpat_3 [default_sink_color] in
-    from_colored_multi_patterns param default_initial_color [cpat_1; cpat_2; cpat_3]
+    from_colored_multi_patterns dm param default_initial_color [cpat_1; cpat_2; cpat_3]
 
 (* Returns the element generated at random from the 1-pattern pattern together with the
  * degree list deg_lst and the generation parameters param. *)
-let arpeggiation param pattern deg_pattern =
+let arpeggiation dm param pattern deg_pattern =
     assert (deg_pattern <> []);
     assert (deg_pattern |> List.for_all Atom.is_beat);
     let m = List.length deg_pattern in
@@ -108,14 +109,14 @@ let arpeggiation param pattern deg_pattern =
     let mpat_3 = MultiPattern.arpeggio deg_pattern in
     let cpat_3 = BudGrammar.create_colored_element
         transition_color_1 mpat_3 [default_sink_color] in
-    from_colored_multi_patterns param default_initial_color [cpat_1; cpat_2; cpat_3]
+    from_colored_multi_patterns dm param default_initial_color [cpat_1; cpat_2; cpat_3]
 
 (* Returns the element generated at random from the 1-pattern pattern and the generation
  * parameters param. *)
-let mobiusation param pattern =
+let mobiusation dm param pattern =
     let pattern' = Pattern.mirror pattern in
     let mpat = [pattern; pattern'] in
     let in_colors = List.init (Pattern.arity pattern) (fun _ -> default_initial_color) in
     let cpat = BudGrammar.create_colored_element default_initial_color mpat in_colors in
-    from_colored_multi_patterns param default_initial_color [cpat]
+    from_colored_multi_patterns dm param default_initial_color [cpat]
 

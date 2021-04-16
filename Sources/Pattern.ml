@@ -15,8 +15,8 @@ let to_string pat =
     assert (is_valid pat);
     Tools.list_to_string Atom.to_string " " pat
 
-(* Returns the pattern consisting in one atom, having degree 0. *)
-let one =
+(* Returns the pattern consisting in unity atom, having degree 0. *)
+let unity =
     [Atom.Beat 0]
 
 (* Returns the pattern consisting in a sequence of duration rests. *)
@@ -24,7 +24,7 @@ let rest duration =
     assert (duration >= 1);
     List.init duration (fun _ -> Atom.Rest)
 
-(* Returns the pattern consisting in one atom of degree deg followed by duration - 1 rests.
+(* Returns the pattern consisting in an atom of degree deg followed by duration - 1 rests.
  * This is in fact a degree with duration as duration. *)
 let beat deg duration =
     assert (duration >= 1);
@@ -41,12 +41,12 @@ let length pat =
     List.length pat
 
 (* Returns the list of the degrees of the pattern pat. *)
-let extract_degrees pat =
+let degrees pat =
     assert (is_valid pat);
     pat |> List.filter Atom.is_beat |> List.map Atom.get_degree
 
 (* Returns the list of the durations of the beats of the pattern pat. *)
-let extract_durations pat =
+let durations pat =
     assert (is_valid pat);
     let rec aux lst =
         match lst with
@@ -57,23 +57,8 @@ let extract_durations pat =
     aux pat
 
 (* Returns the pattern obtained by the partial composition of the patterns pat_1 and pat_2
- * at position i. *)
-(* TODO: remove *)
-let rec partial_composition pat_1 i pat_2 =
-    assert (is_valid pat_1);
-    assert (is_valid pat_2);
-    assert ((1 <= i) && (i <= arity pat_1));
-    match pat_1, i with
-        |(Atom.Beat d) :: pat_1', 1 ->
-            let pat_2' = pat_2 |> List.map (fun a -> Atom.incr a d) in
-            List.append pat_2' pat_1'
-        |Atom.Rest :: pat_1', i -> Atom.Rest :: (partial_composition pat_1' i pat_2)
-        |(Atom.Beat d) :: pat_1', i ->
-            (Atom.Beat d) :: (partial_composition pat_1' (i - 1) pat_2)
-        |[], _ -> []
-
-(* new *)
-let rec partial_composition_ dm pat_1 i pat_2 =
+ * at position i w.r.t. the degree monoid dm. *)
+let rec partial_composition dm pat_1 i pat_2 =
     assert (is_valid pat_1);
     assert (is_valid pat_2);
     assert ((1 <= i) && (i <= arity pat_1));
@@ -81,25 +66,19 @@ let rec partial_composition_ dm pat_1 i pat_2 =
         |(Atom.Beat _) as a :: pat_1', 1 ->
             let pat_2' = pat_2 |> List.map (fun a' -> Atom.product dm a a') in
             List.append pat_2' pat_1'
-        |Atom.Rest :: pat_1', i -> Atom.Rest :: (partial_composition_ dm pat_1' i pat_2)
+        |Atom.Rest :: pat_1', i -> Atom.Rest :: (partial_composition dm pat_1' i pat_2)
         |(Atom.Beat d) :: pat_1', i ->
-            (Atom.Beat d) :: (partial_composition_ dm pat_1' (i - 1) pat_2)
+            (Atom.Beat d) :: (partial_composition dm pat_1' (i - 1) pat_2)
         |[], _ -> []
 
-(* Returns the pattern obtained by replacing each rest of the pattern pat by a sequence of
- * dilatation rests and by multiplying each degree by mul. *)
-let transform dilatation mul pat =
+(* Returns the pattern obtained by replacing each degree of the pattern pat by its image by
+ * the map f. *)
+let map f pat =
     assert (is_valid pat);
-    assert (dilatation >= 0);
-    let rest_seq = rest dilatation in
-    let action a =
-        match a with
-            |Atom.Rest -> rest_seq
-            |Atom.Beat d -> [Atom.Beat (d * mul)]
-    in
-    pat |> List.map action |> List.flatten
+    pat |> List.map (Atom.map f)
 
-(* new *)
+(* Returns the pattern obtained by replacing each rest of the pattern pat by a sequence of
+ * coeff rests. *)
 let dilatation coeff pat =
     assert (is_valid pat);
     assert (coeff >= 0);
@@ -117,32 +96,21 @@ let mirror pat =
     List.rev pat
 
 (* Returns the pattern obtained by repeating k times the pattern pat. *)
+(*
 let repeat pat k =
     assert (is_valid pat);
     assert (k >= 1);
     List.init k (fun _ -> pat) |> List.flatten
-
-(* Returns the operad of patterns. *)
-let operad =
-    Operad.create arity partial_composition one
-
-(* new *)
-let operad_ dm =
-    Operad.create arity (partial_composition_ dm) one
+*)
 
 (* Returns the pattern obtained by transposing by k degrees the pattern pat. *)
+(*
 let transpose pat k =
     assert (is_valid pat);
-    let pat' = [Atom.Beat k] in
-    partial_composition pat' 1 pat
+    map (fun d -> d + k) pat
+*)
 
-(* new *)
-let map f pat =
-    assert (is_valid pat);
-    let change a =
-        match a with
-            |Atom.Rest -> a
-            |Atom.Beat d -> Atom.Beat (f d)
-    in
-    pat |> List.map change
+(* Returns the operad of patterns on the degree monoid dm. *)
+let operad dm =
+    Operad.create arity (partial_composition dm) unity
 

@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: apr. 2021
  * Modifications: apr. 2021
-*)
+ *)
 
 (* A degree monoid is a monoid structure on degrees. Operads on (multi-)patterns are
  * parametrized by degree monoids. *)

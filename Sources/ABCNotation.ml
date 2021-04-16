@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2019
- * Modifications: aug. 2019, dec. 2019, jan. 2020
+ * Modifications: aug. 2019, dec. 2019, jan. 2020, apr. 2021
  *)
 
 (* Returns the abc notation of the MIDI note note. Raises Tools.BadValue if note is not
@@ -45,8 +45,7 @@ let pattern_to_abc_string context pat =
         else
             Printf.sprintf "z%d " l
     in
-    let deg_dur = List.combine (Pattern.extract_degrees pat)
-        (Pattern.extract_durations pat) in
+    let deg_dur = List.combine (Pattern.degrees pat) (Pattern.durations pat) in
     let str = deg_dur |> List.map
         (fun (deg, dur) ->
             let note = midi_to_abc_note (Context.degree_to_midi_note context deg) in
