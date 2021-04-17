@@ -18,12 +18,10 @@
 %token CYCLIC
 %token MAX
 %token MULTI_PATTERN
-(*%token TRANSPOSE*)
 %token MIRROR
 %token CONCATENATE
 %token REPEAT
 %token STACK
-(*%token TRANSFORM*)
 %token PARTIAL_COMPOSE
 %token FULL_COMPOSE
 %token HOMOGENEOUS_COMPOSE
@@ -31,14 +29,7 @@
 %token GENERATE
 %token PARTIAL
 %token FULL
-%token COLORED
-(*
-%token TEMPORIZE
-%token RHYTHMIZE
-%token HARMONIZE
-%token ARPEGGIATE
-%token MOBIUSATE
-*)
+%token HOMOGENEOUS
 
 %token <int> INTEGER
 %token <string> NAME
@@ -136,6 +127,6 @@ shape:
         {BudGrammar.Partial}
     |FULL
         {BudGrammar.Full}
-    |COLORED
-        {BudGrammar.Colored}
+    |HOMOGENEOUS
+        {BudGrammar.Homogeneous}
 

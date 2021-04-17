@@ -14,6 +14,7 @@ Copyright (C) 2019--2021 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
       cyclic monoids, avec `max` monoids).
     + Big simplification of the language: the built-in constructions `transpose`,
       `temporize`, `rhythmize`, `harmonize`, and `arpeggiate` have been supressed.
+    + The patterns forming a multi-pattern must have the same arity.
     + Improved parsing and error messages.
 + `1.001` (2020-10-16)
     + Improved parsing and error messages.

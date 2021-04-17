@@ -141,8 +141,8 @@ rule read = parse
         {Parser.PARTIAL}
     |"full"
         {Parser.FULL}
-    |"colored"
-        {Parser.COLORED}
+    |"homogeneous"
+        {Parser.HOMOGENEOUS}
     |integer
         {Parser.INTEGER (int_of_string (Lexing.lexeme lexbuf))}
     |name

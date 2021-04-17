@@ -25,7 +25,7 @@ type 'a bud_grammar = {
 type generation_shape =
     |Partial
     |Full
-    |Colored
+    |Homogeneous
 
 (* Tests if ce is a well-formed colored element. This is the case if and only if the number
  * of input colors is the same as the arity of the underlying element of ce. *)
@@ -137,7 +137,7 @@ let full_random_generator budg nb_iter =
  * the bug grammar budg after nb_iter iterations. This algorithm works by choosing at random
  * at each step a generator and performs to the right a colored composition with the element
  * generated at the previous step. *)
-let colored_random_generator budg nb_iter =
+let homogeneous_random_generator budg nb_iter =
     assert (nb_iter >= 0);
     Tools.interval 1 nb_iter |> List.fold_left
         (fun res _ ->
@@ -152,5 +152,5 @@ let random_generator budg nb_iter shape =
     match shape with
         |Partial -> partial_random_generator budg nb_iter
         |Full -> full_random_generator budg nb_iter
-        |Colored -> colored_random_generator budg nb_iter
+        |Homogeneous -> homogeneous_random_generator budg nb_iter
 
