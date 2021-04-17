@@ -1,5 +1,5 @@
 # Bud Music Box
-`8/\/\8'
+`8/\/\8`
 
 A tool to generate random music from short patterns using operads, colored operads, and bud
 generating systems.
@@ -44,6 +44,7 @@ over them, and to randomly generate some of them. Results can be converted to fi
 
 
 ### Main functionalities
+TO UPDATE
 1. [Multi-pattern creation](Examples/MultiPatternCreation.bmb)
 1. [Multi-pattern operations](Examples/MultiPatternOperations.bmb)
 1. [Setting the ambient scale, root, and tempo](Examples/ScaleRootTempo.bmb)
@@ -57,6 +58,7 @@ over them, and to randomly generate some of them. Results can be converted to fi
 
 
 ### Complete examples
+TO UPDATE
 + An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale, played on kotos.
 + An [example](Examples/CompleteHir2.bmb) on the Hirajoshi scale, played on voices.
 + An [example](Examples/CompleteMaj1.bmb) on the major natural scale.
@@ -78,18 +80,18 @@ This creates an executable `bmb`.
 
 
 ## Dependencies
-The following programs are needed and they are available for most of the Linux systems like
-Debian or Archlinux, after 2019.
+The following programs are needed:
 
-+ `ocaml` (Version `>= 4.06.0`.)
-+ `ocamlbuild`
-+ `ocaml-findlib`
++ `pkg-config`
++ `ocaml` (Version `>= 4.11.1`. An inferior but not too old version may be suitable.)
 + `opam`
-+ `extlib` (Available by `opam install extlib`. Do not forget to run `opam init` first.)
++ `ocamlbuild` (Available by `opam install ocamlbuild`.)
++ `ocamlfind` (Available by `opam install ocamlfind`.)
++ `extlib` (Available by `opam install extlib`.)
++ `menhir` (Available by `opam install graphics`.)
 + `abcmidi`
 + `abcm2ps`
 + `timidity`
-+ `rlwrap` (Optional.)
 
 
 ## User guide
