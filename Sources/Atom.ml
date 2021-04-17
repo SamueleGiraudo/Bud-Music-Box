@@ -3,6 +3,9 @@
  * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, may. 2020, oct. 2020
  *)
 
+(* An exception for errors in handling atoms. *)
+exception Error
+
 (* An atom is an indivisible element of a musical pattern. It can be a rest or a beat
  * attached with a degree. *)
 type atom =
@@ -28,12 +31,19 @@ let is_beat a =
         |Rest -> false
         |Beat _ -> true
 
-(* Returns the degree associated with the atom a. If a not a beat, the exception
- * Tools.BadValue is raised. *)
+(* Returns the degree associated with the atom a. If a not a beat, the exception Error is
+ * raised. *)
 let get_degree a =
     match a with
-        |Rest -> raise Tools.BadValue
+        |Rest -> raise Error
         |Beat d -> d
+
+(* Tests if the atom a is a rest or if it is a beat having a degree in the degree monoid
+ * dm. *)
+let is_on_degree_monoid dm a =
+    match a with
+        |Rest -> true
+        |Beat d -> DegreeMonoid.is_element dm d
 
 (* Returns the product of the atoms a1 and a2 w.r.t. the degree monoid dm. *)
 let product dm a1 a2 =

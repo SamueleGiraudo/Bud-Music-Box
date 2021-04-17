@@ -9,11 +9,11 @@
 %token SHOW
 %token WRITE
 %token PLAY
-%token SET_SCALE
-%token SET_ROOT
-%token SET_TEMPO
-%token SET_SOUNDS
-%token SET_MONOID
+%token SCALE
+%token ROOT
+%token TEMPO
+%token SOUNDS
+%token MONOID
 %token ADD_INT
 %token CYCLIC
 %token MAX
@@ -22,6 +22,7 @@
 %token MIRROR
 %token CONCATENATE
 %token REPEAT
+%token STACK
 (*%token TRANSFORM*)
 %token PARTIAL_COMPOSE
 %token FULL_COMPOSE
@@ -59,19 +60,19 @@ instruction:
         {Program.Write (mpat_name, file_name)}
     |PLAY mpat_name=NAME
         {Program.Play mpat_name}
-    |SET_SCALE scale=nonempty_list(INTEGER)
+    |SCALE scale=nonempty_list(INTEGER)
         {Program.SetScale scale}
-    |SET_ROOT midi_note=INTEGER
+    |ROOT midi_note=INTEGER
         {Program.SetRoot midi_note}
-    |SET_TEMPO tempo=INTEGER
+    |TEMPO tempo=INTEGER
         {Program.SetTempo tempo}
-    |SET_SOUNDS midi_sounds=nonempty_list(INTEGER)
+    |SOUNDS midi_sounds=nonempty_list(INTEGER)
         {Program.SetSounds midi_sounds}
-    |SET_MONOID ADD_INT
+    |MONOID ADD_INT
         {Program.SetMonoidAddInt}
-    |SET_MONOID CYCLIC k=INTEGER
+    |MONOID CYCLIC k=INTEGER
         {Program.SetMonoidCyclic k}
-    |SET_MONOID MAX z=INTEGER
+    |MONOID MAX z=INTEGER
         {Program.SetMonoidMax z}
     |MULTI_PATTERN mpat_name=NAME mpat=multi_pattern
         {Program.MultiPattern (mpat_name, mpat)}
@@ -85,6 +86,8 @@ instruction:
         {Program.Concatenate (res_name, mpat_names_lst)}
     |REPEAT res_name=NAME mpat_name=NAME k=INTEGER
         {Program.Repeat (res_name, mpat_name, k)}
+    |STACK res_name=NAME mpat_names_lst=nonempty_list(NAME)
+        {Program.Stack (res_name, mpat_names_lst)}
     (*
     |TRANSFORM res_name=NAME mpat_name=NAME dilatation=INTEGER
             mul_lst=nonempty_list(INTEGER)

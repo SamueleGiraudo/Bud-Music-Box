@@ -1,12 +1,20 @@
 # Bud Music Box
+`8/\/\8'
+
 A tool to generate random music from short patterns using operads, colored operads, and bud
 generating systems.
 
-Copyright (C) 2019--2020 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
+Copyright (C) 2019--2021 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
 
 ## Versions
++ `1.011` (2021-04-17)
+    + Implementation of degree monoids: three monoids are proposed (the additive monoid,
+      cyclic monoids, avec `max` monoids).
+    + Big simplification of the language: the built-in constructions `transpose`,
+      `temporize`, `rhythmize`, `harmonize`, and `arpeggiate` have been supressed.
+    + Improved parsing and error messages.
 + `1.001` (2020-10-16)
     + Improved parsing and error messages.
 + `0.1111` (2020-05-20)

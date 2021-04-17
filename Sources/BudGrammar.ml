@@ -62,9 +62,9 @@ let create operad generators initial_color =
 let arity budg ce =
     (Operad.arity budg.operad) ce.element
 
-(* Returns the colored one of color of the bud grammar budg. *)
-let colored_one budg color =
-    {out_color = color; element = Operad.one budg.operad; in_colors = [color]}
+(* Returns the colored inity of color of the bud grammar budg. *)
+let colored_unity budg color =
+    {out_color = color; element = Operad.unity budg.operad; in_colors = [color]}
 
 (* Returns the partial composition of y at position i in x in the colored operad of the bud
  * grammar budg. *)
@@ -92,7 +92,7 @@ let colored_composition budg x y =
     let lst = List.init (arity budg x)
         (fun i ->
             let a = in_color x (i + 1) in
-            if a = y.out_color then y else colored_one budg a) in
+            if a = y.out_color then y else colored_unity budg a) in
     full_composition budg x lst
 
 (* Returns the list of the generators of the bud grammar budg that have c as out color. *)
@@ -116,7 +116,7 @@ let partial_random_generator budg nb_iter =
                 else
                     let y = Tools.pick_random candidates in
                     partial_composition budg res i y)
-        (colored_one budg budg.initial_color)
+        (colored_unity budg budg.initial_color)
 
 (* Returns the colored element obtained by using the full random generator algorithm on the
  * bug grammar budg after nb_iter iterations. *)
@@ -131,7 +131,7 @@ let full_random_generator budg nb_iter =
             else
                 let picked_gens = candidates |> List.map Tools.pick_random in
                 full_composition budg res picked_gens)
-        (colored_one budg budg.initial_color)
+        (colored_unity budg budg.initial_color)
 
 (* Returns the colored element obtained by using the colored random generator algorithm on
  * the bug grammar budg after nb_iter iterations. This algorithm works by choosing at random
@@ -143,7 +143,7 @@ let colored_random_generator budg nb_iter =
         (fun res _ ->
             let y = Tools.pick_random budg.generators in
             colored_composition budg res y)
-        (colored_one budg budg.initial_color)
+        (colored_unity budg budg.initial_color)
 
 (* Returns an element generated at random by one of the three algorithms specified by shape.
  * The random generation uses the bud generating system budg and uses nb_iter iterations. *)
