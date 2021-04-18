@@ -45,21 +45,14 @@ over them, and to randomly generate some of them. Results can be converted to fi
 
 
 ### Main functionalities
-TO UPDATE
 1. [Multi-pattern creation](Examples/MultiPatternCreation.bmb)
 1. [Multi-pattern operations](Examples/MultiPatternOperations.bmb)
 1. [Setting the ambient scale, root, and tempo](Examples/ScaleRootTempo.bmb)
 1. [Changing instruments](Examples/Sounds.bmb)
 1. [Colored multi-patterns and random generation](Examples/Generation.bmb)
-1. [Temporization](Examples/Temporization.bmb)
-1. [Rhythmization](Examples/Rhythmization.bmb)
-1. [Harmonization](Examples/Harmonization.bmb)
-1. [Arpeggiation](Examples/Arpeggiation.bmb)
-1. [Mobiusation](Examples/Mobiusation.bmb)
 
 
 ### Complete examples
-TO UPDATE
 + An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale, played on kotos.
 + An [example](Examples/CompleteHir2.bmb) on the Hirajoshi scale, played on voices.
 + An [example](Examples/CompleteMaj1.bmb) on the major natural scale.

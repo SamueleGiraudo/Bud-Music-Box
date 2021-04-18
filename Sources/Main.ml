@@ -79,9 +79,10 @@ else if Tools.has_argument "-f" then begin
                 Program.execute prgm
             with
                 |Lexer.Error ei ->
-                    Printf.printf "Syntax error: %s\n"
-                        (Lexer.error_information_to_string ei);
-            exit 0
+                    (Printf.sprintf "Syntax error: %s"
+                        (Lexer.error_information_to_string ei))
+                        |> Tools.print_error;
+                    exit 0
         end
     end
 end

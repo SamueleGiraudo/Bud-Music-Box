@@ -1,3 +1,8 @@
+scale 2 1 4 1 4
+root 57
+tempo 96
+sounds 52 53
+
 multi_pattern p1 0 2 * 1 * 0 4 ; -5 * * 0 0 0 0
 multi_pattern p2 1 * 0 ; 0 * 1
 multi_pattern p3 -1 ; -1
@@ -9,11 +14,6 @@ colorize c2 p2 a a a
 colorize c3 p3 b a
 colorize c4 p4 b a a
 colorize c5 p5 c c
-
-set_scale 2 1 4 1 4
-set_root 57
-set_tempo 96
-set_sounds 52 53
 
 generate res full 4 a c1 c2 c3 c4 c5
 show

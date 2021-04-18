@@ -1,13 +1,13 @@
+scale 2 1 4 1 4
+root 57
+tempo 192
+sounds 107 107
+
 multi_pattern p1 0 * 1 * 2 ; 0 0 * * -5
 multi_pattern p2 0 * ; * 0
 
 colorize c1 p1 a a a b
 colorize c2 p2 a a
-
-set_scale 2 1 4 1 4
-set_root 57
-set_tempo 192
-set_sounds 107 107
 
 generate res partial 64 a c1 c2
 show
