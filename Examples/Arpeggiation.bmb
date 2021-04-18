@@ -1,0 +1,27 @@
+{A template to randomly arpeggiate a pattern.}
+
+{Sets some context data.}
+scale 2 1 4 1 4
+root 57
+tempo 128
+sounds 1
+monoid add_int
+
+{The multi-pattern of multiplicity 1 which will be altered.}
+multi_pattern p 2 0 * 1 -1 * *
+
+{The multi-pattern of multiplicity 4 obtained by copying the voices of p four times.}
+stack p_4 p p p p
+
+{The arpeggio multi-pattern of multiplicity 4.}
+multi_pattern ar 0 * * * ; * 4 * * ; * * 2 * ; * * * 7
+
+{Colorization of the multi-patterns.}
+colorize c_p_4_1 p_4 a b b b b
+colorize c_p_4_2 p_4 b b b b b
+colorize c_ar ar b c
+
+generate res full 3 a c_p_4_1 c_p_4_2 c_ar
+show
+play res
+

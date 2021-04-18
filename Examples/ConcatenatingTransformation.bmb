@@ -1,0 +1,27 @@
+{A template to randomly create a pattern by transforming it from a pattern obtained by
+ concatenating this pattern with an other pattern obtained by an homogeneous operation.}
+
+{Sets some context data.}
+scale 2 1 4 1 4
+root 57
+tempo 128
+sounds 1
+monoid add_int
+
+{The multi-pattern of multiplicity 1 which will be altered.}
+multi_pattern p 2 0 * * 1 -1 *
+
+{The multi-pattern obtained from p as the image of an homogeneous operation (the mirror
+ operation here).}
+mirror p_op p
+
+{The pattern obtained by concatenating the two previous ones.}
+concatenate p_conc p p_op
+
+{Colorization of the last multi-pattern.}
+colorize c p_conc a a a a a a a a a
+
+generate res full 2 a c
+show
+play res
+

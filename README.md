@@ -60,6 +60,19 @@ over them, and to randomly generate some of them. Results can be converted to fi
 + An [example](Examples/CompletePen1.bmb) on the minor pentatonic scale.
 
 
+## Some templates
++ Adding some [random temporizations](Examples/Temporization.bmb) from a pattern.
++ Adding some [random rhythmic variations](Examples/RhythmicVariation.bmb) from a pattern
+  and a flat pattern.
++ [Concatenating a pattern with its mirror](Examples/ConcatenatingTransformation.bmb) and
+  generating a new pattern.
++ Adding some [random harmonizations](Examples/Harmonization.bmb) from a pattern and a
+  chord.
++ Adding some [random arpeggiations](Examples/Arpeggiation.bmb) from a pattern and a chord.
++ [Stacking a pattern with its mirror](Examples/StackingTransformation.bmb) and
+  generating a new pattern.
+
+
 ## Building
 The following instructions hold for Linux systems like Debian or Archlinux, after 2019.
 

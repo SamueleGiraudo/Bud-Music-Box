@@ -1,0 +1,26 @@
+{A template to randomly increase the duration of some beats.}
+
+{Sets some context data.}
+scale 2 1 4 1 4
+root 57
+tempo 128
+sounds 1
+monoid add_int
+
+{The multi-pattern of multiplicity 1 which will be altered.}
+multi_pattern p 2 0 * 1 -1 * *
+
+{Definition of temporizing multi-patterns.}
+multi_pattern t1 0 *
+multi_pattern t2 0 * *
+
+{Colorization of the multi-patterns.}
+colorize c_p1 p a b b b b
+colorize c_p2 p b b b b b
+colorize c_t1 t1 b c
+colorize c_t2 t2 b c
+
+generate res partial 8 a c_p1 c_p2 c_t1 c_t2
+show
+play res
+
