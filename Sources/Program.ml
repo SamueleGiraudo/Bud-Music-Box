@@ -3,14 +3,11 @@
  * Modifications: oct. 2020, apr. 2021
  *)
 
-(* Names for files. *)
-type file_name = string
+(* Names for paths. *)
+type path = string
 
-(* Names for multi-patterns. *)
-type multi_pattern_name = string
-
-(* Names for colored multi-patterns. *)
-type colored_multi_pattern_name = string
+(* Names for multi-patterns and colored multi-patterns. *)
+type name = string
 
 (* The different possible degree monoids. *)
 type degree_monoid =
@@ -21,8 +18,8 @@ type degree_monoid =
 (* All the possible program instructions. *)
 type instruction =
     |Show
-    |Write of multi_pattern_name * file_name
-    |Play of multi_pattern_name
+    |Write of name * path
+    |Play of name
     |SetScale of Scale.scale
     |SetRoot of Context.midi_note
     |SetTempo of int
@@ -30,18 +27,16 @@ type instruction =
     |SetMonoidAddInt
     |SetMonoidCyclic of int
     |SetMonoidMax of int
-    |MultiPattern of multi_pattern_name * MultiPattern.multi_pattern
-    |Mirror of multi_pattern_name * multi_pattern_name
-    |Concatenate of multi_pattern_name * (multi_pattern_name list)
-    |Repeat of multi_pattern_name * multi_pattern_name * int
-    |Stack of multi_pattern_name * (multi_pattern_name list)
-    |PartialCompose of multi_pattern_name * multi_pattern_name * int * multi_pattern_name
-    |FullCompose of multi_pattern_name * multi_pattern_name * (multi_pattern_name list)
-    |HomogeneousCompose of multi_pattern_name * multi_pattern_name * multi_pattern_name
-    |Colorize of colored_multi_pattern_name * multi_pattern_name * BudGrammar.color
-        * (BudGrammar.color list)
-    |Generate of multi_pattern_name * BudGrammar.generation_shape * int * BudGrammar.color
-        * (colored_multi_pattern_name list)
+    |MultiPattern of name * MultiPattern.multi_pattern
+    |Mirror of name * name
+    |Concatenate of name * (name list)
+    |Repeat of name * name * int
+    |Stack of name * (name list)
+    |PartialCompose of name * name * int * name
+    |FullCompose of name * name * (name list)
+    |HomogeneousCompose of name * name * name
+    |Colorize of name * name * BudGrammar.color * (BudGrammar.color list)
+    |Generate of name * BudGrammar.generation_shape * int * BudGrammar.color * (name list)
 
 (* A program is a list of instructions. *)
 type program = instruction list
@@ -235,7 +230,7 @@ let execute_instruction instr st =
             st
         end
         |SetScale scale -> begin
-            if not (Scale.is_scale scale) then
+            if not (Scale.is_valid scale) then
                 raise (ExecutionError "This is not a scale.");
             if not ((Scale.nb_steps_by_octave scale) = 12) then
                 raise (ExecutionError "This is not a 12-TET scale");

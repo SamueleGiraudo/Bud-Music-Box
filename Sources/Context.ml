@@ -16,7 +16,7 @@ type context = {
 
 (* Returns the context with the specified attributes. *)
 let create scale root tempo =
-    assert (Scale.is_scale scale);
+    assert (Scale.is_valid scale);
     assert (0 <= root && root < 128);
     assert (1 <= tempo);
     {scale = scale; root = root; tempo = tempo}
@@ -40,7 +40,7 @@ let tempo context =
 
 (* Returns the context obtained by replacing the scale of the context context by scale. *)
 let set_scale context scale =
-    assert (Scale.is_scale scale);
+    assert (Scale.is_valid scale);
     {context with scale = scale}
 
 (* Returns the context obtained by replacing the root note of the context context by root. *)
