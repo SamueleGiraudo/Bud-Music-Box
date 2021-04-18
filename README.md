@@ -58,9 +58,11 @@ over them, and to randomly generate some of them. Results can be converted to fi
 + An [example](Examples/CompleteMaj1.bmb) on the major natural scale.
 + An [example](Examples/CompleteHar1.bmb) on the minor harmonic scale.
 + An [example](Examples/CompletePen1.bmb) on the minor pentatonic scale.
++ An [example](Examples/CompletePen2.bmb) on the minor pentatonic scale.
++ An [example](Examples/CompletePen3.bmb) on the minor pentatonic scale.
 
 
-## Some templates
+### Some templates
 + Adding some [random temporizations](Examples/Temporization.bmb) from a pattern.
 + Adding some [random rhythmic variations](Examples/RhythmicVariation.bmb) from a pattern
   and a flat pattern.

@@ -1,0 +1,26 @@
+scale 3 2 2 3 2
+root 57
+tempo 128
+sounds 25 33
+
+multi_pattern p1 0 * * 1 4 ; -5 * -1 * 0
+multi_pattern p2 0 * ; * 0
+multi_pattern p3 0 * * ; * * 0
+multi_pattern p4 0 0 ; 0 0
+
+colorize cpat1 p1 in c1 c2 sink
+colorize cpat2 p2 c1 in
+colorize cpat3 p3 c2 in
+colorize cpat4 p4 c1 in in
+
+generate g partial 32 in cpat1 cpat2 cpat3 cpat4
+
+multi_pattern beg 0 0 0 * ; * -5 -5 -5
+
+multi_pattern end 3 2 * 1 * * 0 * * * ; -8 -7 * -6 * * * -5 * *
+
+concatenate res beg g end
+
+show
+play res
+

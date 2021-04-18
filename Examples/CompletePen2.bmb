@@ -1,0 +1,19 @@
+scale 3 2 2 3 2
+root 57
+tempo 95
+sounds 24 35
+
+multi_pattern p1
+    0  *  0  0 2 2  0 2 * 2 *  0  0 1 1  0 1 * 1 * ;
+    -5 * -5 -5 0 0 -5 0 * 0 * -5 -5 0 0 -5 0 * 0 *
+multi_pattern p2 -2 -1 0 ; -2 -1 -5
+multi_pattern p3 0 * ; * 0
+
+colorize c1 p1 a b b b a a b a a b b a a b a a
+colorize c2 p2 a a a b
+colorize c3 p3 a a
+
+generate res partial 32 a c1 c2 c3
+show
+play res
+
