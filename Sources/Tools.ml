@@ -17,7 +17,7 @@ type color =
 
 (* Tests if the integer value x is different from 0.*)
 let int_to_bool x =
-    x = 0
+    x <> 0
 
 (* Returns the list of integers from a to b. *)
 let interval a b =

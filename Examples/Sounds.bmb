@@ -4,6 +4,6 @@ play p1
 
 {Sets the MIDI sound of the first voice to the "Trombone" of code 58 and of the second
  voice to the "Violin" of code 41.}
-set_sounds 58 41
+sounds 58 41
 play p1
 

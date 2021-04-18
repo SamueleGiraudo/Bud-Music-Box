@@ -471,5 +471,5 @@ let execute prgm =
         Tools.print_success "End of execution."
     with
         |ExecutionError msg ->
-            Printf.sprintf "Execution error: %s\n" msg |> Tools.print_error
+            Printf.sprintf "Execution error: %s" msg |> Tools.print_error
 

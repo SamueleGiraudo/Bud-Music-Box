@@ -47,10 +47,10 @@ program:
 instruction:
     |SHOW
         {Program.Show}
-    |WRITE mpat_name=NAME file_name=NAME
-        {Program.Write (mpat_name, file_name)}
-    |PLAY mpat_name=NAME
-        {Program.Play mpat_name}
+    |WRITE mp_name=NAME file_name=NAME
+        {Program.Write (mp_name, file_name)}
+    |PLAY mp_name=NAME
+        {Program.Play mp_name}
     |SCALE scale=nonempty_list(INTEGER)
         {Program.SetScale scale}
     |ROOT midi_note=INTEGER
@@ -59,58 +59,33 @@ instruction:
         {Program.SetTempo tempo}
     |SOUNDS midi_sounds=nonempty_list(INTEGER)
         {Program.SetSounds midi_sounds}
-    |MONOID ADD_INT
-        {Program.SetMonoidAddInt}
-    |MONOID CYCLIC k=INTEGER
-        {Program.SetMonoidCyclic k}
-    |MONOID MAX z=INTEGER
-        {Program.SetMonoidMax z}
-    |MULTI_PATTERN mpat_name=NAME mpat=multi_pattern
-        {Program.MultiPattern (mpat_name, mpat)}
-    (*
-    |TRANSPOSE res_name=NAME mpat_name=NAME k=INTEGER
-        {Program.Transpose (res_name, mpat_name, k)}
-    *)
-    |MIRROR res_name=NAME mpat_name=NAME
-        {Program.Mirror (res_name, mpat_name)}
-    |CONCATENATE res_name=NAME mpat_names_lst=nonempty_list(NAME)
-        {Program.Concatenate (res_name, mpat_names_lst)}
-    |REPEAT res_name=NAME mpat_name=NAME k=INTEGER
-        {Program.Repeat (res_name, mpat_name, k)}
-    |STACK res_name=NAME mpat_names_lst=nonempty_list(NAME)
-        {Program.Stack (res_name, mpat_names_lst)}
-    (*
-    |TRANSFORM res_name=NAME mpat_name=NAME dilatation=INTEGER
-            mul_lst=nonempty_list(INTEGER)
-        {Program.Transform (res_name, mpat_name, dilatation, mul_lst)}
-    *)
-    |PARTIAL_COMPOSE res_name=NAME mpat_name_1=NAME pos=INTEGER mpat_name_2=NAME
-        {Program.PartialCompose (res_name, mpat_name_1, pos, mpat_name_2)}
-    |FULL_COMPOSE res_name=NAME mpat_name=NAME mpat_names_lst=nonempty_list(NAME)
-        {Program.FullCompose (res_name, mpat_name, mpat_names_lst)}
-    |HOMOGENEOUS_COMPOSE res_name=NAME mpat_name_1=NAME mpat_name_2=NAME
-        {Program.HomogeneousCompose (res_name, mpat_name_1, mpat_name_2)}
-    |COLORIZE res_name=NAME mpat_name=NAME out_color=NAME in_colors=nonempty_list(NAME)
-        {Program.Colorize (res_name, mpat_name, out_color, in_colors)}
+    |MONOID dm=degree_monoid
+        {dm}
+    |MULTI_PATTERN mp_name=NAME mp=multi_pattern
+        {Program.MultiPattern (mp_name, mp)}
+    |MIRROR res_name=NAME mp_name=NAME
+        {Program.Mirror (res_name, mp_name)}
+    |CONCATENATE res_name=NAME mp_names_lst=nonempty_list(NAME)
+        {Program.Concatenate (res_name, mp_names_lst)}
+    |REPEAT res_name=NAME mp_name=NAME k=INTEGER
+        {Program.Repeat (res_name, mp_name, k)}
+    |STACK res_name=NAME mp_names_lst=nonempty_list(NAME)
+        {Program.Stack (res_name, mp_names_lst)}
+    |PARTIAL_COMPOSE res_name=NAME mp_name_1=NAME pos=INTEGER mp_name_2=NAME
+        {Program.PartialCompose (res_name, mp_name_1, pos, mp_name_2)}
+    |FULL_COMPOSE res_name=NAME mp_name=NAME mp_names_lst=nonempty_list(NAME)
+        {Program.FullCompose (res_name, mp_name, mp_names_lst)}
+    |HOMOGENEOUS_COMPOSE res_name=NAME mp_name_1=NAME mp_name_2=NAME
+        {Program.HomogeneousCompose (res_name, mp_name_1, mp_name_2)}
+    |COLORIZE res_name=NAME mp_name=NAME out_color=NAME in_colors=nonempty_list(NAME)
+        {Program.Colorize (res_name, mp_name, out_color, in_colors)}
     |GENERATE res_name=NAME shape=shape size=INTEGER color=NAME
-            cpat_names_lst=nonempty_list(NAME)
-        {Program.Generate (res_name, shape, size, color, cpat_names_lst)}
-    (*
-    |TEMPORIZE res_name=NAME shape=shape size=INTEGER pat_name=NAME max_delay=INTEGER
-        {Program.Temporize (res_name, shape, size, pat_name, max_delay)}
-    |RHYTHMIZE res_name=NAME shape=shape size=INTEGER pat_name=NAME rpat_name=NAME
-        {Program.Rhythmize (res_name, shape, size, pat_name, rpat_name)}
-    |HARMONIZE res_name=NAME shape=shape size=INTEGER pat_name=NAME dpat_name=NAME
-        {Program.Harmonize (res_name, shape, size, pat_name, dpat_name)}
-    |ARPEGGIATE res_name=NAME shape=shape size=INTEGER pat_name=NAME dpat_name=NAME
-        {Program.Arpeggiate (res_name, shape, size, pat_name, dpat_name)}
-    |MOBIUSATE res_name=NAME shape=shape size=INTEGER pat_name=NAME
-        {Program.Mobiusate (res_name, shape, size, pat_name)}
-    *)
+            cmp_names_lst=nonempty_list(NAME)
+        {Program.Generate (res_name, shape, size, color, cmp_names_lst)}
 
 multi_pattern:
-    |pat_lst=separated_nonempty_list(SEMICOLON, pattern)
-        {pat_lst}
+    |mp_lst=separated_nonempty_list(SEMICOLON, pattern)
+        {mp_lst}
 
 pattern:
     |pat=nonempty_list(atom)
@@ -121,6 +96,14 @@ atom:
         {Atom.Rest}
     |d=INTEGER
         {Atom.Beat d}
+
+degree_monoid:
+    |ADD_INT
+        {Program.SetMonoidAddInt}
+    |CYCLIC k=INTEGER
+        {Program.SetMonoidCyclic k}
+    |MAX z=INTEGER
+        {Program.SetMonoidMax z}
 
 shape:
     |PARTIAL

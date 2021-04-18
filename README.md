@@ -129,8 +129,11 @@ these patterns.
 + About operads and combinatorial generation:
     + S. Giraudo.
       Colored operads, series on colored operads, and combinatorial generating systems.
-      Discrete Math.,
-      342, 6, 1624--1657, 2019.
+      Discrete Math., 342, 6, 1624--1657, 2019.
+
+    + S. Giraudo.
+      Combinatorial operads from monoids.
+      J. Algebr. Comb., 41, Issue 2, 493–538, 2015.
 
 + About the operad of patterns:
     + S. Giraudo.
