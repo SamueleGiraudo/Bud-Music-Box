@@ -55,6 +55,7 @@ over them, and to randomly generate some of them. Results can be converted to fi
 ### Complete examples
 + An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale, played on kotos.
 + An [example](Examples/CompleteHir2.bmb) on the Hirajoshi scale, played on voices.
++ An [example](Examples/CompleteHir3.bmb) on the Hirajoshi scale.
 + An [example](Examples/CompleteMaj1.bmb) on the major natural scale.
 + An [example](Examples/CompleteHar1.bmb) on the minor harmonic scale.
 + An [example](Examples/CompletePen1.bmb) on the minor pentatonic scale.

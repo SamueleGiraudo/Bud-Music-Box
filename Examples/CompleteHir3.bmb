@@ -1,23 +1,18 @@
-{Sets some context information.}
-set_scale 2 1 4 1 4
-set_root 60
-set_tempo 128
-set_sounds 108 107
+scale 2 1 4 1 4
+root 60
+tempo 128
+sounds 108 107
 
-{Defines 3 2-multi-patterns.}
-multi_pattern mpat_1 1 1 0 0 2 2 1 1 ; -5 * * * 0 * * *
-multi_pattern mpat_2 -1 * 0 * 1 * ; * 0 * * 0 *
+multi_pattern mpat_1 1 * * 0 2 * * * ; -5 * * * 0 0 * *
+multi_pattern mpat_2 -1 * 0 * 1 * ; * 0 -1 * 0 *
 multi_pattern mpat_3 0 * ; * 0
 
-{Defines 4 colored 2-multi-patterns from the previous 2-multi-patterns.}
-colorize cpat_1 mpat_1 c1 c2 c1
-colorize cpat_2 mpat_1 c1 c1 c2
-colorize cpat_3 mpat_2 c1 c1 c2
+colorize cpat_1 mpat_1 c1 c2 c1 c1
+colorize cpat_2 mpat_1 c1 c1 c2 c2
+colorize cpat_3 mpat_2 c1 c1 c2 c1
 colorize cpat_4 mpat_3 c1 c1
 
-{Creates a new 2-multi-pattern mpat_4 obtained by using the partial random generation
- algorithm with k := 32, c1 as initial color, and cpat_1, cpat_2, cpat_3, and cpat_4 as
- rules.}
 generate mpat_4 partial 32 c1 cpat_1 cpat_2 cpat_3 cpat_4
+show
 play mpat_4
 
