@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020,
- * apr. 2020, oct. 2020
+ * apr. 2020, oct. 2020, aug. 2022
  *)
 
 (* A color is a name (string). *)
@@ -9,16 +9,16 @@ type color = string
 
 (* A colored element is an element of an operad augmented with output an input colors. *)
 type 'a colored_element = {
-    out_color : color ;
-    element : 'a ;
-    in_colors : color list
+    out_color: color ;
+    element: 'a ;
+    in_colors: color list
 }
 
 (* Bud grammar. *)
 type 'a bud_grammar = {
-    operad : 'a Operad.operad;
-    generators : 'a colored_element list;
-    initial_color : color
+    operad: 'a Operad.operad;
+    generators: 'a colored_element list;
+    initial_color: color
 }
 
 (* A type for specifying a random generation shape. *)
@@ -48,10 +48,10 @@ let in_color ce i =
 (* Returns a string representing the colored element ce, where element_to_string is a map
  * sending any underlying object to a string representing it. *)
 let colored_element_to_string element_to_string ce =
-    Printf.sprintf "%s | %s | %s"
+    Printf.sprintf "%%%s | %s | %s"
         ce.out_color
         (element_to_string (get_element ce))
-        (Tools.list_to_string Fun.id " " ce.in_colors)
+        (Tools.list_to_string (fun c -> "%" ^ c) " " ce.in_colors)
 
 (* Returns the bud grammar with the specified attributes. *)
 let create operad generators initial_color =

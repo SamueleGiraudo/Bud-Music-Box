@@ -1,16 +1,16 @@
 {Creation of colored 2-multi-patterns.}
 
 {A first one of arity 4.}
-multi_pattern mpat_1 0 -1 1 * * ; -7 * * 0 0
-colorize cpat_1 mpat_1 a b a a
+multi-pattern mpat_1 0 -1 1 . . + -7 . . 0 0
+colorize cpat_1 %a | mpat_1 | %b %a %a
 
 {A second one of arity 1.}
-multi_pattern mpat_2 0 * ; * 0
-colorize cpat_2 mpat_2 a a
+multi-pattern mpat_2 0 . + . 0
+colorize cpat_2 %a | mpat_2 | %a
 
 {We use the partial bud generation algorithm with 32 iterations and "a" as initial color
  on the colored multi-patterns cpat_1 and cpat_2.}
-generate p partial 32 a cpat_1 cpat_2
+generate p partial 32 %a cpat_1 cpat_2
 
 {Let us play the result.}
 play p

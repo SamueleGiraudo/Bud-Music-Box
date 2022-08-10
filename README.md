@@ -4,11 +4,15 @@
 A tool to generate random music from short patterns using operads, colored operads, and bud
 generating systems.
 
-Copyright (C) 2019--2021 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
+Copyright (C) 2019--2022 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
 [https://igm.univ-mlv.fr/~giraudo/]
 
 
 ## Versions
++ `1.100` (2022-08-10)
+    + Improvement of the syntax.
+    + Empty patterns are allowed.
+    + Various optimizations have been made.
 + `1.011` (2021-04-17)
     + Implementation of degree monoids: three monoids are proposed (the additive monoid,
       cyclic monoids, avec `max` monoids).
@@ -52,9 +56,9 @@ over them, and to randomly generate some of them. Results can be converted to fi
 1. [Colored multi-patterns and random generation](Examples/Generation.bmb)
 
 
-### Complete examples
-+ An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale, played on kotos.
-+ An [example](Examples/CompleteHir2.bmb) on the Hirajoshi scale, played on voices.
+### Some examples
++ An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale.
++ An [example](Examples/CompleteHir2.bmb) on the Hirajoshi scale.
 + An [example](Examples/CompleteHir3.bmb) on the Hirajoshi scale.
 + An [example](Examples/CompleteMaj1.bmb) on the major natural scale.
 + An [example](Examples/CompleteHar1.bmb) on the minor harmonic scale.
@@ -63,28 +67,15 @@ over them, and to randomly generate some of them. Results can be converted to fi
 + An [example](Examples/CompletePen3.bmb) on the minor pentatonic scale.
 
 
-### Some templates
-+ Adding some [random temporizations](Examples/Temporization.bmb) from a pattern.
-+ Adding some [random rhythmic variations](Examples/RhythmicVariation.bmb) from a pattern
-  and a flat pattern.
-+ [Concatenating a pattern with its mirror](Examples/ConcatenatingTransformation.bmb) and
-  generating a new pattern.
-+ Adding some [random harmonizations](Examples/Harmonization.bmb) from a pattern and a
-  chord.
-+ Adding some [random arpeggiations](Examples/Arpeggiation.bmb) from a pattern and a chord.
-+ [Stacking a pattern with its mirror](Examples/StackingTransformation.bmb) and
-  generating a new pattern.
-
-
 ## Building
-The following instructions hold for Linux systems like Debian or Archlinux, after 2019.
+The following instructions hold for Linux systems like Debian or Archlinux, after 2021.
 
 1. Clone the repository somewhere by running
 `git clone https://github.com/SamueleGiraudo/Bud-Music-Box.git`.
 
 2. Install all dependencies (see the section below).
 
-3. Build the project by running `chmod +x Compil` and then `./Compil`.
+3. Build the project by running `make`.
 
 This creates an executable `bmb`.
 
@@ -93,7 +84,7 @@ This creates an executable `bmb`.
 The following programs are needed:
 
 + `pkg-config`
-+ `ocaml` (Version `>= 4.11.1`. An inferior but not too old version may be suitable.)
++ `ocaml` (Version `>= 4.13.1`. An inferior but not too old version may be suitable.)
 + `opam`
 + `ocamlbuild` (Available by `opam install ocamlbuild`.)
 + `ocamlfind` (Available by `opam install ocamlfind`.)
@@ -116,14 +107,18 @@ Files containing such instructions must have `bmb` as extension. Given such a fi
 executes line by line each of its instructions.
 
 
+## Miscellaneous
+To get the syntax highlighting in `vim`, follow the instructions in [bmb.vim](Vim/bmb.vim).
+
+
 ## Theoretical aspects
 An operad is an algebraic structure wherein elements are operations. This program is based
-upon an operad on an abstraction of polyphonic musical phrases called multi-patterns. The
-set of all this object is endowed with the structure of an operad allowing us to perform
-computations on musical phrases. The main idea is that one can, from a set of small musical
-phrases, generate randomly a new musical phrase by computing some random compositions of
-these patterns.
-
+upon an operad on an abstraction of polyphonic musical phrases called multi-patterns,
+forming the music box model. The set of these objects is endowed with the structure of an
+operad allowing us to perform computations on musical phrases. The operad structure on
+multi-patterns makes it possible to see any multi-pattern as an operation on multi-patterns.
+The main idea is that one can, from a set of small musical phrases, generate randomly a new
+musical phrase by computing some random compositions of these patterns.
 
 ## Bibliography
 
@@ -131,6 +126,7 @@ these patterns.
     + M. Méndez.
       Set operads in combinatorics and computer science.
       Springer, Cham, SpringerBriefs in Mathematics, xvi+129, 2015.
+
     + S. Giraudo.
       Nonsymmetric Operads in Combinatorics.
       Springer Nature Switzerland AG, ix+172, 2018.
@@ -150,6 +146,7 @@ these patterns.
       [Journées d'informatique musicale](https://jim2020.sciencesconf.org/), 2020.
 
     + S. Giraudo.
-      The music box operad: random generation of musical phrases from patterns.
-      Work in progress, 2020.
+      [The music box operad: random generation of musical phrases from patterns](
+        https://arxiv.org/abs/2104.13040),
+      Work in progress, 2022.
 

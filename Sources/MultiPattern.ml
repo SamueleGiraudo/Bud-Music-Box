@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020, apr. 2020, may 2020
- * oct. 2020, apr. 2021
+ * oct. 2020, apr. 2021, jul. 2022
  *)
 
 (* A multi-pattern is a nonempty list of patterns such that all its patterns have the same
@@ -15,28 +15,33 @@ type colored_multi_pattern =
 
 (* Tests if the list lst of patterns is a multi-pattern. *)
 let is_valid lst =
-    if lst = [] then
-        false
-    else
-        let len = Pattern.length (List.hd lst) and ar = Pattern.arity (List.hd lst) in
-        lst |> List.for_all (fun p -> Pattern.length p = len && Pattern.arity p = ar)
+    match lst with
+        |[] -> true
+        |p :: lst' ->
+            let len = Pattern.length p and ar = Pattern.arity p in
+            lst' |> List.for_all
+                (fun p' -> len = Pattern.length p' && ar = Pattern.arity p')
 
 (* Returns the multi-pattern of multiplicity m obtained by stacking the pattern pat with m
  * copies of itself. *)
 let from_pattern pat m =
-    assert (Pattern.is_valid pat);
     assert (m >= 1);
     List.init m (fun _ -> pat)
 
 (* Returns a string representing the multi-pattern mp. *)
 let to_string mp =
     assert (is_valid mp);
-    Tools.list_to_string Pattern.to_string " ; " mp
+    Tools.list_to_string Pattern.to_string " + " mp
+
+(* Returns the empty multi-pattern of multiplicity m. *)
+let empty m =
+    assert (m >= 1);
+    List.init m (Fun.const Pattern.empty)
 
 (* Returns the multi-pattern consisting in m voices of the unity pattern. *)
-let unity m =
+let unity dm m =
     assert (m >= 1);
-    List.init m (fun _ -> Pattern.unity)
+    List.init m (Fun.const (Pattern.unity dm))
 
 (* Returns the arity of the multi-pattern mp. *)
 let arity mp =
@@ -132,7 +137,7 @@ let repeat mp k =
 (* Returns the operad of multi-patterns of multiplicity m on the degree monoid dm. *)
 let operad dm m =
     assert (m >= 1);
-    Operad.create arity (partial_composition dm) (unity m)
+    Operad.create arity (partial_composition dm) (unity dm m)
 
 (* Returns the multi-pattern obtained by the full composition of the multi-pattern mp with
  * the multi-pattern of the list mp_lst w.r.t. the degree monoid dm. *)

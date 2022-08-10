@@ -1,16 +1,16 @@
 (* Author: Samuele Giraudo
  * Creation: oct. 2020
- * Modifications: oct. 2020, apr. 2021
+ * Modifications: oct. 2020, apr. 2021, jul. 2022, aug. 2022
  *)
 
 {
 
 (* A type to communicate about parsing or lexing errors. *)
 type error_information = {
-    path : string;
-    line : int;
-    column : int;
-    message : string
+    path: string;
+    line: int;
+    column: int;
+    message: string
 }
 
 (* An exception raised when an error is encountered. *)
@@ -79,90 +79,56 @@ let value_from_file_path path parser_axiom lexer_axiom =
 
 }
 
-let letter = ['a'-'z' 'A'-'Z' '_']
+let letters = ['a'-'z' 'A'-'Z']
 let digits = ['0'-'9']
-let plain_character = letter | digits
+let specials = ['_' ''']
 
-let name = letter plain_character*
+let name = (letters | specials) (letters | specials | digits)*
 let integer = '-'? digits+
 
 rule read = parse
-    |" " |"\t"
-        {read lexbuf}
-    |"\n"
-        {next_line lexbuf; read lexbuf}
-    |";"
-        {Parser.SEMICOLON}
-    |"*"
-        {Parser.STAR}
-    |"show"
-        {Parser.SHOW}
-    |"write"
-        {Parser.WRITE}
-    |"play"
-        {Parser.PLAY}
-    |"scale"
-        {Parser.SCALE}
-    |"root"
-        {Parser.ROOT}
-    |"tempo"
-        {Parser.TEMPO}
-    |"sounds"
-        {Parser.SOUNDS}
-    |"monoid"
-        {Parser.MONOID}
-    |"add_int"
-        {Parser.ADD_INT}
-    |"cyclic"
-        {Parser.CYCLIC}
-    |"max"
-        {Parser.MAX}
-    |"multi_pattern"
-        {Parser.MULTI_PATTERN}
-    |"mirror"
-        {Parser.MIRROR}
-    |"concatenate"
-        {Parser.CONCATENATE}
-    |"repeat"
-        {Parser.REPEAT}
-    |"stack"
-        {Parser.STACK}
-    |"partial_compose"
-        {Parser.PARTIAL_COMPOSE}
-    |"full_compose"
-        {Parser.FULL_COMPOSE}
-    |"homogeneous_compose"
-        {Parser.HOMOGENEOUS_COMPOSE}
-    |"colorize"
-        {Parser.COLORIZE}
-    |"generate"
-        {Parser.GENERATE}
-    |"partial"
-        {Parser.PARTIAL}
-    |"full"
-        {Parser.FULL}
-    |"homogeneous"
-        {Parser.HOMOGENEOUS}
-    |integer
-        {Parser.INTEGER (int_of_string (Lexing.lexeme lexbuf))}
-    |name
-        {Parser.NAME (Lexing.lexeme lexbuf)}
-    |"{"
-        {comment 0 lexbuf}
-    |eof
-        {Parser.EOF}
-    |_ as c
-        {unexpected_character_error lexbuf c}
+    |" " |"\t" {read lexbuf}
+    |"\n" {next_line lexbuf; read lexbuf}
+    |"+" {Parser.PLUS}
+    |"." {Parser.DOT}
+    |"%" {Parser.PERCENT}
+    |"|" {Parser.PIPE}
+    |"show" {Parser.SHOW}
+    |"write" {Parser.WRITE}
+    |"play" {Parser.PLAY}
+    |"scale" {Parser.SCALE}
+    |"root" {Parser.ROOT}
+    |"tempo" {Parser.TEMPO}
+    |"sounds" {Parser.SOUNDS}
+    |"monoid" {Parser.MONOID}
+    |"add-int" {Parser.ADD_INT}
+    |"cyclic" {Parser.CYCLIC}
+    |"max" {Parser.MAX}
+    |"multi-pattern" {Parser.MULTI_PATTERN}
+    |"mirror" {Parser.MIRROR}
+    |"inverse" {Parser.INVERSE}
+    |"concatenate" {Parser.CONCATENATE}
+    |"repeat" {Parser.REPEAT}
+    |"stack" {Parser.STACK}
+    |"partial-compose" {Parser.PARTIAL_COMPOSE}
+    |"full-compose" {Parser.FULL_COMPOSE}
+    |"homogeneous-compose" {Parser.HOMOGENEOUS_COMPOSE}
+    |"colorize" {Parser.COLORIZE}
+    |"mono-colorize" {Parser.MONO_COLORIZE}
+    |"generate" {Parser.GENERATE}
+    |"partial" {Parser.PARTIAL}
+    |"full" {Parser.FULL}
+    |"homogeneous" {Parser.HOMOGENEOUS}
+    |integer {Parser.INTEGER (int_of_string (Lexing.lexeme lexbuf))}
+    |name {Parser.NAME (Lexing.lexeme lexbuf)}
+    |"{" {comment 0 lexbuf}
+    |eof {Parser.EOF}
+    |_ as c {unexpected_character_error lexbuf c}
 
 and comment level = parse
-    |"\n"
-        {next_line lexbuf; comment level lexbuf}
-    |"}"
-        {if level = 0 then read lexbuf else comment (level - 1) lexbuf}
-    |"{"
-        {comment (level + 1) lexbuf}
-    |eof
-        {unclosed_comment_error lexbuf}
-    |_
-        {comment level lexbuf}
+    |"\n" {next_line lexbuf; comment level lexbuf}
+    |"}" {if level = 0 then read lexbuf else comment (level - 1) lexbuf}
+    |"{" {comment (level + 1) lexbuf}
+    |eof {unclosed_comment_error lexbuf}
+    |_ {comment level lexbuf}
 

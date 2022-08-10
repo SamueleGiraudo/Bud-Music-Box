@@ -1,19 +1,19 @@
 scale 2 1 2 2 1 3 1
 root 57
-tempo 192
-sounds 0 2
+tempo 190
+sounds 0 1
 
-multi_pattern p1 0 * 2 * 4 * ; 0 0 0 * * *
-multi_pattern p2 0 0 ; -7 -7
-multi_pattern p3 0 1 ; 0 0
-multi_pattern p4 0 0 ; 7 7
+multi-pattern p1 0 . 2 . 4 . + 0 0 0 . . .
+multi-pattern p2 0 0 + -7 -7
+multi-pattern p3 0 1 + 0 0
+multi-pattern p4 0 0 + 7 7
 
-colorize c1 p1 a a a b
-colorize c2 p2 a c c
-colorize c3 p3 a a a
-colorize c4 p4 c a a
+colorize c1 %a | p1 | %a %a %b
+colorize c2 %a | p2 | %c %c
+colorize c3 %a | p3 | %a %a
+colorize c4 %c | p4 | %a %a
 
-generate res partial 32 a c1 c2 c3 c4
+generate res partial 128 %a c1 c2 c3 c4
 show
 play res
 

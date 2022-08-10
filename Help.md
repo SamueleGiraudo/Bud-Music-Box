@@ -11,17 +11,17 @@ with an alphabetic symbol or `_`.
 
 ## Syntax for multi-patterns
 A multi-pattern is specified by the sequence of its atoms, that are degrees (expressed by
-signed decimal integers) or rests (expressed by `*`). The multiple voices of a multi-pattern
-are separated by a `;`.
+signed decimal integers) or rests (expressed by `.`). The multiple voices of a multi-pattern
+are separated by a `+`.
 
 For instance,
 ```
-1 -1 * * 2 * 4 ; 0 0 * 1 * -3 0 ; * * 2 * 2 2 * ; * 0 * 0 * * 0
+1 -1 . . 2 . 4 + 0 0 . 1 . -3 . + 1 . 2 . 2 2 . + . 0 . 0 0 . 0
 ```
-is a string specifying a $4$-multi-pattern. This multi-pattern has arity $3$ because $3$
-is the minimal number of beats among all the four voices. The length of this multi-pattern
-is $7$ since each voice has seven atom, where an atom is either a beat or a rest. Therefore,
-this multi-pattern lasts $7$ amounts of time.
+is a string specifying a multi-pattern of multiplicity $4$. The multiplicity is the number
+of voices. This multi-pattern has arity $4$ because each voice contains $4$ beats. The
+length of this multi-pattern is $7$ since each voice has seven atom, where an atom is either
+a beat or a rest. Therefore, this multi-pattern lasts $7$ amounts of time.
 
 
 ## Instruction set
@@ -61,6 +61,8 @@ this multi-pattern lasts $7$ amounts of time.
 + `STEP_1 ... STEP_k` is the integer composition of a $12$-scale.
 + Sets the underlying scale to the specified one.
 
+By default, the minor natural scale `2 1 2 2 1 2 2` is used.
+
 
 #### Setting a root note
 `root NOTE`
@@ -68,13 +70,18 @@ this multi-pattern lasts $7$ amounts of time.
 + `NOTE` is the midi code of a note between $0$ and $127$.
 + Sets the root of the underlying set of notes.
 
+By default, the root note `57` is used.
+
 
 #### Setting a tempo
 `tempo VAL`
 
 + `VAL` is a nonnegative integer.
-+ Sets the tempo as `VAL` bpm. In the score files, each beat is denoted as one eighth the
-  duration of a whole note.
++ Sets the tempo as `VAL` bpm. In the score files, each beat is denoted as one quarter note
+  and each rest is denoted as one quarter rest. The tempo specifies the number of each of
+  these in one minute.
+
+By default, the tempo of `120` is used.
 
 
 #### Setting voice sounds
@@ -83,6 +90,8 @@ this multi-pattern lasts $7$ amounts of time.
 + `SOUND_1 ... SOUND_m` is a sequence of General MIDI sounds, encoded as integers between
   $0$ and $127$.
 + Allocates to each potential $i$-th voice of each multi-pattern the specified sound.
+
+By default, the sounds `108` are used.
 
 
 ### Setting a degree monoid
@@ -94,11 +103,13 @@ this multi-pattern lasts $7$ amounts of time.
 + This encodes how to perform products on degrees for the compositions the operads of
   multi-patterns.
 
+By default, the additive degree monoid is used.
+
 
 ### Multi-pattern manipulation
 
 #### Naming a multi-pattern
-`multi_pattern NAME PAT_STR`
+`multi-pattern NAME PAT_STR`
 
 + `NAME` is an identifier.
 + `PAT_STR` is a string specifying a multi-pattern.
@@ -112,6 +123,14 @@ this multi-pattern lasts $7$ amounts of time.
 + `NAME` is an identifier.
 + `PAT` is the name of a multi-pattern.
 + Bounds `NAME` to the multi-pattern defined as the mirror image of `PAT`.
+
+
+#### Inverse image of a multi-pattern
+`inverse NAME PAT`
+
++ `NAME` is an identifier.
++ `PAT` is the name of a multi-pattern.
++ Bounds `NAME` to the multi-pattern defined as the inverse image of `PAT`.
 
 
 #### Concatenate multi-patterns
@@ -140,7 +159,7 @@ this multi-pattern lasts $7$ amounts of time.
 
 
 #### Partial composition of two multi-patterns
-`partial_compose NAME PAT_1 POS PAT_2`
+`partial-compose NAME PAT_1 POS PAT_2`
 
 + `NAME` is an identifier.
 + `PAT_1` is the name of an $m$-multi-pattern of arity $n$.
@@ -150,7 +169,7 @@ this multi-pattern lasts $7$ amounts of time.
 
 
 #### Full composition of multi-patterns
-`full_compose NAME PAT PAT_1 ... PAT_n`
+`full-compose NAME PAT PAT_1 ... PAT_n`
 
 + `NAME` is an identifier.
 + `PAT` is the name of an $m$-multi-pattern of arity $n$.
@@ -159,7 +178,7 @@ this multi-pattern lasts $7$ amounts of time.
 
 
 #### Homogeneous composition of two multi-patterns
-`binarily_compose NAME PAT_1 PAT_2`
+`binarily-compose NAME PAT_1 PAT_2`
 
 + `NAME` is an identifier.
 + `PAT_1` is the name of an $m$-multi-pattern.
@@ -170,17 +189,29 @@ this multi-pattern lasts $7$ amounts of time.
 ### Bud grammar manipulation
 
 #### Colorize a multi-pattern
-`colorize NAME PAT OUT IN_1 ... IN_n`
+`colorize NAME %OUT | PAT | %IN_1 ... %IN_n`
 
 + `NAME` is an identifier.
-+ `PAT` is a multi-pattern of arity $n$.
 + `OUT` is a color.
++ `PAT` is a multi-pattern of arity $n$.
 + `IN_1 ... IN_n` is a list of colors.
 + Bounds the specified identifier to the colored multi-pattern obtained by surrounding the
  multi-pattern `PAT` with the output color `OUT` and the input colors `IN_1 ... IN_n`.
 
+
+#### Mono-colorize a multi-pattern
+`mono-colorize NAME %OUT | PAT | %IN`
+
++ `NAME` is an identifier.
++ `OUT` is a color.
++ `PAT` is a multi-pattern of arity $n$.
++ `IN` is a color.
++ Bounds the specified identifier to the colored multi-pattern obtained by surrounding the
+ multi-pattern `PAT` with the output color `OUT` and the input colors `IN ... IN`.
+
+
 #### Randomly generate a multi-pattern
-`generate NAME SHAPE SIZE COL CPAT_1 ... CPAT_n`
+`generate NAME SHAPE SIZE %COL CPAT_1 ... CPAT_n`
 
 + `NAME` is an identifier.
 + `SHAPE` is `partial`, `full`, or `colored`.

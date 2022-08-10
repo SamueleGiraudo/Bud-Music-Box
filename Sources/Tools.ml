@@ -1,23 +1,10 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2020, oct. 2020,
- * apr. 2021
+ * apr. 2021, jul. 2022
  *)
 
-(* Representation of the 8 terminal colors in order to specify colored text to print. *)
-type color =
-    |Black
-    |Red
-    |Green
-    |Yellow
-    |Blue
-    |Magenta
-    |Cyan
-    |White
-
-(* Tests if the integer value x is different from 0.*)
-let int_to_bool x =
-    x <> 0
+(* About lists. *)
 
 (* Returns the list of integers from a to b. *)
 let interval a b =
@@ -47,12 +34,6 @@ let partial_composition_lists lst_1 i lst_2 =
         lst_2 ;
         list_factor lst_1 i ((List.length lst_1) - i)]
 
-(* Returns the number of elements a starting the list lst. *)
-let rec length_start lst a =
-    match lst with
-        |x :: lst' when x = a -> 1 + length_start lst' a
-        |_ -> 0
-
 (* Returns an element of the list lst picked at random. *)
 let pick_random lst =
     List.nth lst (Random.int (List.length lst))
@@ -61,6 +42,46 @@ let pick_random lst =
  * each element to a string representing it, and sep is a separating string. *)
 let list_to_string element_to_string sep lst =
     lst |> List.map element_to_string |> String.concat sep
+
+
+(* About characters and strings. *)
+
+(* Returns the string obtained by indenting each line of the string str by k spaces. *)
+let indent k str =
+    assert (k >= 0);
+    let ind = String.make k ' ' in
+    str |> String.fold_left
+        (fun (res, c') c ->
+            let s = String.make 1 c in
+            if c' = Some '\n' then (res ^ ind ^ s, Some c) else (res ^ s, Some c))
+        (ind, None)
+        |> fst
+
+(* Tests if the character c is an alphabetic character. *)
+let is_alpha_character c =
+    ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z')
+
+(* Tests if the character c is a character allowed in aliases. *)
+let is_plain_character c =
+     (is_alpha_character c) || ('0' <= c && c <= '9') || c = '_'
+
+
+(* About strings representing paths. *)
+
+(* Returns the extension of the file at path path. *)
+let extension path =
+    let i = String.rindex path '.' in
+    String.sub path i ((String.length path) - i)
+
+(* Tests if the file at path path has the extension ext (with the point). *)
+let has_extension ext path =
+    if not (String.contains path '.') then
+        false
+    else
+        extension path = ext
+
+
+(* About program arguments. *)
 
 (* Tests if the current execution environment admits the string arg as argument. *)
 let has_argument arg =
@@ -82,17 +103,19 @@ let next_arguments arg nb =
     in
     prefix_list (search_suffix args) nb
 
-(* Returns the extension of the file at path path. *)
-let extension path =
-    let i = String.rindex path '.' in
-    String.sub path i ((String.length path) - i)
 
-(* Tests if the file at path path has the extension ext (with the point). *)
-let has_extension ext path =
-    if not (String.contains path '.') then
-        false
-    else
-        extension path = ext
+(* About colors and inputs/outputs. *)
+
+(* Representation of the 8 terminal colors in order to specify colored text to print. *)
+type color =
+    |Black
+    |Red
+    |Green
+    |Yellow
+    |Blue
+    |Magenta
+    |Cyan
+    |White
 
 (* Returns the code for each color corresponding to the coloration code in the terminal. *)
 let color_code col =

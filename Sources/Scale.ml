@@ -1,7 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2020, oct. 2020,
- * apr. 2021
+ * apr. 2021, jul. 2022, aug. 2022
  *)
 
 (* A degree is a (possibly negative) integer. *)
@@ -18,8 +18,8 @@ let is_valid lst =
     else
         lst |> List.for_all (fun x -> x >= 1)
 
-(* The harmonic minor scale. *)
-let minor_harmonic = [2; 1; 2; 2; 1; 3; 1]
+(* The minor natural scale. *)
+let minor_natural = [2; 1; 2; 2; 1; 2; 2]
 
 (* Returns the string representing the scale scale. For instance, the minor pentatonic scale
  * is represented by "3 2 2 3 2". *)

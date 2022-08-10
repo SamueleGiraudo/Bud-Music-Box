@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2019
- * Modifications: aug. 2019, dec. 2019, jan. 2020, apr. 2021
+ * Modifications: aug. 2019, dec. 2019, jan. 2020, apr. 2021, jul. 2022
  *)
 
 (* An exception for errors in conversions between MIDI notes and abc notation. *)
@@ -38,55 +38,48 @@ let midi_to_abc_note note =
         |125 -> "f''''"  |126 -> "^f''''" |127 -> "g''''"
         |_ -> raise Error
 
-(* Returns a string representing the pattern p under the context context in the abc
- * notation. Raises Error if a note encoded by p is outside the MIDI range. *)
-let pattern_to_abc_string context p =
-    let l = Tools.length_start p Atom.Rest in
-    let first_rest_str =
-        if l = 0 then
-            ""
-        else
-            Printf.sprintf "z%d " l
-    in
-    let deg_dur = List.combine (Pattern.degrees p) (Pattern.durations p) in
-    let str = deg_dur |> List.map
-        (fun (deg, dur) ->
-            let note = midi_to_abc_note (Context.degree_to_midi_note context deg) in
-            (Printf.sprintf "%s%d" note dur)) in
-    first_rest_str ^ (String.concat " " str)
+(* Returns a string representing the pattern p under the context ct in the abc notation.
+ * Raises Error if a note encoded by p is outside the MIDI range. *)
+let pattern_to_abc_string ct p =
+    p |> List.map
+        (fun at ->
+            match at with
+                |Atom.Rest -> "z"
+                |Atom.Beat d -> midi_to_abc_note (Context.degree_to_midi_note ct d))
+        |> String.concat " "
 
-(* Returns a string representing the multi-pattern mp under the context context in the abc
+(* Returns a string representing the multi-pattern mp under the context ct in the abc
  * notation. The list midi_sounds contains the respective MIDI codes of the voices. Raises
  * Error if a note encoded by mp is outside the MIDI range. *)
-let multi_pattern_to_abc_string context midi_sounds mp =
+let multi_pattern_to_abc_string ct midi_sounds mp =
     assert (MultiPattern.is_valid mp);
     assert ((List.length midi_sounds) >= (MultiPattern.multiplicity mp));
     assert (midi_sounds |> List.for_all (fun s -> 0 <= s && s < 128));
     let lst = mp |> List.mapi
         (fun i p ->
-            Printf.sprintf "V:voice%d\n%%%%MIDI program %d\n%s\n"
-                (i + 1)
-                (List.nth midi_sounds i)
-                (pattern_to_abc_string context p)) in
-    (String.concat "" lst) ^ "\n"
+            "%\n"
+            ^ Printf.sprintf "V: %d clef=treble\n" (i + 1)
+            ^ "L: 1/4\n"
+            ^ Printf.sprintf "%%%%MIDI program %d\n" (List.nth midi_sounds i)
+            ^ pattern_to_abc_string ct p
+            ^ "\n") in
+    (String.concat "" lst)
 
-(* Returns a string in the abc notation representing the multi-pattern mp under the
- * context context and with the midi sounds specified by the integer list midi_sounds. This
- * string contains all the information to be a valid abc program. Raises Error if a note
- * encoded by mp is outside the MIDI range. *)
-let complete_abc_string context midi_sounds mp =
+(* Returns a string in the abc notation representing the multi-pattern mp under the context
+ * ct and with the midi sounds specified by the integer list midi_sounds. This string
+ * contains all the information to be a valid abc program. Raises Error if a note encoded by
+ * mp is outside the MIDI range. *)
+let complete_abc_string ct midi_sounds mp =
     assert (MultiPattern.is_valid mp);
     assert ((List.length midi_sounds) >= (MultiPattern.multiplicity mp));
     assert (midi_sounds |> List.for_all (fun s -> 0 <= s && s < 128));
-    let res = "" in
-    let res = res ^ "X:1\n" in
-    let res = res ^ "T:Music\n" in
-    let res = res ^ "C:By Bud Music Box\n" in
-    let res = res ^ "K:Am\n"in
-    let res = res ^ "M:8/8\n" in
-    let res = res ^ "L:1/8\n" in
-    let res = res ^ (Printf.sprintf "Q:1/8=%d\n" (Context.tempo context)) in
-    let res = res ^ "%%MIDI nobarlines\n" in
-    let res = res ^ multi_pattern_to_abc_string context midi_sounds mp in
-    res
+      "X: 1\n"
+    ^ "T: Track\n"
+    ^ "C: Bud Music Box\n"
+    ^ "M: 4/4\n"
+    ^ "K: Am\n"
+    ^ Printf.sprintf "Q: 1/4=%d\n" (Context.tempo ct)
+    ^ "%%MIDI nobarlines\n"
+    ^ "%\n"
+    ^ multi_pattern_to_abc_string ct midi_sounds mp
 

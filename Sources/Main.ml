@@ -1,24 +1,24 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, may 2019, aug. 2019, dec. 2019, jan. 2020
- * apr. 2020, may 2020, oct. 2020, apr. 2021
+ * apr. 2020, may 2020, oct. 2020, apr. 2021, jul. 2022, aug. 2022
  *)
 
 let name = "Bud Music Box"
 let logo = "8/\\/\\8"
-(* let version = "0.01"
- * let version = "0.10"
- * let version = "0.11"
- * let version = "0.111"
- * let version = "0.1111"
- * let version = "1.001"
- *)
-let version = "1.011" and version_date = "2021-04-17"
+(* let version = "0.01" *)
+(* let version = "0.10" *)
+(* let version = "0.11" *)
+(* let version = "0.111" *)
+(* let version = "0.1111" *)
+(* let version = "1.001" *)
+(* let version = "1.011" and version_date = "2021-04-17" *)
+let version = "1.100" and version_date = "2022-08-10"
 let author = "Samuele Giraudo"
-let email = "samuele.giraudo@u-pem.fr"
+let email = "samuele.giraudo@univ-eiffel.fr"
 
 let information =
-    Printf.sprintf "%s\n%s\nCopyright (C) 2019--2021 %s\nWritten by %s [%s]\n\
+    Printf.sprintf "%s\n%s\nCopyright (C) 2019--2022 %s\nWritten by %s [%s]\n\
         Version: %s (%s)\n"
         logo name author author email version version_date
 

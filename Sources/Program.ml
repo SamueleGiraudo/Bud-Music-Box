@@ -1,13 +1,13 @@
 (* Author: Samuele Giraudo
  * Creation: oct. 2020
- * Modifications: oct. 2020, apr. 2021
+ * Modifications: oct. 2020, apr. 2021, jul. 2022, aug. 2022
  *)
-
-(* Names for paths. *)
-type path = string
 
 (* Names for multi-patterns and colored multi-patterns. *)
 type name = string
+
+(* Names for paths. *)
+type path = string
 
 (* The different possible degree monoids. *)
 type degree_monoid =
@@ -24,11 +24,10 @@ type instruction =
     |SetRoot of Context.midi_note
     |SetTempo of int
     |SetSounds of int list
-    |SetMonoidAddInt
-    |SetMonoidCyclic of int
-    |SetMonoidMax of int
+    |SetDegreeMonoid of degree_monoid
     |MultiPattern of name * MultiPattern.multi_pattern
     |Mirror of name * name
+    |Inverse of name * name
     |Concatenate of name * (name list)
     |Repeat of name * name * int
     |Stack of name * (name list)
@@ -36,6 +35,7 @@ type instruction =
     |FullCompose of name * name * (name list)
     |HomogeneousCompose of name * name * name
     |Colorize of name * name * BudGrammar.color * (BudGrammar.color list)
+    |MonoColorize of name * name * BudGrammar.color * BudGrammar.color
     |Generate of name * BudGrammar.generation_shape * int * BudGrammar.color * (name list)
 
 (* A program is a list of instructions. *)
@@ -43,18 +43,18 @@ type program = instruction list
 
 (* The state is the internal memory during the execution of a program. *)
 type state = {
-    context : Context.context;
-    midi_sounds : int list;
-    degree_monoid : degree_monoid;
-    multi_patterns : (string * MultiPattern.multi_pattern) list;
-    colored_multi_patterns : (string * MultiPattern.colored_multi_pattern) list
+    context: Context.context;
+    midi_sounds: int list;
+    degree_monoid: degree_monoid;
+    multi_patterns: (string * MultiPattern.multi_pattern) list;
+    colored_multi_patterns: (string * MultiPattern.colored_multi_pattern) list
 }
 
 (* Exception raised when a dynamic error is encountered. *)
 exception ExecutionError of string
 
-(* Returns the default midi sound (Acoustic Grand Piano). *)
-let default_midi_sound = 0
+(* Returns the default midi sound (Kalimba). *)
+let default_midi_sound = 108
 
 (* Returns the extension of the file containing commands for the generation. *)
 let extension = ".bmb"
@@ -63,11 +63,11 @@ let extension = ".bmb"
 let path_results = "Outputs"
 
 (* The prefix of all the generated temporary result files. *)
-let prefix_result = "Phrase_"
+let prefix_result = "Track_"
 
 (* Returns the initial state. *)
 let initial_state =
-    {context = Context.create Scale.minor_harmonic 57 192;
+    {context = Context.create Scale.minor_natural 57 120;
     midi_sounds = [];
     degree_monoid = AddInt;
     multi_patterns = [];
@@ -96,9 +96,9 @@ let state_to_string st =
          # Multi-patterns:\n%s\n\
          # Colored multi-patterns:\n%s"
         (Context.to_string st.context)
-        ("    " ^ (Tools.list_to_string string_of_int " " st.midi_sounds))
-        ("    " ^ (degree_monoid_to_string st.degree_monoid))
-        ("    " ^ (Tools.list_to_string
+        (Tools.indent 4 (Tools.list_to_string string_of_int " " st.midi_sounds))
+        (Tools.indent 4 (degree_monoid_to_string st.degree_monoid))
+        (Tools.indent 4 (Tools.list_to_string
             (fun (name, mpat) ->
                 Printf.sprintf "%s = [multiplicity = %d, length = %d, arity = %d] %s"
                 name
@@ -106,26 +106,20 @@ let state_to_string st =
                 (MultiPattern.length mpat)
                 (MultiPattern. arity mpat)
                 (MultiPattern.to_string mpat))
-            "\n    "
+            "\n"
             st.multi_patterns))
-        ("    " ^ (Tools.list_to_string
+        (Tools.indent 4 (Tools.list_to_string
             (fun (name, cpat) ->
                 Printf.sprintf "%s = %s" name
                     (BudGrammar.colored_element_to_string MultiPattern.to_string cpat))
-            "\n    "
+            "\n"
             st.colored_multi_patterns))
+        |> Tools.indent 4
 
 (* Tests if str is a multi-pattern, a colored multi-pattern, or a color name. *)
 let is_name str =
-    let len = String.length str in
-    if len = 0 then
-        false
-    else
-        Tools.interval 0 (len - 1) |> List.for_all
-            (fun i ->
-                let a = String.get str i in
-                ('a' <= a && a <= 'z') ||  ('A' <= a && a <= 'Z')
-                    ||  ('0' <= a && a <= '9') || a = '_')
+    String.length str >= 1 && Tools.is_alpha_character (String.get str 0)
+        && String.for_all Tools.is_plain_character str
 
 (* Returns an option on the multi-pattern of name name in the state st. If there is no such
  * multi-pattern, None is returned. *)
@@ -181,9 +175,9 @@ let create_files st mpat file_name =
             |ABCNotation.Error -> false
     end
 
-(* Plays the phrase from the state st. Returns true if the playing is possible and false
+(* Plays the track from the state st. Returns true if the playing is possible and false
  * otherwise. *)
-let play_phrase st mpat =
+let play_track st mpat =
     if not (Sys.file_exists path_results) then
         Sys.command ("mkdir -p " ^ path_results) |> ignore
     else
@@ -196,7 +190,7 @@ let play_phrase st mpat =
     else
         let file_name_mid = file_name ^ ".mid" in
         let err = Printf.sprintf "timidity %s &> /dev/null" file_name_mid |> Sys.command in
-        not (Tools.int_to_bool err)
+        (err = 0)
 
 (* Executes the instruction instr on the state st and returns the new state after the
  * execution of instr. Produces also the specified side effect by instr. *)
@@ -222,11 +216,11 @@ let execute_instruction instr st =
             let mpat = multi_pattern_with_name st mpat_name in
             if Option.is_none mpat then
                 raise (ExecutionError "Unknown multi-pattern name.");
-            Tools.print_information "Playing phrase...";
-            let ok = play_phrase st (Option.get mpat) in
+            Tools.print_information "Playing track...";
+            let ok = play_track st (Option.get mpat) in
             if not ok then
                 raise (ExecutionError "Error in playing.");
-            Tools.print_information "Phrase played.";
+            Tools.print_information "Track played.";
             st
         end
         |SetScale scale -> begin
@@ -262,23 +256,9 @@ let execute_instruction instr st =
                 |> Tools.print_information;
             st'
         end
-        |SetMonoidAddInt -> begin
-            let st' = {st with degree_monoid = AddInt} in
-            Printf.sprintf "Degree monoid set to %s." (degree_monoid_to_string AddInt)
-                |> Tools.print_information;
-            st'
-        end
-        |SetMonoidCyclic k -> begin
-            if k <= 0 then
-                raise (ExecutionError "The order of the cyclic monoid is not correct.");
-            let st' = {st with degree_monoid = Cyclic k} in
-            Printf.sprintf "Degree monoid set to %s." (degree_monoid_to_string (Cyclic k))
-                |> Tools.print_information;
-            st'
-        end
-        |SetMonoidMax z -> begin
-            let st' = {st with degree_monoid = Max z} in
-            Printf.sprintf "Degree monoid set to %s." (degree_monoid_to_string (Max z))
+        |SetDegreeMonoid dm -> begin
+            let st' = {st with degree_monoid = dm} in
+            Printf.sprintf "Degree monoid set to %s." (degree_monoid_to_string dm)
                 |> Tools.print_information;
             st'
         end
@@ -302,6 +282,17 @@ let execute_instruction instr st =
             let res = MultiPattern.mirror (Option.get mpat) in
             let st' = add_multi_pattern st res_name res in
             Tools.print_information "Mirror computed.";
+            st'
+        end
+        |Inverse (res_name, mpat_name) -> begin
+            if not (is_name res_name) then
+                raise (ExecutionError "Bad multi-pattern name.");
+            let mpat = multi_pattern_with_name st mpat_name in
+            if Option.is_none mpat then
+                raise (ExecutionError "Unknown multi-pattern name.");
+            let res = MultiPattern.map (fun d -> -d) (Option.get mpat) in
+            let st' = add_multi_pattern st res_name res in
+            Tools.print_information "Inverse computed.";
             st'
         end
         |Concatenate (res_name, mpat_names_lst) -> begin
@@ -423,6 +414,18 @@ let execute_instruction instr st =
                 raise (ExecutionError "Bad number of input colors.");
             let cpat = BudGrammar.create_colored_element out_color (Option.get mpat)
                 in_colors in
+            let st' = add_colored_multi_pattern st res_name cpat in
+            Tools.print_information "Colored multi-pattern added.";
+            st'
+        end
+        |MonoColorize (res_name, mpat_name, out_color, in_color) -> begin
+            if not (is_name res_name) then
+                raise (ExecutionError "Bad multi-pattern name.");
+            let mpat = multi_pattern_with_name st mpat_name in
+            if Option.is_none mpat then
+                raise (ExecutionError "Unknown multi-pattern name.");
+            let cpat = BudGrammar.create_colored_element out_color (Option.get mpat)
+                (List.init (MultiPattern.arity (Option.get mpat)) (Fun.const in_color)) in
             let st' = add_colored_multi_pattern st res_name cpat in
             Tools.print_information "Colored multi-pattern added.";
             st'

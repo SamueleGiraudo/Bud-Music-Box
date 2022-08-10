@@ -1,15 +1,15 @@
 scale 3 2 2 3 2
 root 57
-tempo 128
-sounds 0 2
+tempo 256
+sounds 1 1
 
-multi_pattern p1 0 * * 1 2 3 * * ; 0 -5 * * * * 0 0
-multi_pattern p2 0 ; 0
+multi-pattern p1 0 . . 1 2 3 . . + 0 -5 . . . . 0 0
+multi-pattern p2 0 + 0
 
-colorize c1 p1 a a b a a
-colorize c2 p2 b b
+colorize c1 %a | p1 | %a %b %a %a
+colorize c2 %b | p2 | %b
 
-generate res full 4 a c1 c2
+generate res full 4 %a c1 c2
 show
 play res
 

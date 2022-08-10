@@ -1,15 +1,15 @@
 scale 2 1 4 1 4
 root 57
 tempo 192
-sounds 107 107
+sounds 0 0
 
-multi_pattern p1 0 * 1 * 2 ; 0 0 * * -5
-multi_pattern p2 0 * ; * 0
+multi-pattern p1 0 . 1 . 2 + 0 0 . . -5
+multi-pattern p2 0 . + . 0
 
-colorize c1 p1 a a a b
-colorize c2 p2 a a
+colorize c1 %a | p1 | %a %a %b
+colorize c2 %a | p2 | %a
 
-generate res partial 64 a c1 c2
+generate res partial 64 %a c1 c2
 show
 play res
 

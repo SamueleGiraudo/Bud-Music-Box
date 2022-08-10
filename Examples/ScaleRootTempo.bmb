@@ -1,5 +1,5 @@
-{By default, the ambient scale is the harmonic minor scale.}
-multi_pattern increasing_7 0 1 2 3 4 5 6 7
+{By default, the ambient scale is the minor natural scale.}
+multi-pattern increasing_7 0 1 2 3 4 5 6 7
 
 play increasing_7
 
@@ -19,10 +19,10 @@ root 45
 play increasing_7
 
 
-{ By default, multi-pattern are played at a speed of 192 beats by minute.}
+{ By default, multi-pattern are played at a speed of 120 beats by minute.}
 
 { Let us change this tempo by providing a new value...}
-tempo 312
+tempo 240
 
 { ... and play the previous pattern (therefore, faster).}
 play increasing_7

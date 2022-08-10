@@ -1,6 +1,7 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
- * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, may. 2020, oct. 2020
+ * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, may. 2020, oct. 2020,
+ * jul. 2022, aug. 2022
  *)
 
 (* An exception for errors in handling atoms. *)
@@ -16,7 +17,7 @@ type atom =
  * is represented by the value of its degree in base ten. *)
 let to_string a =
     match a with
-        |Rest -> "*"
+        |Rest -> "."
         |Beat d -> string_of_int d
 
 (* Tests if the atom a is a rest. *)
@@ -44,14 +45,6 @@ let is_on_degree_monoid dm a =
     match a with
         |Rest -> true
         |Beat d -> DegreeMonoid.is_element dm d
-
-(* Returns the product of the atoms a1 and a2 w.r.t. the degree monoid dm. *)
-let product dm a1 a2 =
-    match a1, a2 with
-        |Rest, Rest -> Rest
-        |Rest, Beat _ -> Rest
-        |Beat _, Rest -> Rest
-        |Beat d1, Beat d2 -> Beat (DegreeMonoid.product dm d1 d2)
 
 (* Returns Rest if the atom a is a rest and otherwise returns the atom having as degree the
  * image by f of the degree of a. *)
