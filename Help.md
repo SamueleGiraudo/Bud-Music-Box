@@ -196,7 +196,7 @@ By default, the additive degree monoid is used.
 + `PAT` is a multi-pattern of arity $n$.
 + `IN_1 ... IN_n` is a list of colors.
 + Bounds the specified identifier to the colored multi-pattern obtained by surrounding the
- multi-pattern `PAT` with the output color `OUT` and the input colors `IN_1 ... IN_n`.
+  multi-pattern `PAT` with the output color `OUT` and the input colors `IN_1 ... IN_n`.
 
 
 #### Mono-colorize a multi-pattern
@@ -207,7 +207,7 @@ By default, the additive degree monoid is used.
 + `PAT` is a multi-pattern of arity $n$.
 + `IN` is a color.
 + Bounds the specified identifier to the colored multi-pattern obtained by surrounding the
- multi-pattern `PAT` with the output color `OUT` and the input colors `IN ... IN`.
+  multi-pattern `PAT` with the output color `OUT` and the input colors `IN ... IN`.
 
 
 #### Randomly generate a multi-pattern

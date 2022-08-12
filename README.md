@@ -108,7 +108,9 @@ executes line by line each of its instructions.
 
 
 ## Miscellaneous
-To get the syntax highlighting in `vim`, follow the instructions in [bmb.vim](Vim/bmb.vim).
+To get the syntax highlighting in the text editor `vim` for the Bud Music Box language, put
+the file [bmb.vim](Vim/syntax/bmb.vim) at `~/.vim/syntax/bmb.vim` and the file
+[bmb.vim](Vim/ftdetect/bmb.vim) at `~/.vim/fdetect/bmb.vim`.
 
 
 ## Theoretical aspects

@@ -4,8 +4,6 @@
 
 " Syntax file of the Bud Music Box language.
 " This file has to be at ~/.vim/syntax/bmb.vim
-" Moreover, the file ~/.vim/fdetect/bmb.vim has to be created with the content
-" au BufRead,BufNewFile *.bmb set filetype=bmb
 
 if exists("b:current_syntax")
     finish
