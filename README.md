@@ -17,7 +17,7 @@ Copyright (C) 2019--2022 Samuele Giraudo - `samuele.giraudo@u-pem.fr` -
     + Implementation of degree monoids: three monoids are proposed (the additive monoid,
       cyclic monoids, avec `max` monoids).
     + Big simplification of the language: the built-in constructions `transpose`,
-      `temporize`, `rhythmize`, `harmonize`, and `arpeggiate` have been supressed.
+      `temporize`, `rhythmize`, `harmonize`, and `arpeggiate` have been removed.
     + The patterns forming a multi-pattern must have the same arity.
     + Improved parsing and error messages.
 + `1.001` (2020-10-16)
@@ -67,6 +67,14 @@ over them, and to randomly generate some of them. Results can be converted to fi
 + An [example](Examples/CompletePen3.bmb) on the minor pentatonic scale.
 
 
+### Other examples
++ A [Mix of patterns](Examples/Mix.bmb).
++ A [horizontal transformations](Examples/Horizontal.bmb).
++ A [vertical transformations](Examples/Vertical.bmb).
++ Some [local variations](Examples/Variation.bmb).
++ A [full piece](Examples/Composition.bmb).
+
+
 ## Building
 The following instructions hold for Linux systems like Debian or Archlinux, after 2021.
 
@@ -84,12 +92,13 @@ This creates an executable `bmb`.
 The following programs are needed:
 
 + `pkg-config`
++ `make`
 + `ocaml` (Version `>= 4.13.1`. An inferior but not too old version may be suitable.)
 + `opam`
 + `ocamlbuild` (Available by `opam install ocamlbuild`.)
 + `ocamlfind` (Available by `opam install ocamlfind`.)
 + `extlib` (Available by `opam install extlib`.)
-+ `menhir` (Available by `opam install graphics`.)
++ `menhir` (Available by `opam install menhir`.)
 + `abcmidi`
 + `abcm2ps`
 + `timidity`
@@ -104,7 +113,7 @@ Files containing such instructions must have `bmb` as extension. Given such a fi
 
 `./bmb -f Program.bmb`
 
-executes line by line each of its instructions.
+executes the instructions of `Program.bmb`, sequentially from the first one to the last one.
 
 
 ## Miscellaneous
@@ -117,10 +126,11 @@ the file [bmb.vim](Vim/syntax/bmb.vim) at `~/.vim/syntax/bmb.vim` and the file
 An operad is an algebraic structure wherein elements are operations. This program is based
 upon an operad on an abstraction of polyphonic musical phrases called multi-patterns,
 forming the music box model. The set of these objects is endowed with the structure of an
-operad allowing us to perform computations on musical phrases. The operad structure on
-multi-patterns makes it possible to see any multi-pattern as an operation on multi-patterns.
-The main idea is that one can, from a set of small musical phrases, generate randomly a new
-musical phrase by computing some random compositions of these patterns.
+operad allowing us to perform computations on musical phrases. Indeed, the operad structure
+on multi-patterns makes it possible to see any multi-pattern as an operation on
+multi-patterns. The main idea is that one can, from a set of small musical phrases, generate
+randomly a new musical phrase by computing some random compositions of these patterns.
+
 
 ## Bibliography
 
