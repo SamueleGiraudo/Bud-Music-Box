@@ -1,0 +1,25 @@
+{Horizontal transformations.}
+
+{Sets some context data.}
+scale 2 1 2 2 1 2 2 {Minor natural scale.}
+root 57
+tempo 120
+sounds 108 {Kalimba sound.}
+monoid add-int
+
+{The multi-pattern of multiplicity 1 which will be altered.}
+multi-pattern p 0 1 . -1 0 . 2 0 .
+
+{Definition of multi-patterns.}
+mirror p1 p {Retrograde.}
+inverse p2 p {Inverse.}
+
+{Colorization of the multi-patterns.}
+mono-colorize c %b1 | p | %b1
+mono-colorize c1 %b1 | p1 | %b1
+mono-colorize c2 %b1 | p2 | %b1
+
+generate res partial 4 %b1 c c1 c2
+show
+play res
+

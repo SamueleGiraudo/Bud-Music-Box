@@ -1,0 +1,46 @@
+{Complete composition.}
+
+{Sets some context data.}
+scale 2 1 2 2 1 2 2 {Minor natural scale.}
+root 57
+tempo 150
+sounds 0 1
+monoid add-int
+
+{Two patterns.}
+multi-pattern p1 0 . 0 -2 2 . -1 0
+multi-pattern p2 0 2 . -2 0 2 0 .
+
+{Some multi-patterns derived from the two previous ones.}
+inverse p1_inv p1
+inverse p2_inv p2
+mirror p1_inv_mir p1_inv
+mirror p2_inv_mir p2_inv
+stack p1__p1_inv_mir p1 p1_inv_mir
+stack p2__p2_inv_mir p2 p2_inv_mir
+
+{First phase: vertical transformation of p1.}
+mono-colorize phase_1_c1 %phase_1 | p1__p1_inv_mir | %phase_1
+
+{Second phase: mix of multi-patterns.}
+mono-colorize phase_2_c1 %phase_2 | p1__p1_inv_mir | %phase_2
+mono-colorize phase_2_c2 %phase_2 | p2__p2_inv_mir | %phase_2
+
+{Third phase: vertical transformation of p2.}
+mono-colorize phase_3_c1 %phase_3 | p2__p2_inv_mir | %phase_3
+
+{Structure multi-pattern.}
+multi-pattern structure 7 -1 7 14 2 14 + 0 -8 0 0 -5 0
+colorize structure_c
+    %start | structure | %phase_1 %phase_1 %phase_2 %phase_2 %phase_3 %phase_3
+
+{Random generation.}
+generate res full 3 %start
+    structure_c
+    phase_1_c1
+    phase_2_c1 phase_2_c2
+    phase_3_c1
+
+show
+play res
+

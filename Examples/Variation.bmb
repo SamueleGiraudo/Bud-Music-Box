@@ -1,0 +1,31 @@
+{Variation of pattern 2.}
+
+{Sets some context data.}
+scale 2 1 2 2 1 2 2 {Minor natural scale.}
+root 57
+tempo 120
+sounds 108 {Kalimba sound.}
+monoid add-int
+
+{The multi-pattern of multiplicity 1 which will be altered.}
+multi-pattern p 0 1 . -1 0 . 2 0 .
+stack m p p
+
+{Definition of multi-patterns.}
+multi-pattern m1 0 0 . + . 0 0
+multi-pattern m2 0 + 4
+
+{The unit of the right multiplicity.}
+multi-pattern u 0 + 0
+
+{Colorization of the multi-patterns.}
+mono-colorize c1 %b1 | m | %b2
+mono-colorize c2 %b2 | m | %b2
+mono-colorize cm1 %b2 | m1 | %b3
+colorize cm2 %b2 | m2 | %b3
+colorize cu %b3 | u | %b3
+
+generate res full 2 %b1 c1 c2 cm1 cm2 cu
+show
+play res
+

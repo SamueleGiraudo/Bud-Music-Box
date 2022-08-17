@@ -1,0 +1,28 @@
+{Mix.}
+
+{Sets some context data.}
+scale 2 1 2 2 1 2 2 {Minor natural scale.}
+root 57
+tempo 120
+sounds 108 108 {Kalimba sound.}
+monoid add-int
+
+{The multi-patterns which will be mixed.}
+multi-pattern m1
+    0 . 0 1 2 -1 . -1 0 1 -2 . 0
+    +
+    -3 . 0 1 2 -4 . -1 0 1 2 -3 .
+
+multi-pattern m2
+    0 4 0 5 . 1 2 0
+    +
+    0 4 0 . -2 1 2 0
+
+{Colorization of the multi-patterns.}
+mono-colorize c1 %b1 | m1 | %b1
+mono-colorize c2 %b1 | m2 | %b1
+
+generate res partial 3 %b1 c1 c2
+show
+play res
+
