@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: oct. 2020
- * Modifications: oct. 2020, apr. 2021, jul. 2022, aug. 2022
+ * Modifications: oct. 2020, apr. 2021, jul. 2022, aug. 2022, nov. 2023
  *)
 
 %token PLUS
@@ -40,7 +40,7 @@
 
 %token EOF
 
-%start <Program.program> program
+%start <Programs.programs> program
 
 %%
 
@@ -48,35 +48,35 @@ program:
     |lst=list(instruction) EOF {lst}
 
 instruction:
-    |SHOW {Program.Show}
-    |WRITE mp_name=NAME file_name=NAME {Program.Write (mp_name, file_name)}
-    |PLAY mp_name=NAME {Program.Play mp_name}
-    |SCALE scale=nonempty_list(INTEGER) {Program.SetScale scale}
-    |ROOT midi_note=INTEGER {Program.SetRoot midi_note}
-    |TEMPO tempo=INTEGER {Program.SetTempo tempo}
-    |SOUNDS midi_sounds=nonempty_list(INTEGER) {Program.SetSounds midi_sounds}
-    |MONOID dm=monoid {Program.SetDegreeMonoid dm}
-    |MULTI_PATTERN mp_name=NAME mp=multi_pattern {Program.MultiPattern (mp_name, mp)}
-    |MIRROR res_name=NAME mp_name=NAME {Program.Mirror (res_name, mp_name)}
-    |INVERSE res_name=NAME mp_name=NAME {Program.Inverse (res_name, mp_name)}
+    |SHOW {Programs.Show}
+    |WRITE mp_name=NAME file_name=NAME {Programs.Write (mp_name, file_name)}
+    |PLAY mp_name=NAME {Programs.Play mp_name}
+    |SCALE scale=nonempty_list(INTEGER) {Programs.SetScale (Scales.Scale scale)}
+    |ROOT midi_note=INTEGER {Programs.SetRoot midi_note}
+    |TEMPO tempo=INTEGER {Programs.SetTempo tempo}
+    |SOUNDS midi_sounds=nonempty_list(INTEGER) {Programs.SetSounds midi_sounds}
+    |MONOID dm=monoid {Programs.SetDegreeMonoid dm}
+    |MULTI_PATTERN mp_name=NAME mp=multi_pattern {Programs.MultiPattern (mp_name, mp)}
+    |MIRROR res_name=NAME mp_name=NAME {Programs.Mirror (res_name, mp_name)}
+    |INVERSE res_name=NAME mp_name=NAME {Programs.Inverse (res_name, mp_name)}
     |CONCATENATE res_name=NAME mp_names_lst=nonempty_list(NAME)
-        {Program.Concatenate (res_name, mp_names_lst)}
-    |REPEAT res_name=NAME mp_name=NAME k=INTEGER {Program.Repeat (res_name, mp_name, k)}
+        {Programs.Concatenate (res_name, mp_names_lst)}
+    |REPEAT res_name=NAME mp_name=NAME k=INTEGER {Programs.Repeat (res_name, mp_name, k)}
     |STACK res_name=NAME mp_names_lst=nonempty_list(NAME)
-        {Program.Stack (res_name, mp_names_lst)}
+        {Programs.Stack (res_name, mp_names_lst)}
     |PARTIAL_COMPOSE res_name=NAME mp_name_1=NAME pos=INTEGER mp_name_2=NAME
-        {Program.PartialCompose (res_name, mp_name_1, pos, mp_name_2)}
+        {Programs.PartialCompose (res_name, mp_name_1, pos, mp_name_2)}
     |FULL_COMPOSE res_name=NAME mp_name=NAME mp_names_lst=nonempty_list(NAME)
-        {Program.FullCompose (res_name, mp_name, mp_names_lst)}
+        {Programs.FullCompose (res_name, mp_name, mp_names_lst)}
     |HOMOGENEOUS_COMPOSE res_name=NAME mp_name_1=NAME mp_name_2=NAME
-        {Program.HomogeneousCompose (res_name, mp_name_1, mp_name_2)}
+        {Programs.HomogeneousCompose (res_name, mp_name_1, mp_name_2)}
     |COLORIZE res_name=NAME out_color=color PIPE mp_name=NAME PIPE in_colors=list(color)
-        {Program.Colorize (res_name, mp_name, out_color, in_colors)}
+        {Programs.Colorize (res_name, mp_name, out_color, in_colors)}
     |MONO_COLORIZE res_name=NAME out_color=color PIPE mp_name=NAME PIPE in_color=color
-        {Program.MonoColorize (res_name, mp_name, out_color, in_color)}
+        {Programs.MonoColorize (res_name, mp_name, out_color, in_color)}
     |GENERATE res_name=NAME shape=shape size=INTEGER color=color
             cmp_names_lst=nonempty_list(NAME)
-        {Program.Generate (res_name, shape, size, color, cmp_names_lst)}
+        {Programs.Generate (res_name, shape, size, color, cmp_names_lst)}
 
 multi_pattern:
     |mp_lst=separated_nonempty_list(PLUS, pattern) {mp_lst}
@@ -85,19 +85,19 @@ pattern:
     |pat=list(atom) {pat}
 
 atom:
-    |DOT {Atom.Rest}
-    |d=INTEGER {Atom.Beat d}
+    |DOT {Atoms.Rest}
+    |n=INTEGER {Atoms.Beat (Degrees.Degree n)}
 
 monoid:
-    |ADD_INT {Program.AddInt}
-    |CYCLIC k=INTEGER {Program.Cyclic k}
-    |MAX z=INTEGER {Program.Max z}
+    |ADD_INT {Programs.AddInt}
+    |CYCLIC k=INTEGER {Programs.Cyclic k}
+    |MAX z=INTEGER {Programs.Max z}
 
 color:
     |PERCENT c=NAME {c}
 
 shape:
-    |PARTIAL {BudGrammar.Partial}
-    |FULL {BudGrammar.Full}
-    |HOMOGENEOUS {BudGrammar.Homogeneous}
+    |PARTIAL {BudGrammars.Partial}
+    |FULL {BudGrammars.Full}
+    |HOMOGENEOUS {BudGrammars.Homogeneous}
 

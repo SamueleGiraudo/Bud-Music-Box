@@ -1,12 +1,12 @@
 (* Author: Samuele Giraudo
  * Creation: dec. 2019
- * Modifications: dec. 2019, jan. 2020, apr. 2020, apr. 2021, aug. 2022
+ * Modifications: dec. 2019, jan. 2020, apr. 2020, apr. 2021, aug. 2022, nov. 2023
  *)
 
 (* A set of parameters for the pattern generation from bud grammars. *)
 type parameters = {
     nb_steps: int;
-    shape: BudGrammar.generation_shape
+    shape: BudGrammars.generation_shapes
 }
 
 (* Returns the parameters with the specified information. *)
@@ -27,10 +27,10 @@ let shape param =
  * and degree monoid dm. *)
 let from_colored_multi_patterns param initial_color dm colored_multi_patterns =
     assert (colored_multi_patterns <> []);
-    let m = MultiPattern.multiplicity (BudGrammar.get_element
+    let m = MultiPatterns.multiplicity (BudGrammars.get_element
         (List.hd colored_multi_patterns)) in
-    let budg = BudGrammar.create
-        (MultiPattern.operad dm m) colored_multi_patterns initial_color in
-    let res = BudGrammar.random_generator budg param.nb_steps param.shape in
-    BudGrammar.get_element res
+    let budg = BudGrammars.create
+        (MultiPatterns.operad dm m) colored_multi_patterns initial_color in
+    let res = BudGrammars.random_generator budg param.nb_steps param.shape in
+    BudGrammars.get_element res
 

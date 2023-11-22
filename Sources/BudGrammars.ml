@@ -1,28 +1,28 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020,
- * apr. 2020, oct. 2020, aug. 2022
+ * apr. 2020, oct. 2020, aug. 2022, nov. 2023
  *)
 
 (* A color is a name (string). *)
-type color = string
+type colors = string
 
 (* A colored element is an element of an operad augmented with output an input colors. *)
-type 'a colored_element = {
-    out_color: color ;
+type 'a colored_elements = {
+    out_color: colors ;
     element: 'a ;
-    in_colors: color list
+    in_colors: colors list
 }
 
 (* Bud grammar. *)
-type 'a bud_grammar = {
-    operad: 'a Operad.operad;
-    generators: 'a colored_element list;
-    initial_color: color
+type 'a bud_grammars = {
+    operad: 'a Operads.operads;
+    generators: 'a colored_elements list;
+    initial_color: colors
 }
 
 (* A type for specifying a random generation shape. *)
-type generation_shape =
+type generation_shapes =
     |Partial
     |Full
     |Homogeneous
@@ -30,7 +30,7 @@ type generation_shape =
 (* Tests if ce is a well-formed colored element. This is the case if and only if the number
  * of input colors is the same as the arity of the underlying element of ce. *)
 let is_colored_element operad ce =
-    (Operad.arity operad ce.element) = (List.length ce.in_colors)
+    (Operads.arity operad ce.element) = (List.length ce.in_colors)
 
 (* Returns the colored element with the specified attributes. *)
 let create_colored_element out_color element in_colors =
@@ -51,7 +51,7 @@ let colored_element_to_string element_to_string ce =
     Printf.sprintf "%%%s | %s | %s"
         ce.out_color
         (element_to_string (get_element ce))
-        (Tools.list_to_string (fun c -> "%" ^ c) " " ce.in_colors)
+        (Strings.from_list (fun c -> "%" ^ c) " " ce.in_colors)
 
 (* Returns the bud grammar with the specified attributes. *)
 let create operad generators initial_color =
@@ -60,19 +60,19 @@ let create operad generators initial_color =
 
 (* Returns the arity of the colored element ce in the bud grammar budg. *)
 let arity budg ce =
-    (Operad.arity budg.operad) ce.element
+    (Operads.arity budg.operad) ce.element
 
 (* Returns the colored inity of color of the bud grammar budg. *)
 let colored_unity budg color =
-    {out_color = color; element = Operad.unity budg.operad; in_colors = [color]}
+    {out_color = color; element = Operads.unity budg.operad; in_colors = [color]}
 
 (* Returns the partial composition of y at position i in x in the colored operad of the bud
  * grammar budg. *)
 let partial_composition budg x i y =
     assert ((1 <= i) && (i <= arity budg x));
     assert (y.out_color = (List.nth x.in_colors (i - 1)));
-    let z' = Operad.partial_composition budg.operad x.element i y.element in
-    let in_colors = Tools.partial_composition_lists x.in_colors i y.in_colors in
+    let z' = Operads.partial_composition budg.operad x.element i y.element in
+    let in_colors = Lists.partial_composition x.in_colors i y.in_colors in
     {out_color = x.out_color; element = z'; in_colors = in_colors}
 
 (* Returns the full composition of each elements of the list lst in x in the colored operad
@@ -103,7 +103,7 @@ let generators_with_out_color budg c =
  * the bug grammar budg after nb_iter iterations. *)
 let partial_random_generator budg nb_iter =
     assert (nb_iter >= 0);
-    Tools.interval 1 nb_iter |> List.fold_left
+    Lists.interval 1 nb_iter |> List.fold_left
         (fun res _ ->
             let ar = arity budg res in
             if ar = 0 then
@@ -114,7 +114,7 @@ let partial_random_generator budg nb_iter =
                 if candidates = [] then
                     res
                 else
-                    let y = Tools.pick_random candidates in
+                    let y = Lists.pick_random candidates in
                     partial_composition budg res i y)
         (colored_unity budg budg.initial_color)
 
@@ -122,14 +122,14 @@ let partial_random_generator budg nb_iter =
  * bug grammar budg after nb_iter iterations. *)
 let full_random_generator budg nb_iter =
     assert (nb_iter >= 0);
-    Tools.interval 1 nb_iter |> List.fold_left
+    Lists.interval 1 nb_iter |> List.fold_left
         (fun res _ ->
             let candidates =  res.in_colors |> List.map
                 (fun c -> generators_with_out_color budg c) in
             if candidates |> List.exists (fun lst -> lst = []) then
                 res
             else
-                let picked_gens = candidates |> List.map Tools.pick_random in
+                let picked_gens = candidates |> List.map Lists.pick_random in
                 full_composition budg res picked_gens)
         (colored_unity budg budg.initial_color)
 
@@ -139,9 +139,9 @@ let full_random_generator budg nb_iter =
  * generated at the previous step. *)
 let homogeneous_random_generator budg nb_iter =
     assert (nb_iter >= 0);
-    Tools.interval 1 nb_iter |> List.fold_left
+    Lists.interval 1 nb_iter |> List.fold_left
         (fun res _ ->
-            let y = Tools.pick_random budg.generators in
+            let y = Lists.pick_random budg.generators in
             colored_composition budg res y)
         (colored_unity budg budg.initial_color)
 

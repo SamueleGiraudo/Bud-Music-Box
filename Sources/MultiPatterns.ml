@@ -1,26 +1,25 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, aug. 2019, sep. 2019, dec. 2019, jan. 2020, apr. 2020, may 2020
- * oct. 2020, apr. 2021, jul. 2022
+ * oct. 2020, apr. 2021, jul. 2022, nov. 2023
  *)
 
 (* A multi-pattern is a nonempty list of patterns such that all its patterns have the same
  * length and the same arity. *)
-type multi_pattern = Pattern.pattern list
+type multi_patterns = Patterns.patterns list
 
 (* A colored multi-pattern is a multi-pattern surrounded with an output color an input
  * colors. *)
-type colored_multi_pattern =
-    multi_pattern BudGrammar.colored_element
+type colored_multi_pattern = multi_patterns BudGrammars.colored_elements
 
 (* Tests if the list lst of patterns is a multi-pattern. *)
 let is_valid lst =
     match lst with
         |[] -> true
         |p :: lst' ->
-            let len = Pattern.length p and ar = Pattern.arity p in
+            let len = Patterns.length p and ar = Patterns.arity p in
             lst' |> List.for_all
-                (fun p' -> len = Pattern.length p' && ar = Pattern.arity p')
+                (fun p' -> len = Patterns.length p' && ar = Patterns.arity p')
 
 (* Returns the multi-pattern of multiplicity m obtained by stacking the pattern pat with m
  * copies of itself. *)
@@ -31,27 +30,27 @@ let from_pattern pat m =
 (* Returns a string representing the multi-pattern mp. *)
 let to_string mp =
     assert (is_valid mp);
-    Tools.list_to_string Pattern.to_string " + " mp
+    Strings.from_list Patterns.to_string " + " mp
 
 (* Returns the empty multi-pattern of multiplicity m. *)
 let empty m =
     assert (m >= 1);
-    List.init m (Fun.const Pattern.empty)
+    List.init m (Fun.const Patterns.empty)
 
 (* Returns the multi-pattern consisting in m voices of the unity pattern. *)
 let unity dm m =
     assert (m >= 1);
-    List.init m (Fun.const (Pattern.unity dm))
+    List.init m (Fun.const (Patterns.unity dm))
 
 (* Returns the arity of the multi-pattern mp. *)
 let arity mp =
     assert (is_valid mp);
-    Pattern.arity (List.hd mp)
+    Patterns.arity (List.hd mp)
 
 (* Returns the length of the multi-pattern mp. *)
 let length mp =
     assert (is_valid mp);
-    Pattern.length (List.hd mp)
+    Patterns.length (List.hd mp)
 
 (* Returns the multiplicity of the multi-pattern mp. *)
 let multiplicity mp =
@@ -67,7 +66,7 @@ let pattern mp i =
 (* Tests if all the atoms of the multi-pattern mp are on the degree monoid dm. *)
 let is_on_degree_monoid dm mp =
     assert (is_valid mp);
-    mp |> List.for_all (Pattern.is_on_degree_monoid dm)
+    mp |> List.for_all (Patterns.is_on_degree_monoid dm)
 
 (* Returns the multi-pattern obtained by the partial composition of the multi-patterns
  * mp1 and mp2 at position i w.r.t. the degree monoid dm. *)
@@ -79,18 +78,18 @@ let partial_composition dm mp1 i mp2 =
     assert ((multiplicity mp1) = (multiplicity mp2));
     assert ((1 <= i) && (i <= (arity mp1)));
     let pairs = List.combine mp1 mp2 in
-    pairs |> List.map (fun (seq_1, seq_2) -> Pattern.partial_composition dm seq_1 i seq_2)
+    pairs |> List.map (fun (seq_1, seq_2) -> Patterns.partial_composition dm seq_1 i seq_2)
 
 (* Returns the multi-pattern obtained by replacing each degree of the multi-pattern mp by
  * its image by the map f. *)
 let map f mp =
     assert (is_valid mp);
-    mp |> List.map (Pattern.map f)
+    mp |> List.map (Patterns.map f)
 
 (* Returns the mirror image of the multi-pattern mp. *)
 let mirror mp =
     assert (is_valid mp);
-    mp |> List.map Pattern.mirror
+    mp |> List.map Patterns.mirror
 
 (* Returns the pattern obtained by concatenating the multi-pattern mp1 with the
  * multi-pattern mp. These multi-patterns must have the same multiplicity. *)
@@ -98,7 +97,7 @@ let concatenate mp1 mp2 =
     assert (is_valid mp1);
     assert (is_valid mp2);
     assert ((multiplicity mp1) = (multiplicity mp2));
-    List.map2 Pattern.concatenate mp1 mp2
+    List.map2 Patterns.concatenate mp1 mp2
 
 (* Returns the multi-pattern obtained by concatenating the multi-patterns of the list of
  * multi-patterns mp_lst. These multi-patterns must have the same multiplicity. *)
@@ -137,7 +136,7 @@ let repeat mp k =
 (* Returns the operad of multi-patterns of multiplicity m on the degree monoid dm. *)
 let operad dm m =
     assert (m >= 1);
-    Operad.create arity (partial_composition dm) (unity dm m)
+    Operads.create arity (partial_composition dm) (unity dm m)
 
 (* Returns the multi-pattern obtained by the full composition of the multi-pattern mp with
  * the multi-pattern of the list mp_lst w.r.t. the degree monoid dm. *)
@@ -149,7 +148,7 @@ let full_composition dm mp mp_lst =
     assert (mp_lst |> List.for_all
         (fun mp' -> (multiplicity mp) = (multiplicity mp')));
     let m = multiplicity mp in
-    Operad.full_composition (operad dm m) mp mp_lst
+    Operads.full_composition (operad dm m) mp mp_lst
 
 (* Returns the multi-pattern obtained by the homogeneous composition of the multi-pattern
  * mp_1 with the multi-pattern mp_2. *)
@@ -160,5 +159,5 @@ let homogeneous_composition dm mp_1 mp_2 =
     assert (is_on_degree_monoid dm mp_2);
     assert ((multiplicity mp_1) = (multiplicity mp_2));
     let m = multiplicity mp_1 in
-    Operad.homogeneous_composition (operad dm m) mp_1 mp_2
+    Operads.homogeneous_composition (operad dm m) mp_1 mp_2
 

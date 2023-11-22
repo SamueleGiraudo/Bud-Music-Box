@@ -1,30 +1,21 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, aug. 2019, dec. 2019, jan. 2020, may. 2020, oct. 2020,
- * jul. 2022, aug. 2022
+ * jul. 2022, aug. 2022, nov. 2023
  *)
-
-(* An exception for errors in handling atoms. *)
-exception Error
 
 (* An atom is an indivisible element of a musical pattern. It can be a rest or a beat
  * attached with a degree. *)
-type atom =
+type atoms =
     |Rest
-    |Beat of Scale.degree
+    |Beat of Degrees.degrees
 
 (* Returns a string representing the atom a. A rest is represented by a star "*" and a beat
  * is represented by the value of its degree in base ten. *)
 let to_string a =
     match a with
         |Rest -> "."
-        |Beat d -> string_of_int d
-
-(* Tests if the atom a is a rest. *)
-let is_rest a =
-    match a with
-        |Rest -> true
-        |Beat _ -> false
+        |Beat d -> Degrees.to_string d
 
 (* Tests if the atom a is a beat. *)
 let is_beat a =
@@ -32,19 +23,12 @@ let is_beat a =
         |Rest -> false
         |Beat _ -> true
 
-(* Returns the degree associated with the atom a. If a not a beat, the exception Error is
- * raised. *)
-let get_degree a =
-    match a with
-        |Rest -> raise Error
-        |Beat d -> d
-
 (* Tests if the atom a is a rest or if it is a beat having a degree in the degree monoid
  * dm. *)
 let is_on_degree_monoid dm a =
     match a with
         |Rest -> true
-        |Beat d -> DegreeMonoid.is_element dm d
+        |Beat d -> DegreeMonoids.is_element dm d
 
 (* Returns Rest if the atom a is a rest and otherwise returns the atom having as degree the
  * image by f of the degree of a. *)

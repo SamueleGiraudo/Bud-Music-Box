@@ -1,17 +1,22 @@
 # Author: Samuele Giraudo
 # Creation: jul. 2022
-# Modifications: jul. 2022
+# Modifications: jul. 2022, nov. 2023
 
 CC = ocamlbuild
-FLAGS = -r -cflags -w,A-4-70
-LIBS = -libs str -libs unix -package extlib -use-menhir
+FLAGS = -r -cflags -w,A-4-70 -menhir "menhir --explain"
+#LIBS = -libs str -libs unix -package extlib -use-menhir
+LIBS =-package unix -package extlib -package zarith -use-menhir
 
-NAME = bmb
-EXEC = Main.native
 SRC_DIR = Sources
 
+NAME = bmb
+EXEC = BudMusicBox.native
+
 .PHONY: all
-all:
+all: $(NAME)
+
+.PHONY: $(NAME)
+$(NAME):
 	$(CC) $(FLAGS) $(LIBS) $(SRC_DIR)/$(EXEC)
 	mv -f $(EXEC) $(NAME)
 

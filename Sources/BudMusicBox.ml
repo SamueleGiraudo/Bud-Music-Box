@@ -1,0 +1,115 @@
+(* Author: Samuele Giraudo
+ * Creation: mar. 2019
+ * Modifications: mar. 2019, apr. 2019, may 2019, aug. 2019, dec. 2019, jan. 2020
+ * apr. 2020, may 2020, oct. 2020, apr. 2021, jul. 2022, aug. 2022, nov. 2023
+ *)
+
+let name = "Bud Music Box"
+
+let logo = "|3^^|3"
+
+(* let version = "0.01" *)
+(* let version = "0.10" *)
+(* let version = "0.11" *)
+(* let version = "0.111" *)
+(* let version = "0.1111" *)
+(* let version = "1.001" *)
+(* let version = "1.011" and version_date = "2021-04-17" *)
+let version = "1.100" and version_date = "2022-08-10"
+
+let author = "Samuele Giraudo"
+
+(*let email = "samuele.giraudo@univ-eiffel.fr"*)
+let email = "giraudo.samuele@uqam.fr"
+
+let information =
+    Printf.sprintf "%s\n%s\nCopyright (C) 2019--2023 %s\nWritten by %s [%s]\n\
+        Version: %s (%s)\n"
+        logo name author author email version version_date
+
+(* TODO *)
+let help_string =
+    "Available arguments:\n"
+        ^ "-v\n"
+        ^ "    -> Print the version of the application.\n"
+        ^ "-h\n"
+        ^ "    -> Print the help.\n"
+        ^ "-hi\n"
+        ^ "    -> Print the help about the instruction set.\n"
+        ^ "-f PATH\n"
+        ^ (Printf.sprintf "    -> Interpret the file PATH having %s as extension.\n"
+            Files.extension)
+
+;;
+
+(* Main expression. *)
+
+(* Version. *)
+if Arguments.exists "--version" then begin
+    Outputs.print_success information;
+    exit 0
+end;
+
+(* Help. *)
+if Arguments.exists "--help" then begin
+    Outputs.print_information_1 help_string;
+    exit 0
+end;
+
+(* Sets the seed of the random generator. *)
+let s =
+    if Arguments.exists "--seed" then begin
+        let arg_lst = Arguments.option_values "--seed" in
+        if List.length arg_lst <> 1 then begin
+            "Error: one option must follow the --seed argument.\n" |> Outputs.print_error;
+            exit 1
+        end
+        else
+            try
+                int_of_string (List.hd arg_lst)
+            with
+                |_ ->
+                    "Error: a nonnegative integer must follow the --seed argument.\n"
+                    |> Outputs.print_error;
+                exit 1
+    end
+    else
+        Unix.time () |> int_of_float
+in
+Random.init s;
+Printf.sprintf "Seed of the random generator set to %d.\n" s |> Outputs.print_information_1;
+
+(* Tests if there is a single file path. *)
+let arg_lst = Arguments.option_values "--file" in
+if List.length arg_lst <> 1 then begin
+    "Error: one path must follow the --file argument.\n" |> Outputs.print_error;
+    exit 1
+end;
+
+(* The path of the file containing the program. *)
+let path = List.hd arg_lst in
+
+(* Checks the existence of the file at path path. *)
+if Sys.file_exists path |> not then begin
+    Printf.sprintf "Error: there is no file %s.\n" path |> Outputs.print_error;
+    exit 1
+end;
+
+(* Checks if the file has the right extension. *)
+if not (Files.has_right_extension path) then begin
+    Printf.sprintf "Error: the file %s has not %s as extension.\n" path Files.extension
+    |> Outputs.print_error;
+    exit 1
+end;
+
+(* Considers the program and executes it. *)
+try
+    let prgm = Lexer.value_from_file_path path Parser.program Lexer.read in
+    Programs.execute prgm
+with
+    |Lexer.Error ei ->
+        Printf.sprintf "Syntax error: %s" (Lexer.error_information_to_string ei)
+        |> Outputs.print_error;
+
+exit 0
+

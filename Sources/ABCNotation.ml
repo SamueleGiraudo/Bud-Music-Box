@@ -1,7 +1,10 @@
 (* Author: Samuele Giraudo
  * Creation: aug. 2019
- * Modifications: aug. 2019, dec. 2019, jan. 2020, apr. 2021, jul. 2022
+ * Modifications: aug. 2019, dec. 2019, jan. 2020, apr. 2021, jul. 2022, nov. 2023
  *)
+
+(* TODO : maybe remove exception and uses options. *)
+(* TODO : maybe define a type midi note. *)
 
 (* An exception for errors in conversions between MIDI notes and abc notation. *)
 exception Error
@@ -41,28 +44,32 @@ let midi_to_abc_note note =
 (* Returns a string representing the pattern p under the context ct in the abc notation.
  * Raises Error if a note encoded by p is outside the MIDI range. *)
 let pattern_to_abc_string ct p =
-    p |> List.map
+    p
+    |> List.map
         (fun at ->
             match at with
-                |Atom.Rest -> "z"
-                |Atom.Beat d -> midi_to_abc_note (Context.degree_to_midi_note ct d))
-        |> String.concat " "
+                |Atoms.Rest -> "z"
+                |Atoms.Beat d -> midi_to_abc_note (Contexts.degree_to_midi_note ct d))
+    |> String.concat " "
 
 (* Returns a string representing the multi-pattern mp under the context ct in the abc
  * notation. The list midi_sounds contains the respective MIDI codes of the voices. Raises
  * Error if a note encoded by mp is outside the MIDI range. *)
 let multi_pattern_to_abc_string ct midi_sounds mp =
-    assert (MultiPattern.is_valid mp);
-    assert ((List.length midi_sounds) >= (MultiPattern.multiplicity mp));
+    assert (MultiPatterns.is_valid mp);
+    assert ((List.length midi_sounds) >= (MultiPatterns.multiplicity mp));
     assert (midi_sounds |> List.for_all (fun s -> 0 <= s && s < 128));
-    let lst = mp |> List.mapi
-        (fun i p ->
-            "%\n"
-            ^ Printf.sprintf "V: %d clef=treble\n" (i + 1)
-            ^ "L: 1/4\n"
-            ^ Printf.sprintf "%%%%MIDI program %d\n" (List.nth midi_sounds i)
-            ^ pattern_to_abc_string ct p
-            ^ "\n") in
+    let lst =
+        mp
+        |> List.mapi
+            (fun i p ->
+                "%\n"
+                ^ Printf.sprintf "V: %d clef=treble\n" (i + 1)
+                ^ "L: 1/4\n"
+                ^ Printf.sprintf "%%%%MIDI program %d\n" (List.nth midi_sounds i)
+                ^ pattern_to_abc_string ct p
+                ^ "\n")
+    in
     (String.concat "" lst)
 
 (* Returns a string in the abc notation representing the multi-pattern mp under the context
@@ -70,15 +77,15 @@ let multi_pattern_to_abc_string ct midi_sounds mp =
  * contains all the information to be a valid abc program. Raises Error if a note encoded by
  * mp is outside the MIDI range. *)
 let complete_abc_string ct midi_sounds mp =
-    assert (MultiPattern.is_valid mp);
-    assert ((List.length midi_sounds) >= (MultiPattern.multiplicity mp));
+    assert (MultiPatterns.is_valid mp);
+    assert ((List.length midi_sounds) >= (MultiPatterns.multiplicity mp));
     assert (midi_sounds |> List.for_all (fun s -> 0 <= s && s < 128));
       "X: 1\n"
     ^ "T: Track\n"
     ^ "C: Bud Music Box\n"
     ^ "M: 4/4\n"
     ^ "K: Am\n"
-    ^ Printf.sprintf "Q: 1/4=%d\n" (Context.tempo ct)
+    ^ Printf.sprintf "Q: 1/4=%d\n" (Contexts.tempo ct)
     ^ "%%MIDI nobarlines\n"
     ^ "%\n"
     ^ multi_pattern_to_abc_string ct midi_sounds mp

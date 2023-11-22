@@ -1,12 +1,12 @@
 (* Author: Samuele Giraudo
  * Creation: mar. 2019
  * Modifications: mar. 2019, apr. 2019, aug. 2019, dec. 2019, jan. 2020, apr. 2021,
- * aug. 2022
+ * aug. 2022, nov. 2023
  *)
 
 (* An operad is specified by a map sending any of its elements to its arity, a partial
  * composition map, and a unit. *)
-type 'a operad = {
+type 'a operads = {
     arity: 'a -> int;
     partial_composition: 'a -> int -> 'a -> 'a;
     unity: 'a
