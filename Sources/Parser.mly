@@ -16,7 +16,7 @@
 %token TEMPO
 %token SOUNDS
 %token MONOID
-%token ADD_INT
+%token ADD
 %token CYCLIC
 %token MAX
 %token MULTI_PATTERN
@@ -89,7 +89,7 @@ atom:
     |n=INTEGER {Atoms.Beat (Degrees.Degree n)}
 
 monoid:
-    |ADD_INT {Programs.AddInt}
+    |ADD {Programs.Add}
     |CYCLIC k=INTEGER {Programs.Cyclic k}
     |MAX z=INTEGER {Programs.Max z}
 

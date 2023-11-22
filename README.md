@@ -1,5 +1,5 @@
 # Bud Music Box
-`8/\/\8`
+`|3^^|3`
 
 A tool to generate random music from short patterns using operads, colored operads, and bud
 generating systems.
@@ -100,7 +100,7 @@ The following programs are needed:
 
 + `pkg-config`
 + `make`
-+ `ocaml` (Version `>= 4.13.1`. An inferior but not too old version may be suitable.)
++ `ocaml` (Version `>= 5.0.0`. An inferior but not too old version may be suitable.)
 + `opam`
 + `ocamlbuild` (Available by `opam install ocamlbuild`.)
 + `ocamlfind` (Available by `opam install ocamlfind`.)
@@ -110,6 +110,8 @@ The following programs are needed:
 + `abcm2ps`
 + `timidity`
 
+Moreover, a proper installation of sound fonts is necessary.
+
 
 ## User guide
 This [page](Help.md) contains the description of the Bud Music Box instruction set and
@@ -118,7 +120,7 @@ language.
 Files containing such instructions must have `bmb` as extension. Given such a file
 `Program.bmb`, the command
 
-`./bmb -f Program.bmb`
+`./bmb --file Program.bmb`
 
 executes the instructions of `Program.bmb`, sequentially from the first one to the last one.
 

@@ -27,18 +27,14 @@ let information =
         Version: %s (%s)\n"
         logo name author author email version version_date
 
-(* TODO *)
+(* Returns the help string about the arguments of the program. *)
 let help_string =
-    "Available arguments:\n"
-        ^ "-v\n"
-        ^ "    -> Print the version of the application.\n"
-        ^ "-h\n"
-        ^ "    -> Print the help.\n"
-        ^ "-hi\n"
-        ^ "    -> Print the help about the instruction set.\n"
-        ^ "-f PATH\n"
-        ^ (Printf.sprintf "    -> Interpret the file PATH having %s as extension.\n"
-            Files.extension)
+      "Usage:\n    ./bmb [--help] [--version] [--seed N] --file PATH \nwhere:\n"
+    ^ "    + `--help` prints the short help (the present text).\n"
+    ^ "    + `--version` prints the version and other information.\n"
+    ^ "    + `--seed N` sets N as the seed of the random generator.\n"
+    ^ "    + `--file PATH` sets PATH as the path to the Bud Music Box program to consider, \
+             contained in a " ^ Files.extension ^ " file.\n"
 
 ;;
 
@@ -103,13 +99,7 @@ if not (Files.has_right_extension path) then begin
 end;
 
 (* Considers the program and executes it. *)
-try
-    let prgm = Lexer.value_from_file_path path Parser.program Lexer.read in
-    Programs.execute prgm
-with
-    |Lexer.Error ei ->
-        Printf.sprintf "Syntax error: %s" (Lexer.error_information_to_string ei)
-        |> Outputs.print_error;
+Execution.execute_path path;
 
 exit 0
 

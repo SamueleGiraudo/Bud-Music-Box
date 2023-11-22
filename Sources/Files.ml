@@ -22,4 +22,13 @@ let is_alpha_character c =
 let is_plain_character c =
      (is_alpha_character c) || ('0' <= c && c <= '9') || c = '_'
 
+(* Tests if str is a multi-pattern, a colored multi-pattern, or a color name. *)
+let is_name str =
+    String.length str >= 1 && is_alpha_character (String.get str 0)
+    && String.for_all is_plain_character str
+
+(* Returns the program specified by the Aclove file at path path. The exception
+ * Lexer.Error is raised when there are syntax errors in the program. *)
+let path_to_program path =
+    Lexer.value_from_file_path path Parser.program Lexer.read
 

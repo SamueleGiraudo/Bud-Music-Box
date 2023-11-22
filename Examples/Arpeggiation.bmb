@@ -5,7 +5,7 @@ scale 2 1 4 1 4
 root 57
 tempo 128
 sounds 1
-monoid add_int
+monoid add
 
 {The multi-pattern of multiplicity 1 which will be altered.}
 multi_pattern p 2 0 * 1 -1 * *

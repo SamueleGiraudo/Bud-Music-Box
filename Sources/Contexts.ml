@@ -4,6 +4,7 @@
  * nov. 2023
  *)
 
+(* TODO consolidate *)
 (* A midi note is an integer between 0 and 127. The value 60 represents the middle C. *)
 type midi_notes = int
 

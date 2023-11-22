@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: oct. 2020
- * Modifications: oct. 2020, apr. 2021, jul. 2022, aug. 2022
+ * Modifications: oct. 2020, apr. 2021, jul. 2022, aug. 2022, nov. 2023
  *)
 
 {
@@ -101,7 +101,7 @@ rule read = parse
     |"tempo" {Parser.TEMPO}
     |"sounds" {Parser.SOUNDS}
     |"monoid" {Parser.MONOID}
-    |"add-int" {Parser.ADD_INT}
+    |"add" {Parser.ADD}
     |"cyclic" {Parser.CYCLIC}
     |"max" {Parser.MAX}
     |"multi-pattern" {Parser.MULTI_PATTERN}
