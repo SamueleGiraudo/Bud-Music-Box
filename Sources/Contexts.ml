@@ -15,11 +15,11 @@ type contexts = {
 
 (* Tests if the context ct is valid. *)
 let is_valid ct =
-    Scales.is_valid ct.scale && MIDI.is_valid_note ct.root && ct.tempo >= 1 &&
-    (ct.midi_programs |> List.for_all MIDI.is_valid_program)
+    Scales.is_valid ct.scale && MIDI.is_valid_note ct.root && ct.tempo >= 1
+    && (ct.midi_programs |> List.for_all MIDI.is_valid_program)
 
 (* Returns the context with the specified attributes. *)
-let create scale root tempo midi_programs =
+let make scale root tempo midi_programs =
     assert (Scales.is_valid scale);
     assert (MIDI.is_valid_note root);
     assert (1 <= tempo);
@@ -37,10 +37,6 @@ let root ct =
 let tempo ct =
     ct.tempo
 
-(* Returns the list of MIDI programs of the context ct. *)
-let midi_programs ct =
-    ct.midi_programs
-
 (* Returns the number of MIDI programs of the context ct. *)
 let number_midi_programs ct =
     List.length ct.midi_programs
@@ -49,29 +45,6 @@ let number_midi_programs ct =
 let midi_program ct i =
     assert (0 <= i && i < number_midi_programs ct);
     List.nth ct.midi_programs i
-
-(* Returns the context obtained by replacing the scale of the context ct by the scale
- * scale. *)
-let set_scale ct scale =
-    assert (Scales.is_valid scale);
-    {ct with scale = scale}
-
-(* Returns the context obtained by replacing the root note of the context ct by the MIDI
- * note root. *)
-let set_root ct root =
-    assert (MIDI.is_valid_note root);
-    {ct with root = root}
-
-(* Returns the context obtained by replacing the tempo of the context ct by the positive
- * integer tempo. *)
-let set_tempo ct tempo =
-    assert (1 <= tempo);
-    {ct with tempo = tempo}
-
-(* Returns the context obtained by replacing the MIDI programs of the context ct by the
- * list of MIDI programs midi_programs. *)
-let set_midi_programs ct midi_programs =
-    {ct with midi_programs = midi_programs}
 
 (* Returns the midi node corresponding with the degree deg in the context ct. *)
 let degree_to_midi_note ct deg =

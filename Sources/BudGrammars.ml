@@ -5,16 +5,18 @@
  *)
 
 (* A color is a name (string). *)
-type colors = string
+type colors = Color of string
 
-(* A colored element is an element of an operad augmented with output an input colors. *)
+(* A colored element is an element of an operad augmented with output an input colors. The
+ * type parameter 'a is the type of the underlying non-colored element. *)
 type 'a colored_elements = {
     out_color: colors ;
     element: 'a ;
     in_colors: colors list
 }
 
-(* Bud grammar. *)
+(* Bud grammars. The type parameter 'a is the type of the elements of the underlying operad
+ * of the bud grammar. *)
 type 'a bud_grammars = {
     operad: 'a Operads.operads;
     generators: 'a colored_elements list;
@@ -27,13 +29,22 @@ type generation_shapes =
     |Full
     |Homogeneous
 
+(* Returns the name of the color c. *)
+let color_name c =
+    let Color name = c in
+    name
+
+(* Returns a string representation of the color c. *)
+let color_to_string c =
+    "%" ^ (color_name c)
+
 (* Tests if ce is a well-formed colored element. This is the case if and only if the number
  * of input colors is the same as the arity of the underlying element of ce. *)
 let is_colored_element operad ce =
     (Operads.arity operad ce.element) = (List.length ce.in_colors)
 
 (* Returns the colored element with the specified attributes. *)
-let create_colored_element out_color element in_colors =
+let make_colored_element out_color element in_colors =
     {out_color = out_color; element = element; in_colors = in_colors}
 
 (* Returns the underlying element of the colored element ce. *)
@@ -48,13 +59,13 @@ let in_color ce i =
 (* Returns a string representing the colored element ce, where element_to_string is a map
  * sending any underlying object to a string representing it. *)
 let colored_element_to_string element_to_string ce =
-    Printf.sprintf "%%%s | %s | %s"
-        ce.out_color
+    Printf.sprintf "%s | %s | %s"
+        (color_to_string ce.out_color)
         (element_to_string (get_element ce))
-        (Strings.from_list (fun c -> "%" ^ c) " " ce.in_colors)
+        (Strings.from_list color_to_string " " ce.in_colors)
 
 (* Returns the bud grammar with the specified attributes. *)
-let create operad generators initial_color =
+let make operad generators initial_color =
     assert (generators |> List.for_all (is_colored_element operad));
     {operad = operad; generators = generators; initial_color = initial_color}
 
@@ -79,23 +90,23 @@ let partial_composition budg x i y =
  * of the bud grammar budg. *)
 let full_composition budg x lst =
     assert ((arity budg x) = (List.length lst));
-    assert (List.combine x.in_colors
-        (lst |> List.map (fun y -> y.out_color))
-            |> List.for_all (fun (c_1, c_2) -> c_1 = c_2));
+    assert (List.for_all2 (=) x.in_colors (lst |> List.map (fun y -> y.out_color)));
     let indexed_elements = lst |> List.mapi (fun i y -> (i + 1, y)) |> List.rev in
-    indexed_elements |>
-        List.fold_left (fun res (i, y) -> partial_composition budg res i y) x
+    indexed_elements
+    |> List.fold_left (fun res (i, y) -> partial_composition budg res i y) x
 
-(* Returns the element obtained by composing each the inputs of x having the same input
- * color as the output of y by y. *)
+(* Returns the element obtained by composing all inputs of x having the same input color as
+ * the output of y by y. *)
 let colored_composition budg x y =
-    let lst = List.init (arity budg x)
-        (fun i ->
-            let a = in_color x (i + 1) in
-            if a = y.out_color then y else colored_unity budg a) in
+    let lst =
+        List.init (arity budg x)
+            (fun i ->
+                let a = in_color x (i + 1) in
+                if a = y.out_color then y else colored_unity budg a)
+    in
     full_composition budg x lst
 
-(* Returns the list of the generators of the bud grammar budg that have c as out color. *)
+(* Returns the list of the generators of the bud grammar budg which have c as out color. *)
 let generators_with_out_color budg c =
     budg.generators |> List.filter (fun g -> g.out_color = c)
 
@@ -103,7 +114,8 @@ let generators_with_out_color budg c =
  * the bug grammar budg after nb_iter iterations. *)
 let partial_random_generator budg nb_iter =
     assert (nb_iter >= 0);
-    Lists.interval 1 nb_iter |> List.fold_left
+    Lists.interval 1 nb_iter
+    |> List.fold_left
         (fun res _ ->
             let ar = arity budg res in
             if ar = 0 then
@@ -122,7 +134,8 @@ let partial_random_generator budg nb_iter =
  * bug grammar budg after nb_iter iterations. *)
 let full_random_generator budg nb_iter =
     assert (nb_iter >= 0);
-    Lists.interval 1 nb_iter |> List.fold_left
+    Lists.interval 1 nb_iter
+    |> List.fold_left
         (fun res _ ->
             let candidates =  res.in_colors |> List.map
                 (fun c -> generators_with_out_color budg c) in

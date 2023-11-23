@@ -16,7 +16,7 @@ set nospell
 setlocal iskeyword+=-
 
 " Comments.
-syn region Comment start="{" end="}"
+syn region Comment start="{" end="}" containedin=ALL
 
 " Commands.
 syn keyword Structure show
@@ -66,4 +66,6 @@ syn match Normal "[a-zA-Z]\+[a-zA-Z0-9_]*"
 
 " Numbers.
 syn match Number "\d\+"
+
+" Comments.
 

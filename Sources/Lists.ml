@@ -9,13 +9,6 @@ let interval a b =
     assert (a <= b);
     List.init (b - a + 1) (fun x -> x + a);;
 
-(* Returns the prefix of length n of the list lst. *)
-let rec prefix lst n =
-    match lst, n with
-        |_, n when n <= 0 -> []
-        |[], _ -> []
-        |x :: lst', n -> x :: (prefix lst' (n - 1))
-
 (* Returns the factor of the list lst starting at position start and of length len. *)
 let rec factor lst start len =
     match lst with

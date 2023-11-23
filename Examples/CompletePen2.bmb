@@ -15,6 +15,7 @@ colorize c2 %a | p2 | %a %a %b
 colorize c3 %a | p3 | %a
 
 generate res partial 32 %a c1 c2 c3
+
 show
 play res
 

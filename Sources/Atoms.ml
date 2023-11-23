@@ -10,7 +10,7 @@ type atoms =
     |Rest
     |Beat of Degrees.degrees
 
-(* Returns a string representing the atom a. A rest is represented by a star "*" and a beat
+(* Returns a string representing the atom a. A rest is represented by a dot "." and a beat
  * is represented by the value of its degree in base ten. *)
 let to_string a =
     match a with
@@ -23,17 +23,17 @@ let is_beat a =
         |Rest -> false
         |Beat _ -> true
 
-(* Tests if the atom a is a rest or if it is a beat having a degree in the degree monoid
- * dm. *)
-let is_on_degree_monoid dm a =
-    match a with
-        |Rest -> true
-        |Beat d -> DegreeMonoids.is_element dm d
-
 (* Returns Rest if the atom a is a rest and otherwise returns the atom having as degree the
  * image by f of the degree of a. *)
 let map f a =
     match a with
         |Rest -> Rest
         |Beat d -> Beat (f d)
+
+(* Tests if the atom a is a rest or if it is a beat having a degree in the degree monoid
+ * dm. *)
+let is_on_degree_monoid dm a =
+    match a with
+        |Rest -> true
+        |Beat d -> DegreeMonoids.is_element dm d
 

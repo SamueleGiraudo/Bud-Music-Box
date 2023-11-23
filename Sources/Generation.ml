@@ -10,7 +10,7 @@ type parameters = {
 }
 
 (* Returns the parameters with the specified information. *)
-let create_parameters nb_steps shape =
+let make_parameters nb_steps shape =
     assert (nb_steps >= 0);
     {nb_steps = nb_steps; shape = shape}
 
@@ -24,13 +24,18 @@ let shape param =
 
 (* Returns the element generated at random from the colored multi-patterns of the list
  * colored multi-patterns with the generation parameters param, initial color initial_color,
- * and degree monoid dm. *)
+ * and degree monoid dm. The list colored_multi_patterns must be nonempty. *)
 let from_colored_multi_patterns param initial_color dm colored_multi_patterns =
     assert (colored_multi_patterns <> []);
-    let m = MultiPatterns.multiplicity (BudGrammars.get_element
-        (List.hd colored_multi_patterns)) in
-    let budg = BudGrammars.create
-        (MultiPatterns.operad dm m) colored_multi_patterns initial_color in
+    let m =
+        MultiPatterns.multiplicity
+            (BudGrammars.get_element (List.hd colored_multi_patterns))
+    in
+    let budg =
+        BudGrammars.make
+            (MultiPatterns.operad dm m)
+            colored_multi_patterns initial_color
+    in
     let res = BudGrammars.random_generator budg param.nb_steps param.shape in
     BudGrammars.get_element res
 

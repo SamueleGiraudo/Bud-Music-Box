@@ -78,5 +78,5 @@ let concatenate p1 p2 =
 
 (* Returns the operad of patterns on the degree monoid dm. *)
 let operad dm =
-    Operads.create arity (partial_composition dm) (unity dm)
+    Operads.make arity (partial_composition dm) (unity dm)
 

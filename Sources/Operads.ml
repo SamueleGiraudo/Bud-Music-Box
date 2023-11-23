@@ -13,7 +13,7 @@ type 'a operads = {
 }
 
 (* Returns the operad with the specified attributes. *)
-let create arity partial_composition unity =
+let make arity partial_composition unity =
     {arity = arity; partial_composition = partial_composition; unity = unity}
 
 (* Returns the unit of the operad op. *)

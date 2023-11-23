@@ -145,7 +145,7 @@ let repeat mp k =
 (* Returns the operad of multi-patterns of multiplicity m on the degree monoid dm. *)
 let operad dm m =
     assert (m >= 1);
-    Operads.create arity (partial_composition dm) (unity dm m)
+    Operads.make arity (partial_composition dm) (unity dm m)
 
 (* Returns the multi-pattern obtained by the full composition of the multi-pattern mp with
  * the multi-pattern of the list mp_lst w.r.t. the degree monoid dm. *)

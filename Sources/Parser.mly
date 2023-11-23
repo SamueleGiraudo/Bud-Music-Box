@@ -9,7 +9,6 @@
 %token DOT
 %token PERCENT
 %token PIPE
-
 %token SHOW
 %token WRITE
 %token PLAY
@@ -38,11 +37,8 @@
 %token PARTIAL
 %token FULL
 %token HOMOGENEOUS
-
 %token <int> POSITIVE_INTEGER
-
 %token <string> NAME
-
 %token EOF
 
 %start <Programs.programs> program
@@ -155,7 +151,7 @@ monoid:
 
 
 color:
-    |PERCENT c=NAME {c}
+    |PERCENT c=NAME {BudGrammars.Color c}
 
 
 shape:

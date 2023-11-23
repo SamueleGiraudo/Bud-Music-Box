@@ -20,7 +20,7 @@ let is_alpha_character c =
 
 (* Tests if the character c is a character allowed in aliases. *)
 let is_plain_character c =
-     (is_alpha_character c) || ('0' <= c && c <= '9') || c = '_'
+     (is_alpha_character c) || ('0' <= c && c <= '9') || c = '_' || c = '\''
 
 (* Tests if str is a multi-pattern, a colored multi-pattern, or a color name. *)
 let is_name str =

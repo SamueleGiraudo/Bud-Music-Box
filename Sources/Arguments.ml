@@ -76,9 +76,3 @@ let option_values opt =
     in
     opt |> arguments_after |> longest_prefix_of_values
 
-(* Tests if the option name opt is an option and admits the value name v as value. *)
-let option_has_value opt v =
-    assert (is_short_option_name opt || is_long_option_name opt);
-    assert (is_value_name v);
-    List.mem v (option_values opt)
-

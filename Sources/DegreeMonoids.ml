@@ -12,6 +12,7 @@ type degree_monoids = {
     unity: Degrees.degrees
 }
 
+(* Returns the name of the degree monoid dm *)
 let name dm =
     dm.name
 

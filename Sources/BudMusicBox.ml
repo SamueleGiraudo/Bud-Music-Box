@@ -48,7 +48,7 @@ end;
 
 (* Help. *)
 if Arguments.exists "--help" then begin
-    Outputs.print_information_1 help_string;
+    Outputs.print_information help_string;
     exit 0
 end;
 
@@ -64,16 +64,17 @@ let s =
             try
                 int_of_string (List.hd arg_lst)
             with
-                |_ ->
+                |_ -> begin
                     "Error: a nonnegative integer must follow the --seed argument.\n"
                     |> Outputs.print_error;
-                exit 1
+                    exit 1
+                end
     end
     else
         Unix.time () |> int_of_float
 in
 Random.init s;
-Printf.sprintf "Seed of the random generator set to %d.\n" s |> Outputs.print_information_1;
+Printf.sprintf "Seed of the random generator set to %d.\n" s |> Outputs.print_information;
 
 (* Tests if there is a single file path. *)
 let arg_lst = Arguments.option_values "--file" in
