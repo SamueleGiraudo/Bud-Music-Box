@@ -3,9 +3,6 @@
  * Modifications: aug. 2019, dec. 2019, jan. 2020, apr. 2021, jul. 2022, nov. 2023
  *)
 
-(* TODO : maybe remove exception and uses options. *)
-(* TODO : maybe define a type midi note. *)
-
 (* An exception for errors in conversions between MIDI notes and abc notation. *)
 exception Error
 
@@ -13,73 +10,91 @@ exception Error
  * 127. *)
 let midi_to_abc_note note =
     match note with
-        |0 -> "C,,,,,"   |1 -> "^C,,,,,"  |2 -> "D,,,,,"  |3 -> "^D,,,,,"  |4 -> "E,,,,,"
-        |5 -> "F,,,,,"   |6 -> "^F,,,,,"  |7 -> "G,,,,,"  |8 -> "^G,,,,,"  |9 -> "A,,,,,"
-        |10 -> "^A,,,,," |11 -> "B,,,,,"  |12 -> "C,,,,"  |13 -> "^C,,,,"  |14 -> "D,,,,"
-        |15 -> "^D,,,,"  |16 -> "E,,,,"   |17 -> "F,,,,"  |18 -> "^F,,,,"  |19 -> "G,,,,"
-        |20 -> "^G,,,,"  |21 -> "A,,,,"   |22 -> "^A,,,," |23 -> "B,,,,"   |24 -> "C,,,"
-        |25 -> "^C,,,"   |26 -> "D,,,"    |27 -> "^D,,,"  |28 -> "E,,,"    |29 -> "F,,,"
-        |30 -> "^F,,,"   |31 -> "G,,,"    |32 -> "^G,,,"  |33 -> "A,,,"    |34 -> "^A,,,"
-        |35 -> "B,,,"    |36 -> "C,,"     |37 -> "^C,,"   |38 -> "D,,"     |39 -> "^D,,"
-        |40 -> "E,,"     |41 -> "F,,"     |42 -> "^F,,"   |43 -> "G,,"     |44 -> "^G,,"
-        |45 -> "A,,"     |46 -> "^A,,"    |47 -> "B,,"    |48 -> "C,"      |49 -> "^C,"
-        |50 -> "D,"      |51 -> "^D,"     |52 -> "E,"     |53 -> "F,"      |54 -> "^F,"
-        |55 -> "G,"      |56 -> "^G,"     |57 -> "A,"     |58 -> "^A,"     |59 -> "B,"
-        |60 -> "C"       |61 -> "^C"      |62 -> "D"      |63 -> "^D"      |64 -> "E"
-        |65 -> "F"       |66 -> "^F"      |67 -> "G"      |68 -> "^G"      |69 -> "A"
-        |70 -> "^A"      |71 -> "B"       |72 -> "c"      |73 -> "^c"      |74 -> "d"
-        |75 -> "^d"      |76 -> "e"       |77 -> "f"      |78 -> "^f"      |79 -> "g"
-        |80 -> "^g"      |81 -> "a"       |82 -> "^a"     |83 -> "b"       |84 -> "c'"
-        |85 -> "^c'"     |86 -> "d'"      |87 -> "^d'"    |88 -> "e'"      |89 -> "f'"
-        |90 -> "^f'"     |91 -> "g'"      |92 -> "^g'"    |93 -> "a'"      |94 -> "^a'"
-        |95 -> "b'"      |96 -> "c''"     |97 -> "^c''"   |98 -> "d''"     |99 -> "^d''"
-        |100 -> "e''"    |101 -> "f''"    |102 -> "^f''"  |103 -> "g''"    |104 -> "^g''"
-        |105 -> "a''"    |106 -> "^a''"   |107 -> "b''"   |108 -> "c'''"   |109 -> "^c'''"
-        |110 -> "d'''"   |111 -> "^d'''"  |112 -> "e'''"  |113 -> "f'''"   |114 -> "^f'''"
-        |115 -> "g'''"   |116 -> "^g'''"  |117 -> "a'''"  |118 -> "^a'''"  |119 -> "b'''"
-        |120 -> "c''''"  |121 -> "^c''''" |122 -> "d''''" |123 -> "^d''''" |124 -> "e''''"
-        |125 -> "f''''"  |126 -> "^f''''" |127 -> "g''''"
+        |MIDI.Note 0 -> "C,,,,,"   |MIDI.Note 1 -> "^C,,,,,"  |MIDI.Note 2 -> "D,,,,,"
+        |MIDI.Note 3 -> "^D,,,,,"  |MIDI.Note 4 -> "E,,,,,"   |MIDI.Note 5 -> "F,,,,,"
+        |MIDI.Note 6 -> "^F,,,,,"  |MIDI.Note 7 -> "G,,,,,"   |MIDI.Note 8 -> "^G,,,,,"
+        |MIDI.Note 9 -> "A,,,,,"   |MIDI.Note 10 -> "^A,,,,," |MIDI.Note 11 -> "B,,,,,"
+        |MIDI.Note 12 -> "C,,,,"   |MIDI.Note 13 -> "^C,,,,"  |MIDI.Note 14 -> "D,,,,"
+        |MIDI.Note 15 -> "^D,,,,"  |MIDI.Note 16 -> "E,,,,"   |MIDI.Note 17 -> "F,,,,"
+        |MIDI.Note 18 -> "^F,,,,"  |MIDI.Note 19 -> "G,,,,"   |MIDI.Note 20 -> "^G,,,,"
+        |MIDI.Note 21 -> "A,,,,"   |MIDI.Note 22 -> "^A,,,,"  |MIDI.Note 23 -> "B,,,,"
+        |MIDI.Note 24 -> "C,,,"    |MIDI.Note 25 -> "^C,,,"   |MIDI.Note 26 -> "D,,,"
+        |MIDI.Note 27 -> "^D,,,"   |MIDI.Note 28 -> "E,,,"    |MIDI.Note 29 -> "F,,,"
+        |MIDI.Note 30 -> "^F,,,"   |MIDI.Note 31 -> "G,,,"    |MIDI.Note 32 -> "^G,,,"
+        |MIDI.Note 33 -> "A,,,"    |MIDI.Note 34 -> "^A,,,"   |MIDI.Note 35 -> "B,,,"
+        |MIDI.Note 36 -> "C,,"     |MIDI.Note 37 -> "^C,,"    |MIDI.Note 38 -> "D,,"
+        |MIDI.Note 39 -> "^D,,"    |MIDI.Note 40 -> "E,,"     |MIDI.Note 41 -> "F,,"
+        |MIDI.Note 42 -> "^F,,"    |MIDI.Note 43 -> "G,,"     |MIDI.Note 44 -> "^G,,"
+        |MIDI.Note 45 -> "A,,"     |MIDI.Note 46 -> "^A,,"    |MIDI.Note 47 -> "B,,"
+        |MIDI.Note 48 -> "C,"      |MIDI.Note 49 -> "^C,"     |MIDI.Note 50 -> "D,"
+        |MIDI.Note 51 -> "^D,"     |MIDI.Note 52 -> "E,"      |MIDI.Note 53 -> "F,"
+        |MIDI.Note 54 -> "^F,"     |MIDI.Note 55 -> "G,"      |MIDI.Note 56 -> "^G,"
+        |MIDI.Note 57 -> "A,"      |MIDI.Note 58 -> "^A,"     |MIDI.Note 59 -> "B,"
+        |MIDI.Note 60 -> "C"       |MIDI.Note 61 -> "^C"      |MIDI.Note 62 -> "D"
+        |MIDI.Note 63 -> "^D"      |MIDI.Note 64 -> "E"       |MIDI.Note 65 -> "F"
+        |MIDI.Note 66 -> "^F"      |MIDI.Note 67 -> "G"       |MIDI.Note 68 -> "^G"
+        |MIDI.Note 69 -> "A"       |MIDI.Note 70 -> "^A"      |MIDI.Note 71 -> "B"
+        |MIDI.Note 72 -> "c"       |MIDI.Note 73 -> "^c"      |MIDI.Note 74 -> "d"
+        |MIDI.Note 75 -> "^d"      |MIDI.Note 76 -> "e"       |MIDI.Note 77 -> "f"
+        |MIDI.Note 78 -> "^f"      |MIDI.Note 79 -> "g"       |MIDI.Note 80 -> "^g"
+        |MIDI.Note 81 -> "a"       |MIDI.Note 82 -> "^a"      |MIDI.Note 83 -> "b"
+        |MIDI.Note 84 -> "c'"      |MIDI.Note 85 -> "^c'"     |MIDI.Note 86 -> "d'"
+        |MIDI.Note 87 -> "^d'"     |MIDI.Note 88 -> "e'"      |MIDI.Note 89 -> "f'"
+        |MIDI.Note 90 -> "^f'"     |MIDI.Note 91 -> "g'"      |MIDI.Note 92 -> "^g'"
+        |MIDI.Note 93 -> "a'"      |MIDI.Note 94 -> "^a'"     |MIDI.Note 95 -> "b'"
+        |MIDI.Note 96 -> "c''"     |MIDI.Note 97 -> "^c''"    |MIDI.Note 98 -> "d''"
+        |MIDI.Note 99 -> "^d''"    |MIDI.Note 100 -> "e''"    |MIDI.Note 101 -> "f''"
+        |MIDI.Note 102 -> "^f''"   |MIDI.Note 103 -> "g''"    |MIDI.Note 104 -> "^g''"
+        |MIDI.Note 105 -> "a''"    |MIDI.Note 106 -> "^a''"   |MIDI.Note 107 -> "b''"
+        |MIDI.Note 108 -> "c'''"   |MIDI.Note 109 -> "^c'''"  |MIDI.Note 110 -> "d'''"
+        |MIDI.Note 111 -> "^d'''"  |MIDI.Note 112 -> "e'''"   |MIDI.Note 113 -> "f'''"
+        |MIDI.Note 114 -> "^f'''"  |MIDI.Note 115 -> "g'''"   |MIDI.Note 116 -> "^g'''"
+        |MIDI.Note 117 -> "a'''"   |MIDI.Note 118 -> "^a'''"  |MIDI.Note 119 -> "b'''"
+        |MIDI.Note 120 -> "c''''"  |MIDI.Note 121 -> "^c''''" |MIDI.Note 122 -> "d''''"
+        |MIDI.Note 123 -> "^d''''" |MIDI.Note 124 -> "e''''"  |MIDI.Note 125 -> "f''''"
+        |MIDI.Note 126 -> "^f''''" |MIDI.Note 127 -> "g''''"
         |_ -> raise Error
+
+(* Returns a string representing the atom a under the context ct in the abc notation.
+ * Raises Error if a note encoded by p is outside the MIDI range. *)
+let atom_to_abc_string ct a =
+     match a with
+        |Atoms.Rest -> "z"
+        |Atoms.Beat d -> midi_to_abc_note (Contexts.degree_to_midi_note ct d)
 
 (* Returns a string representing the pattern p under the context ct in the abc notation.
  * Raises Error if a note encoded by p is outside the MIDI range. *)
 let pattern_to_abc_string ct p =
-    p
-    |> List.map
-        (fun at ->
-            match at with
-                |Atoms.Rest -> "z"
-                |Atoms.Beat d -> midi_to_abc_note (Contexts.degree_to_midi_note ct d))
-    |> String.concat " "
+    p |> Patterns.atoms |> List.map (atom_to_abc_string ct) |> String.concat " "
 
 (* Returns a string representing the multi-pattern mp under the context ct in the abc
- * notation. The list midi_sounds contains the respective MIDI codes of the voices. Raises
- * Error if a note encoded by mp is outside the MIDI range. *)
-let multi_pattern_to_abc_string ct midi_sounds mp =
+ * notation. Raises Error if a note encoded by mp is outside the MIDI range. *)
+let multi_pattern_to_abc_string ct mp =
+    assert (Contexts.is_valid ct);
     assert (MultiPatterns.is_valid mp);
-    assert ((List.length midi_sounds) >= (MultiPatterns.multiplicity mp));
-    assert (midi_sounds |> List.for_all (fun s -> 0 <= s && s < 128));
+    assert (Contexts.number_midi_programs ct >= (MultiPatterns.multiplicity mp));
     let lst =
         mp
+        |> MultiPatterns.patterns
         |> List.mapi
             (fun i p ->
                 "%\n"
                 ^ Printf.sprintf "V: %d clef=treble\n" (i + 1)
                 ^ "L: 1/4\n"
-                ^ Printf.sprintf "%%%%MIDI program %d\n" (List.nth midi_sounds i)
+                ^ Printf.sprintf "%%%%MIDI program %d\n"
+                    (MIDI.program_code (Contexts.midi_program ct i))
                 ^ pattern_to_abc_string ct p
                 ^ "\n")
     in
     (String.concat "" lst)
 
 (* Returns a string in the abc notation representing the multi-pattern mp under the context
- * ct and with the midi sounds specified by the integer list midi_sounds. This string
- * contains all the information to be a valid abc program. Raises Error if a note encoded by
- * mp is outside the MIDI range. *)
-let complete_abc_string ct midi_sounds mp =
+ * ct. This string contains all the information to be a valid abc program. Raises Error if a
+ * note encoded by mp is outside the MIDI range. *)
+let complete_abc_string ct mp =
+    assert (Contexts.is_valid ct);
     assert (MultiPatterns.is_valid mp);
-    assert ((List.length midi_sounds) >= (MultiPatterns.multiplicity mp));
-    assert (midi_sounds |> List.for_all (fun s -> 0 <= s && s < 128));
+    assert (Contexts.number_midi_programs ct >= (MultiPatterns.multiplicity mp));
       "X: 1\n"
     ^ "T: Track\n"
     ^ "C: Bud Music Box\n"
@@ -88,5 +103,5 @@ let complete_abc_string ct midi_sounds mp =
     ^ Printf.sprintf "Q: 1/4=%d\n" (Contexts.tempo ct)
     ^ "%%MIDI nobarlines\n"
     ^ "%\n"
-    ^ multi_pattern_to_abc_string ct midi_sounds mp
+    ^ multi_pattern_to_abc_string ct mp
 

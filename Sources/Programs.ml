@@ -9,22 +9,16 @@ type names = string
 (* Names for paths. *)
 type paths = string
 
-(* The different possible degree monoids. *)
-type degree_monoids =
-    |Add
-    |Cyclic of int
-    |Max of int
-
 (* All the possible program instructions. *)
 type instructions =
     |Show
     |Write of names * paths
     |Play of names
     |SetScale of Scales.scales
-    |SetRoot of Contexts.midi_notes
+    |SetRoot of MIDI.notes
     |SetTempo of int
-    |SetSounds of int list
-    |SetDegreeMonoid of degree_monoids
+    |SetSounds of MIDI.programs list
+    |SetDegreeMonoid of DegreeMonoids.degree_monoids
     |MultiPattern of names * MultiPatterns.multi_patterns
     |Mirror of names * names
     |Inverse of names * names
@@ -40,12 +34,10 @@ type instructions =
         names * BudGrammars.generation_shapes * int * BudGrammars.colors * (names list)
 
 (* A program is a list of instructions. *)
-type programs = instructions list
+type programs = Program of instructions list
 
-(* Returns a string representing the degree monoid dm. *)
-let degree_monoid_to_string dm =
-    match dm with
-        |Add -> "Z"
-        |Cyclic k -> Printf.sprintf "Z_%d" k
-        |Max z -> Printf.sprintf "M_%d" z
+(* Returns the list of the instructions forming the program p. *)
+let instructions p =
+    let Program instr = p in
+    instr
 

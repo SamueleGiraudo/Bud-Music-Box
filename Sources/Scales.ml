@@ -19,9 +19,6 @@ let is_valid s =
         |[] -> false
         |pr -> pr |> List.for_all (fun x -> x >= 1)
 
-(* The minor natural scale. *)
-let minor_natural = Scale [2; 1; 2; 2; 1; 2; 2]
-
 (* Returns the string representing the scale s. For instance, the minor pentatonic scale is
  * represented by "3 2 2 3 2". *)
 let to_string s =

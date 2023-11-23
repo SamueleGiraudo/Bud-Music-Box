@@ -1,6 +1,6 @@
 " Author: Samuele Giraudo
 " Creation: aug. 2022
-" Modifications: aug. 2022
+" Modifications: aug. 2022, nov. 2023
 
 " Syntax file of the Bud Music Box language.
 " This file has to be at ~/.vim/syntax/bmb.vim
@@ -14,6 +14,9 @@ set nospell
 
 " To allow '-' to be part of a keyword.
 setlocal iskeyword+=-
+
+" Comments.
+syn region Comment start="{" end="}"
 
 " Commands.
 syn keyword Structure show
@@ -37,12 +40,14 @@ syn keyword Structure mono-colorize
 syn keyword Structure generate
 
 " Options of commands.
-syn keyword Special add-int
-syn keyword Special cyclic
-syn keyword Special max
-syn keyword Special partial
-syn keyword Special full
-syn keyword Special homogeneous
+syn keyword String add
+syn keyword String cyclic
+syn keyword String mul
+syn keyword String mul-mod
+syn keyword String max
+syn keyword String partial
+syn keyword String full
+syn keyword String homogeneous
 
 " Stacking patterns.
 syn match Conditional "+"
@@ -61,7 +66,4 @@ syn match Normal "[a-zA-Z]\+[a-zA-Z0-9_]*"
 
 " Numbers.
 syn match Number "\d\+"
-
-" Comments.
-syn region Comment start="{" end="}"
 

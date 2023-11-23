@@ -4,8 +4,7 @@
 
 CC = ocamlbuild
 FLAGS = -r -cflags -w,A-4-70 -menhir "menhir --explain"
-#LIBS = -libs str -libs unix -package extlib -use-menhir
-LIBS =-package unix -package extlib -package zarith -use-menhir
+LIBS =-package unix -use-menhir
 
 SRC_DIR = Sources
 

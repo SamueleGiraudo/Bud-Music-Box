@@ -82,13 +82,14 @@ let value_from_file_path path parser_axiom lexer_axiom =
 let letters = ['a'-'z' 'A'-'Z']
 let digits = ['0'-'9']
 let specials = ['_' ''']
-
 let name = (letters | specials) (letters | specials | digits)*
-let integer = '-'? digits+
+let positive_integer = ['1'-'9'] digits*
 
 rule read = parse
     |" " |"\t" {read lexbuf}
     |"\n" {next_line lexbuf; read lexbuf}
+    |"0" {Parser.ZERO_INTEGER}
+    |"-" {Parser.MINUS}
     |"+" {Parser.PLUS}
     |"." {Parser.DOT}
     |"%" {Parser.PERCENT}
@@ -103,6 +104,8 @@ rule read = parse
     |"monoid" {Parser.MONOID}
     |"add" {Parser.ADD}
     |"cyclic" {Parser.CYCLIC}
+    |"mul" {Parser.MUL}
+    |"mul-mod" {Parser.MUL_MOD}
     |"max" {Parser.MAX}
     |"multi-pattern" {Parser.MULTI_PATTERN}
     |"mirror" {Parser.MIRROR}
@@ -119,7 +122,7 @@ rule read = parse
     |"partial" {Parser.PARTIAL}
     |"full" {Parser.FULL}
     |"homogeneous" {Parser.HOMOGENEOUS}
-    |integer {Parser.INTEGER (int_of_string (Lexing.lexeme lexbuf))}
+    |positive_integer {Parser.POSITIVE_INTEGER (int_of_string (Lexing.lexeme lexbuf))}
     |name {Parser.NAME (Lexing.lexeme lexbuf)}
     |"{" {comment 0 lexbuf}
     |eof {Parser.EOF}
