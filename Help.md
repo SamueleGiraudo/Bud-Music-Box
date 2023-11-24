@@ -5,8 +5,8 @@ This page describes all the instructions of the Bud Music Box language.
 ## General conventions
 Comments are enclosed into symbols `{` and `}`. Nested comments are allowed.
 
-Identifiers are strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, or `_`, and starting
-with an alphabetic symbol or `_`.
+Identifiers are strings made of symbols in `a`-`z`, `A`-`Z`, `0`-`9`, `'`, or `_`, and
+starting with an alphabetic symbol or `'` or `_`.
 
 
 ## Syntax for multi-patterns
@@ -21,10 +21,11 @@ For instance,
 is a string specifying a multi-pattern of multiplicity $4$. The multiplicity is the number
 of voices. This multi-pattern has arity $4$ because each voice contains $4$ beats. The
 length of this multi-pattern is $7$ since each voice has seven atom, where an atom is either
-a beat or a rest. Therefore, this multi-pattern lasts $7$ amounts of time.
+a beat or a rest. Therefore, this multi-pattern lasts $7$ units of time.
 
 
 ## Instruction set
+
 
 ### Control instructions
 
@@ -32,17 +33,23 @@ a beat or a rest. Therefore, this multi-pattern lasts $7$ amounts of time.
 #### Display information
 `show`
 
-+ Prints the current internal data (scale, tempo, patterns, _etc._).
++ Prints the current internal data consisting of the specified data, including the scale,
+  root note, tempo, MIDI programs, degree monoid, and patterns.
 
 
 #### Write the associated files of a multi-pattern 
-`write FILE_NAME PAT`
+`write PAT`
 
-+ `FILE_NAME` is a path to a non-existing file without extension.
 + `PAT` is the name of a multi-pattern.
 + Creates the ABC file, postscript file, and MIDI file for the musical phrase encoded by the
   multi-pattern `PAT`, with the underlying context of scale, root note, tempo, and MIDI
-  sounds. The created files are obtained by adding an adequate extension to `FILE_NAME`.
+  programs. The created files are obtained by adding adequate extensions to the path of the
+  run program. Just before the extensions of the created files, a suffix `_N` can be added
+  in order to obtain new file names. These files are put in the same directory as the one of
+  the run program
+
+For instance, if the path of the run program is `Samples/First.bmb`, `write pat` creates the
+files `Samples/First_0.abc`, `Samples/First_0.ps`, and `Samples/First_0.mid`.
 
 
 #### Play a multi-pattern
@@ -50,7 +57,8 @@ a beat or a rest. Therefore, this multi-pattern lasts $7$ amounts of time.
 
 + `PAT` is the name of a multi-pattern.
 + Plays `PAT` according to the underlying context of scale, root note, tempo, and MIDI
-  sounds.
+  programs. This instruction produces additionally the same effects as the instruction
+  `write PAT`.
 
 
 ### Context management
@@ -58,19 +66,19 @@ a beat or a rest. Therefore, this multi-pattern lasts $7$ amounts of time.
 #### Setting a scale
 `scale STEP_1 ... STEP_k`
 
-+ `STEP_1 ... STEP_k` is the integer composition of a $12$-scale.
++ `STEP_1 ... STEP_k` is the integer composition (also named _profile_) of a $12$-TET scale.
 + Sets the underlying scale to the specified one.
 
-By default, the minor natural scale `2 1 2 2 1 2 2` is used.
+For instance, `scale 2 1 2 2 1 2 2` sets the minor natural scale as underlying scale.
 
 
 #### Setting a root note
 `root NOTE`
 
-+ `NOTE` is the midi code of a note between $0$ and $127$.
++ `NOTE` is the MIDI code of a note between $0$ and $127$.
 + Sets the root of the underlying set of notes.
 
-By default, the root note `57` is used.
+For instance, `root 60` sets the root note to the middle C.
 
 
 #### Setting a tempo
@@ -81,17 +89,18 @@ By default, the root note `57` is used.
   and each rest is denoted as one quarter rest. The tempo specifies the number of each of
   these in one minute.
 
-By default, the tempo of `120` is used.
+For instance, `tempo 96` sets the tempo to `96` bpm.
 
 
 #### Setting voice sounds
 `sounds SOUND_1 ... SOUND_m`
 
-+ `SOUND_1 ... SOUND_m` is a sequence of General MIDI sounds, encoded as integers between
-  $0$ and $127$.
++ `SOUND_1 ... SOUND_m` is a sequence of General MIDI sound programs, encoded as integers
+  between $0$ and $127$.
 + Allocates to each potential $i$-th voice of each multi-pattern the specified sound.
 
-By default, the sounds `108` are used.
+For instance, `sounds 0 108` allocates to the $1$-st voice the _Acoustic Grand Piano_
+MIDI program and to the $2$-nd voice, the _Kalimba_ program.
 
 
 ### Setting a degree monoid

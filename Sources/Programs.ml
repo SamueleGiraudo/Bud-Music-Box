@@ -6,13 +6,10 @@
 (* Names for multi-patterns and colored multi-patterns. *)
 type names = string
 
-(* Names for paths. *)
-type paths = string
-
 (* All the possible program instructions. *)
 type instructions =
     |Show
-    |Write of names * paths
+    |Write of names
     |Play of names
     |SetScale of Scales.scales
     |SetRoot of MIDI.notes

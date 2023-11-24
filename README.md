@@ -8,47 +8,6 @@ Copyright (C) 2019--2023 [Samuele Giraudo](https://igm.univ-mlv.fr/~giraudo/) -
 `giraudo.samuele@uqam.ca` -
 
 
-## Versions
-+ `1.100` (2022-08-10)
-    + Improvement of the syntax.
-    + Empty patterns are allowed.
-    + Various optimizations have been made.
-
-+ `1.011` (2021-04-17)
-    + Implementation of degree monoids: three monoids are proposed (the additive monoid,
-      cyclic monoids, avec `max` monoids).
-    + Big simplification of the language: the built-in constructions `transpose`,
-      `temporize`, `rhythmize`, `harmonize`, and `arpeggiate` have been removed.
-    + The patterns forming a multi-pattern must have the same arity.
-    + Improved parsing and error messages.
-
-+ `1.001` (2020-10-16)
-    + Improved parsing and error messages.
-
-+ `0.1111` (2020-05-20)
-    + Improved efficiency of partial composition of patterns.
-    + The patterns forming a multi-pattern can now have different arities.
-
-+ `0.111` (2020-04-26)
-    + New language specification.
-    + Documentation improvements.
-    + Add instruction `concatenate`.
-    + Add instruction `repeat`.
-    + Add instruction `transpose`.
-
-+ `0.11` (2020-01-24)
-    + Add instructions `binarily_composition` and `mobiusation`.
-    + Language and instruction redesign.
-
-+ `0.10` (2020-01-01)
-    + Several improvements.
-    + Add instructions `morphism` and `mirror`.
-    + Add instructions `temporize`, `rhythmize`, `harmonize`, and `arpeggiate`.
-
-+ `0.01` (2019-12-18)
-    + Initial version.
-
-
 ## Quick overview and examples
 This program offers a complete language allowing to represent musical patterns, to compute
 over them, and to randomly generate some of them. Results can be converted to files in the
@@ -82,20 +41,15 @@ over them, and to randomly generate some of them. Results can be converted to fi
 + A [full piece](Examples/Composition.bmb).
 
 
-## Building
+## Versions
+Here is the [changelog](Versions.md) of the different versions.
+
+
+## Installation
 The following instructions hold for Linux systems like Debian or Archlinux, after 2021.
 
-1. Clone the repository somewhere by running
-`git clone https://github.com/SamueleGiraudo/Bud-Music-Box.git`.
 
-2. Install all dependencies (see the section below).
-
-3. Build the project by running `make`.
-
-This creates an executable `bmb`.
-
-
-## Dependencies
+### Dependencies
 The following programs are needed:
 
 + `pkg-config`
@@ -113,11 +67,24 @@ The following programs are needed:
 Moreover, a proper installation of sound fonts is necessary.
 
 
+### Building
+Here are the required steps to build the interpreter `Bud Music Box`:
+
+1. Clone the repository somewhere by running
+`git clone https://github.com/SamueleGiraudo/Bud-Music-Box.git`.
+
+2. Install all dependencies (see the section below).
+
+3. Build the project by running `make`.
+
+This creates an executable `bmb`. The following sections explain how to use it.
+
+
 ## User guide
 This [page](Help.md) contains the description of the Bud Music Box instruction set and
 language.
 
-Files containing such instructions must have `bmb` as extension. Given such a file
+Files containing such instructions must have `.bmb` as extension. Given such a file
 `Program.bmb`, the command
 
 `./bmb --file Program.bmb`
@@ -132,13 +99,13 @@ the file [bmb.vim](Vim/syntax/bmb.vim) at `~/.vim/syntax/bmb.vim` and the file
 
 
 ## Theoretical aspects
-An operad is an algebraic structure wherein elements are operations. This program is based
-upon an operad on an abstraction of polyphonic musical phrases called multi-patterns,
-forming the music box model. The set of these objects is endowed with the structure of an
-operad allowing us to perform computations on musical phrases. Indeed, the operad structure
-on multi-patterns makes it possible to see any multi-pattern as an operation on
-multi-patterns. The main idea is that one can, from a set of small musical phrases, generate
-randomly a new musical phrase by computing some random compositions of these patterns.
+An operad is an algebraic structure wherein elements are operations. This generative method
+is based upon an abstraction of polyphonic musical phrases called multi-patterns, forming
+the music box model. The set of these objects is endowed with the structure of an operad
+allowing us to perform computations on musical phrases. Indeed, the operad structure on
+multi-patterns makes it possible to see any multi-pattern as an operation on multi-patterns.
+The main idea is that one can, from a set of small musical phrases, generate randomly a new
+musical phrase by computing some random compositions of these patterns.
 
 
 ## Bibliography

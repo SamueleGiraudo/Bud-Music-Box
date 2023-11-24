@@ -93,7 +93,7 @@ if Sys.file_exists path |> not then begin
 end;
 
 (* Checks if the file has the right extension. *)
-if not (Files.has_right_extension path) then begin
+if not (Paths.has_extension Files.extension path) then begin
     Printf.sprintf "Error: the file %s has not %s as extension.\n" path Files.extension
     |> Outputs.print_error;
     exit 1

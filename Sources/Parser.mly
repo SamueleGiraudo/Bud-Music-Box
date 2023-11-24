@@ -52,7 +52,7 @@ program:
 instruction:
     |SHOW {Programs.Show}
 
-    |WRITE mp_name=NAME file_name=NAME {Programs.Write (mp_name, file_name)}
+    |WRITE mp_name=NAME {Programs.Write mp_name}
 
     |PLAY mp_name=NAME {Programs.Play mp_name}
 
