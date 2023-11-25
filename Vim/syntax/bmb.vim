@@ -10,7 +10,7 @@ if exists("b:current_syntax")
 endif
 
 " Turns off spell checking.
-set nospell
+setlocal nospell
 
 " To allow '-' to be part of a keyword.
 setlocal iskeyword+=-
@@ -52,9 +52,6 @@ syn keyword String homogeneous
 
 " Stacking patterns.
 syn match Conditional "+"
-
-" For the parts of colored multi-patterns.
-syn match Function "|"
 
 " Rests.
 syn match Macro "."

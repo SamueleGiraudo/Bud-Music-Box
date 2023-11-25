@@ -130,7 +130,7 @@ let create_files st mpat =
     else if Option.is_none st.degree_monoid then
         set_fail_message st "Degree monoid not specified."
     else if List.length st.midi_programs < MultiPatterns.multiplicity mpat then
-        set_fail_message st "MIDI programs insufficiently specified."
+        set_fail_message st "General MIDI programs insufficiently specified."
     else
         let ct =
             Contexts.make
@@ -225,10 +225,10 @@ let execute_instruction instr st =
                 set_success_message st' "Tempo set."
         |Programs.SetSounds midi_programs ->
             if midi_programs |> List.exists (fun p -> not (MIDI.is_valid_program p)) then
-                set_fail_message st "Invalid MIDI programs."
+                set_fail_message st "Invalid General MIDI programs."
             else
                 let st' = {st with midi_programs = midi_programs} in
-                set_success_message st' "MIDI programs set."
+                set_success_message st' "General MIDI programs set."
         |Programs.SetDegreeMonoid dm ->
             let st' = {st with degree_monoid = Some dm} in
             if st.multi_patterns |> List.map snd
