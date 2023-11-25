@@ -6,8 +6,7 @@
 
 (* Returns the list of integers from a to b. *)
 let interval a b =
-    assert (a <= b);
-    List.init (b - a + 1) (fun x -> x + a);;
+    if a > b then [] else List.init (b - a + 1) (fun x -> x + a);;
 
 (* Returns the factor of the list lst starting at position start and of length len. *)
 let rec factor lst start len =

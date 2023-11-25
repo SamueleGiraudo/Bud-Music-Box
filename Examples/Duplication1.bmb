@@ -7,8 +7,8 @@ monoid add
 
 {multi-pattern p1 -2 0 2 5 . 1 3}
 {multi-pattern p1 0 2 1 3 2 4 3 5}
-multi-pattern p1 -2 0 2 . 1
-stack-repeat p1 p1 2
+multi-pattern p1  -2 0 2 . 1
+stack-repeat p1 p1 -2
 
 multi-pattern p2 0 . + . 0
 

@@ -8,7 +8,6 @@
 %token PLUS
 %token DOT
 %token PERCENT
-%token PIPE
 %token SHOW
 %token WRITE
 %token PLAY
@@ -103,15 +102,15 @@ instruction:
         Programs.HomogeneousCompose (res_name, mp_name_1, mp_name_2)
     }
 
-    |COLORIZE res_name=NAME out_color=color PIPE mp_name=NAME PIPE in_colors=list(color) {
+    |COLORIZE res_name=NAME out_color=color mp_name=NAME in_colors=list(color) {
         Programs.Colorize (res_name, mp_name, out_color, in_colors)
     }
 
-    |MONO_COLORIZE res_name=NAME out_color=color PIPE mp_name=NAME PIPE in_color=color {
+    |MONO_COLORIZE res_name=NAME out_color=color mp_name=NAME in_color=color {
         Programs.MonoColorize (res_name, mp_name, out_color, in_color)
     }
 
-    |GENERATE res_name=NAME shape=shape size=POSITIVE_INTEGER color=color
+    |GENERATE res_name=NAME shape=shape size=nonnegative_integer color=color
     cmp_names_lst=nonempty_list(NAME) {
         Programs.Generate (res_name, shape, size, color, cmp_names_lst)
     }

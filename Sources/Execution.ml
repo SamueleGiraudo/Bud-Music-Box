@@ -231,13 +231,15 @@ let execute_instruction instr st =
                 set_success_message st' "MIDI programs set."
         |Programs.SetDegreeMonoid dm ->
             let st' = {st with degree_monoid = Some dm} in
-            set_success_message st' "Degree monoid set."
+            if st.multi_patterns |> List.map snd
+            |> List.for_all (MultiPatterns.is_on_degree_monoid dm) |> not then
+                set_fail_message
+                    st
+                    "Degree monoid not compatible with existing multi-patterns."
+            else
+                set_success_message st' "Degree monoid set."
         |Programs.MultiPattern (name, mpat) ->
-            if not (Files.is_name name) then
-                set_fail_message st "Bad multi-pattern name."
-            else if not (MultiPatterns.is_valid mpat) then
-                set_fail_message st "Bad multi-pattern."
-            else if Option.is_none st.degree_monoid then
+            if Option.is_none st.degree_monoid then
                 set_fail_message st "Degree monoid not specified."
             else
                 let dm = Option.get st.degree_monoid in
@@ -247,262 +249,179 @@ let execute_instruction instr st =
                     let st' = add_multi_pattern st name mpat in
                     set_success_message st' "Multi-pattern added."
         |Programs.Mirror (res_name, mpat_name) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
+            let mpat = multi_pattern_with_name st mpat_name in
+            if Option.is_none mpat then
+                set_fail_message st "Unknown multi-pattern name."
             else
-                let mpat = multi_pattern_with_name st mpat_name in
-                if Option.is_none mpat then
-                    set_fail_message st "Unknown multi-pattern name."
-                else
-                    let res = MultiPatterns.mirror (Option.get mpat) in
-                    let st' = add_multi_pattern st res_name res in
-                    set_success_message st' "Mirror computed and added."
+                let res = MultiPatterns.mirror (Option.get mpat) in
+                let st' = add_multi_pattern st res_name res in
+                set_success_message st' "Mirror computed and added."
         |Programs.Inverse (res_name, mpat_name) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
+            let mpat = multi_pattern_with_name st mpat_name in
+            if Option.is_none mpat then
+                set_fail_message st "Unknown multi-pattern name."
             else
-                let mpat = multi_pattern_with_name st mpat_name in
-                if Option.is_none mpat then
-                    set_fail_message st "Unknown multi-pattern name."
+                let res = MultiPatterns.map Degrees.opposite (Option.get mpat) in
+                let dm = Option.get st.degree_monoid in
+                if not (MultiPatterns.is_on_degree_monoid dm res) then
+                    set_fail_message st "Resulting multi-pattern not on degree monoid."
                 else
-                    let res = MultiPatterns.map Degrees.opposite (Option.get mpat) in
                     let st' = add_multi_pattern st res_name res in
                     set_success_message st' "Inverse computed and added."
         |Programs.Concatenate (res_name, mpat_names_lst) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
-            else if mpat_names_lst = [] then
-                set_fail_message st "Empty list of multi-patterns."
+            let mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
+            if mpat_lst |> List.exists Option.is_none then
+                set_fail_message st "Unknown multi-pattern name."
             else
-                let mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
-                if mpat_lst |> List.exists Option.is_none then
-                    set_fail_message st "Unknown multi-pattern name."
+                let mpat_lst' = mpat_lst |> List.map Option.get in
+                let m = MultiPatterns.multiplicity (List.hd mpat_lst') in
+                if mpat_lst'
+                |> List.exists (fun mpat -> MultiPatterns.multiplicity mpat <> m) then
+                    set_fail_message st "Bad multiplicity of multi-patterns."
                 else
-                    let mpat_lst' = mpat_lst |> List.map Option.get in
-                    let m = MultiPatterns.multiplicity (List.hd mpat_lst') in
+                    let res = MultiPatterns.concatenate_list mpat_lst' in
+                    let st' = add_multi_pattern st res_name res in
+                    set_success_message st' "Concatenation computed and added.";
+        |Programs.ConcatenateRepeat (res_name, mpat_name, k) ->
+            let mpat = multi_pattern_with_name st mpat_name in
+            if Option.is_none mpat then
+                set_fail_message st "Unknown multi-pattern name."
+            else
+                let res = MultiPatterns.concatenate_repeat (Option.get mpat) k in
+                let st' = add_multi_pattern st res_name res in
+                set_success_message st' "Concatenate repetition computed and added.\n"
+        |Programs.Stack (res_name, mpat_names_lst) ->
+            let mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
+            if mpat_lst |> List.exists Option.is_none then
+                set_fail_message st "Unknown multi-pattern name."
+            else
+                let mpat_lst' = mpat_lst |> List.map Option.get in
+                let ar = MultiPatterns.arity (List.hd mpat_lst') in
+                if mpat_lst' |> List.exists (fun mpat -> MultiPatterns.arity mpat <> ar)
+                then
+                    set_fail_message st "Bad arity of multi-patterns."
+                else
+                    let len = MultiPatterns.length (List.hd mpat_lst') in
                     if mpat_lst'
+                    |> List.exists (fun mpat -> MultiPatterns.length mpat <> len) then
+                        set_fail_message st "Bad length of multi-patterns."
+                else
+                    let res = MultiPatterns.stack_list mpat_lst' in
+                    let st' = add_multi_pattern st res_name res in
+                    set_success_message st' "Stack computed and added."
+        |Programs.StackRepeat (res_name, mpat_name, k) ->
+            let mpat = multi_pattern_with_name st mpat_name in
+            if Option.is_none mpat then
+                set_fail_message st "Unknown multi-pattern name."
+            else
+                let res = MultiPatterns.stack_repeat (Option.get mpat) k in
+                let st' = add_multi_pattern st res_name res in
+                set_success_message st' "Stack repetition computed and added."
+        |Programs.PartialCompose (res_name, mpat_name_1, pos, mpat_name_2) ->
+            let mpat_1 = multi_pattern_with_name st mpat_name_1
+            and mpat_2 = multi_pattern_with_name st mpat_name_2 in
+            if Option.is_none mpat_1 || Option.is_none mpat_2 then
+                set_fail_message st "Unknown multi-pattern name."
+            else
+                let mpat_1 = Option.get mpat_1 and mpat_2 = Option.get mpat_2 in
+                if MultiPatterns.multiplicity mpat_1 <> MultiPatterns.multiplicity mpat_2
+                then
+                    set_fail_message st "Bad multiplicity of multi-patterns."
+            else if pos < 1 || pos > MultiPatterns.arity mpat_1 then
+                set_fail_message st "Bad partial composition position."
+            else
+                let dm = Option.get st.degree_monoid in
+                let res = MultiPatterns.partial_composition dm mpat_1 pos mpat_2 in
+                let st' = add_multi_pattern st res_name res in
+                set_success_message st' "Partial composition computed and added."
+        |Programs.FullCompose (res_name, mpat_name, mpat_names_lst) ->
+            let mpat = multi_pattern_with_name st mpat_name
+            and mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
+            if mpat :: mpat_lst |> List.exists Option.is_none then
+                set_fail_message st "Unknown multi-pattern name."
+            else
+                let mpat = Option.get mpat
+                and mpat_lst = mpat_lst |> List.map Option.get in
+                if MultiPatterns.arity mpat <> List.length mpat_lst then
+                    set_fail_message st "Bad number of multi-patterns."
+                else
+                    let m = MultiPatterns.multiplicity mpat in
+                    if mpat_lst
                     |> List.exists (fun mpat -> MultiPatterns.multiplicity mpat <> m) then
                         set_fail_message st "Bad multiplicity of multi-patterns."
                     else
-                        let res = MultiPatterns.concatenate_list mpat_lst' in
-                        let st' = add_multi_pattern st res_name res in
-                        set_success_message st' "Concatenation computed and added.";
-        |Programs.ConcatenateRepeat (res_name, mpat_name, k) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
-            else
-                let mpat = multi_pattern_with_name st mpat_name in
-                if Option.is_none mpat then
-                    set_fail_message st "Unknown multi-pattern name."
-                else if k <= 0 then
-                    set_fail_message st "Bad number of repetitions."
-                else
-                    let res = MultiPatterns.concatenate_repeat (Option.get mpat) k in
-                    let st' = add_multi_pattern st res_name res in
-                    set_success_message st' "Concatenate repetition computed and added.\n"
-        |Programs.Stack (res_name, mpat_names_lst) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
-            else if mpat_names_lst = [] then
-                set_fail_message st "Empty list of multi-patterns."
-            else
-                let mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
-                if mpat_lst |> List.exists Option.is_none then
-                    set_fail_message st "Unknown multi-pattern name."
-                else
-                    let mpat_lst' = mpat_lst |> List.map Option.get in
-                    let ar = MultiPatterns.arity (List.hd mpat_lst') in
-                    if mpat_lst'
-                    |> List.exists (fun mpat -> MultiPatterns.arity mpat <> ar) then
-                        set_fail_message st "Bad arity of multi-patterns."
-                    else
-                        let len = MultiPatterns.length (List.hd mpat_lst') in
-                        if mpat_lst'
-                        |> List.exists (fun mpat -> MultiPatterns.length mpat <> len) then
-                            set_fail_message st "Bad length of multi-patterns."
-                    else
-                        let res = MultiPatterns.stack_list mpat_lst' in
-                        let st' = add_multi_pattern st res_name res in
-                        set_success_message st' "Stack computed and added."
-        |Programs.StackRepeat (res_name, mpat_name, k) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
-            else
-                let mpat = multi_pattern_with_name st mpat_name in
-                if Option.is_none mpat then
-                    set_fail_message st "Unknown multi-pattern name."
-                else if k <= 0 then
-                    set_fail_message st "Bad number of repetitions."
-                else
-                    let res = MultiPatterns.stack_repeat (Option.get mpat) k in
-                    let st' = add_multi_pattern st res_name res in
-                    set_success_message st' "Stack repetition computed and added.\n"
-        |Programs.PartialCompose (res_name, mpat_name_1, pos, mpat_name_2) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
-            else
-                let mpat_1 = multi_pattern_with_name st mpat_name_1 in
-                if Option.is_none mpat_1 then
-                    set_fail_message st "Unknown multi-pattern name."
-                else
-                    let mpat_2 = multi_pattern_with_name st mpat_name_2 in
-                    if Option.is_none mpat_2 then
-                        set_fail_message st "Unknown multi-pattern name."
-                    else
-                        let mpat_1 = Option.get mpat_1 and mpat_2 = Option.get mpat_2 in
-                        if MultiPatterns.multiplicity mpat_1 
-                        <> MultiPatterns.multiplicity mpat_2 then
-                        set_fail_message st "Bad multiplicity of multi-patterns.\n"
-                    else if pos < 1 || pos > MultiPatterns.arity mpat_1 then
-                        set_fail_message st "Bad partial composition position."
-                    else if Option.is_none st.degree_monoid then
-                        set_fail_message st "Degree monoid not specified."
-                    else
                         let dm = Option.get st.degree_monoid in
-                        let res = MultiPatterns.partial_composition dm mpat_1 pos mpat_2 in
+                        let res = MultiPatterns.full_composition dm mpat mpat_lst in
                         let st' = add_multi_pattern st res_name res in
-                        set_success_message st' "Partial composition computed and added."
-        |Programs.FullCompose (res_name, mpat_name, mpat_names_lst) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
-            else
-                let mpat = multi_pattern_with_name st mpat_name in
-                if Option.is_none mpat then
-                    set_fail_message st "Unknown multi-pattern name."
-                else
-                    let mpat_lst =
-                        mpat_names_lst |> List.map (multi_pattern_with_name st)
-                    in
-                    if mpat_lst |> List.exists Option.is_none then
-                        set_fail_message st "Unknown multi-pattern name."
-                    else
-                        let mpat = Option.get mpat in
-                        let mpat_lst' = mpat_lst |> List.map Option.get in
-                        let m = MultiPatterns.multiplicity mpat in
-                        if mpat_lst'
-                        |> List.exists (fun mpat -> MultiPatterns.multiplicity mpat <> m)
-                        then
-                            set_fail_message st "Bad multiplicity of multi-patterns."
-                        else if Option.is_none st.degree_monoid then
-                            set_fail_message st "Degree monoid not specified."
-                        else
-                            let dm = Option.get st.degree_monoid in
-                            let res = MultiPatterns.full_composition dm mpat mpat_lst' in
-                            let st' = add_multi_pattern st res_name res in
-                            set_success_message st' "Full composition computed and added."
+                        set_success_message st' "Full composition computed and added."
         |Programs.HomogeneousCompose (res_name, mpat_name_1, mpat_name_2) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
+            let mpat_1 = multi_pattern_with_name st mpat_name_1
+            and mpat_2 = multi_pattern_with_name st mpat_name_2 in
+            if Option.is_none mpat_1 || Option.is_none mpat_2 then
+                set_fail_message st "Unknown multi-pattern name."
             else
-                let mpat_1 = multi_pattern_with_name st mpat_name_1 in
-                if Option.is_none mpat_1 then
-                    set_fail_message st "Unknown multi-pattern name."
+                let mpat_1 = Option.get mpat_1 and mpat_2 = Option.get mpat_2 in
+                if MultiPatterns.multiplicity mpat_1 <> MultiPatterns.multiplicity mpat_2
+                then
+                    set_fail_message st "Bad multiplicity of multi-patterns."
                 else
-                    let mpat_2 = multi_pattern_with_name st mpat_name_2 in
-                    if Option.is_none mpat_2 then
-                        set_fail_message st "Unknown multi-pattern name."
-                    else
-                        let mpat_1 = Option.get mpat_1 and mpat_2 = Option.get mpat_2 in
-                        if MultiPatterns.multiplicity mpat_1
-                        <> MultiPatterns.multiplicity mpat_2 then
-                            set_fail_message st "Bad multiplicity of multi-patterns."
-                        else if Option.is_none st.degree_monoid then
-                            set_fail_message st "Degree monoid not specified."
-                        else
-                            let dm = Option.get st.degree_monoid in
-                            let res =
-                                MultiPatterns.homogeneous_composition dm mpat_1 mpat_2
-                            in
-                            let st' = add_multi_pattern st res_name res in
-                            set_success_message
-                                st'
-                                "Homogeneous composition computed and added."
+                    let dm = Option.get st.degree_monoid in
+                    let res = MultiPatterns.homogeneous_composition dm mpat_1 mpat_2 in
+                    let st' = add_multi_pattern st res_name res in
+                    set_success_message st' "Homogeneous composition computed and added."
         |Programs.Colorize (res_name, mpat_name, out_color, in_colors) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
+            let mpat = multi_pattern_with_name st mpat_name in
+            if Option.is_none mpat then
+                set_fail_message st "Unknown multi-pattern name."
             else
-                let mpat = multi_pattern_with_name st mpat_name in
-                if Option.is_none mpat then
-                    set_fail_message st "Unknown multi-pattern name."
+                let mpat = Option.get mpat in
+                if List.length in_colors <> MultiPatterns.arity mpat then
+                    set_fail_message st "Bad number of input colors."
                 else
-                    if not (Files.is_name (Colors.name out_color)) then
-                        set_fail_message st "Bad output color name."
-                    else if in_colors |> List.map Colors.name
-                    |> List.for_all Files.is_name |> not then
-                        set_fail_message st "Bad input color name."
-                    else
-                        let mpat = Option.get mpat in
-                        if List.length in_colors <> MultiPatterns.arity mpat then
-                            set_fail_message st "Bad number of input colors."
-                        else
-                            let cpat =
-                                ColoredElements.make out_color mpat in_colors
-                            in
-                            let st' = add_colored_multi_pattern st res_name cpat in
-                            set_success_message st' "Colored multi-pattern added."
-        |Programs.MonoColorize (res_name, mpat_name, out_color, in_color) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
-            else
-                let mpat = multi_pattern_with_name st mpat_name in
-                if Option.is_none mpat then
-                    set_fail_message st "Unknown multi-pattern name."
-                else if not (Files.is_name (Colors.name out_color)) then
-                    set_fail_message st "Bad output color name."
-                else if not (Files.is_name (Colors.name in_color)) then
-                    set_fail_message st "Bad input color name."
-                else
-                    let mpat = Option.get mpat in
-                    let n = MultiPatterns.arity mpat in
-                    let cpat =
-                        ColoredElements.make
-                            out_color
-                            mpat
-                            (List.init n (Fun.const in_color))
-                    in
+                    let cpat = ColoredElements.make out_color mpat in_colors in
                     let st' = add_colored_multi_pattern st res_name cpat in
-                    set_success_message st' "Monocolored multi-pattern added.\n"
-        |Programs.Generate (res_name, shape, size, color, cpat_names_lst) ->
-            if not (Files.is_name res_name) then
-                set_fail_message st "Bad multi-pattern name."
-            else if size < 0 then
-                set_fail_message st "Bad size for the generation."
-            else if not (Files.is_name (Colors.name color)) then
-                set_fail_message st "Bad color name."
+                    set_success_message st' "Colored multi-pattern added."
+        |Programs.MonoColorize (res_name, mpat_name, out_color, in_color) ->
+            let mpat = multi_pattern_with_name st mpat_name in
+            if Option.is_none mpat then
+                set_fail_message st "Unknown multi-pattern name."
             else
-                let cpat_lst =
-                    cpat_names_lst
-                    |> List.map (colored_multi_pattern_with_name st)
+                let mpat = Option.get mpat in
+                let n = MultiPatterns.arity mpat in
+                let cpat =
+                    ColoredElements.make out_color mpat (List.init n (Fun.const in_color))
                 in
-                if cpat_lst |> List.exists Option.is_none then
-                    set_fail_message st "Unknown colored multi-pattern name."
-                else if not (Files.is_name (Colors.name color)) then
-                    set_fail_message st "Bad starting color name."
+                let st' = add_colored_multi_pattern st res_name cpat in
+                set_success_message st' "Monocolored multi-pattern added.\n"
+        |Programs.Generate (res_name, shape, size, color, cpat_names_lst) ->
+            let cpat_lst =
+                cpat_names_lst |> List.map (colored_multi_pattern_with_name st)
+            in
+            if cpat_lst |> List.exists Option.is_none then
+                set_fail_message st "Unknown colored multi-pattern name."
+            else
+                let cpat_lst' = cpat_lst |> List.map Option.get in
+                let m =
+                    MultiPatterns.multiplicity
+                        (ColoredElements.element (List.hd cpat_lst'))
+                in
+                if cpat_lst'
+                |> List.exists
+                    (fun cpat ->
+                        MultiPatterns.multiplicity (ColoredElements.element cpat) <> m)
+                then
+                    set_fail_message st "Bad multiplicity of colored multi-patterns."
                 else
-                    let cpat_lst' = cpat_lst |> List.map Option.get in
-                    let m =
-                        MultiPatterns.multiplicity
-                            (ColoredElements.element (List.hd cpat_lst'))
+                    let dm = Option.get st.degree_monoid in
+                    let res =
+                        Generation.from_colored_multi_patterns
+                            (Generation.make_parameters size shape)
+                            color
+                            dm
+                            cpat_lst'
                     in
-                    if cpat_lst'
-                    |> List.exists
-                        (fun cpat ->
-                            MultiPatterns.multiplicity (ColoredElements.element cpat) <> m)
-                    then
-                        set_fail_message st "Bad multiplicity of colored multi-patterns."
-                    else if Option.is_none st.degree_monoid then
-                        set_fail_message st "Degree monoid not specified."
-                    else
-                        let dm = Option.get st.degree_monoid in
-                        let res =
-                            Generation.from_colored_multi_patterns
-                                (Generation.make_parameters size shape)
-                                color
-                                dm
-                                cpat_lst'
-                        in
-                        let st' = add_multi_pattern st res_name res in
-                        set_success_message st' "Multi-pattern generated."
+                    let st' = add_multi_pattern st res_name res in
+                    set_success_message st' "Multi-pattern generated."
 
 (* Executes the program prgm located in the program file of path path_bmb. This function
  * only produces the side effects prescribed by the program. *)

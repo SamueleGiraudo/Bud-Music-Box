@@ -60,13 +60,11 @@ syn match Function "|"
 syn match Macro "."
 
 " Match colors.
-syn match Constant "%[a-zA-Z]\+[a-zA-Z0-9_]*"
+syn match Constant "%[a-zA-Z_']\+[a-zA-Z0-9_']*"
 
 " Multi-pattern or colored multi-pattern names.
-syn match Normal "[a-zA-Z]\+[a-zA-Z0-9_]*"
+syn match Normal "[a-zA-Z_']\+[a-zA-Z0-9_']*"
 
 " Numbers.
 syn match Number "\d\+"
-
-" Comments.
 

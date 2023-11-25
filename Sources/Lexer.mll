@@ -93,7 +93,6 @@ rule read = parse
     |"+" {Parser.PLUS}
     |"." {Parser.DOT}
     |"%" {Parser.PERCENT}
-    |"|" {Parser.PIPE}
     |"show" {Parser.SHOW}
     |"write" {Parser.WRITE}
     |"play" {Parser.PLAY}
