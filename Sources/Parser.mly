@@ -26,8 +26,9 @@
 %token MIRROR
 %token INVERSE
 %token CONCATENATE
-%token REPEAT
+%token CONCATENATE_REPEAT
 %token STACK
+%token STACK_REPEAT
 %token PARTIAL_COMPOSE
 %token FULL_COMPOSE
 %token HOMOGENEOUS_COMPOSE
@@ -78,12 +79,16 @@ instruction:
         Programs.Concatenate (res_name, mp_names_lst)
     }
 
-    |REPEAT res_name=NAME mp_name=NAME k=POSITIVE_INTEGER {
-        Programs.Repeat (res_name, mp_name, k)
+    |CONCATENATE_REPEAT res_name=NAME mp_name=NAME k=POSITIVE_INTEGER {
+        Programs.ConcatenateRepeat (res_name, mp_name, k)
     }
 
     |STACK res_name=NAME mp_names_lst=nonempty_list(NAME) {
         Programs.Stack (res_name, mp_names_lst)
+    }
+
+    |STACK_REPEAT res_name=NAME mp_name=NAME k=POSITIVE_INTEGER {
+        Programs.StackRepeat (res_name, mp_name, k)
     }
 
     |PARTIAL_COMPOSE res_name=NAME mp_name_1=NAME pos=POSITIVE_INTEGER mp_name_2=NAME {
@@ -151,7 +156,7 @@ monoid:
 
 
 color:
-    |PERCENT c=NAME {BudGrammars.Color c}
+    |PERCENT c=NAME {Colors.Color c}
 
 
 shape:

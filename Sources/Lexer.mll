@@ -111,8 +111,9 @@ rule read = parse
     |"mirror" {Parser.MIRROR}
     |"inverse" {Parser.INVERSE}
     |"concatenate" {Parser.CONCATENATE}
-    |"repeat" {Parser.REPEAT}
+    |"concatenate-repeat" {Parser.CONCATENATE_REPEAT}
     |"stack" {Parser.STACK}
+    |"stack-repeat" {Parser.STACK_REPEAT}
     |"partial-compose" {Parser.PARTIAL_COMPOSE}
     |"full-compose" {Parser.FULL_COMPOSE}
     |"homogeneous-compose" {Parser.HOMOGENEOUS_COMPOSE}

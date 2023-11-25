@@ -87,7 +87,7 @@ let state_to_string st =
         (Strings.indent 4 (Strings.from_list
             (fun (name, cpat) ->
                 Printf.sprintf "%s = %s" name
-                    (BudGrammars.colored_element_to_string MultiPatterns.to_string cpat))
+                    (ColoredElements.to_string MultiPatterns.to_string cpat))
             "\n"
             st.colored_multi_patterns))
         |> Strings.indent 4
@@ -288,7 +288,7 @@ let execute_instruction instr st =
                         let res = MultiPatterns.concatenate_list mpat_lst' in
                         let st' = add_multi_pattern st res_name res in
                         set_success_message st' "Concatenation computed and added.";
-        |Programs.Repeat (res_name, mpat_name, k) ->
+        |Programs.ConcatenateRepeat (res_name, mpat_name, k) ->
             if not (Files.is_name res_name) then
                 set_fail_message st "Bad multi-pattern name."
             else
@@ -298,9 +298,9 @@ let execute_instruction instr st =
                 else if k <= 0 then
                     set_fail_message st "Bad number of repetitions."
                 else
-                    let res = MultiPatterns.repeat (Option.get mpat) k in
+                    let res = MultiPatterns.concatenate_repeat (Option.get mpat) k in
                     let st' = add_multi_pattern st res_name res in
-                    set_success_message st' "Repetition computed and added.\n";
+                    set_success_message st' "Concatenate repetition computed and added.\n"
         |Programs.Stack (res_name, mpat_names_lst) ->
             if not (Files.is_name res_name) then
                 set_fail_message st "Bad multi-pattern name."
@@ -325,6 +325,19 @@ let execute_instruction instr st =
                         let res = MultiPatterns.stack_list mpat_lst' in
                         let st' = add_multi_pattern st res_name res in
                         set_success_message st' "Stack computed and added."
+        |Programs.StackRepeat (res_name, mpat_name, k) ->
+            if not (Files.is_name res_name) then
+                set_fail_message st "Bad multi-pattern name."
+            else
+                let mpat = multi_pattern_with_name st mpat_name in
+                if Option.is_none mpat then
+                    set_fail_message st "Unknown multi-pattern name."
+                else if k <= 0 then
+                    set_fail_message st "Bad number of repetitions."
+                else
+                    let res = MultiPatterns.stack_repeat (Option.get mpat) k in
+                    let st' = add_multi_pattern st res_name res in
+                    set_success_message st' "Stack repetition computed and added.\n"
         |Programs.PartialCompose (res_name, mpat_name_1, pos, mpat_name_2) ->
             if not (Files.is_name res_name) then
                 set_fail_message st "Bad multi-pattern name."
@@ -413,15 +426,21 @@ let execute_instruction instr st =
                 if Option.is_none mpat then
                     set_fail_message st "Unknown multi-pattern name."
                 else
-                    let mpat = Option.get mpat in
-                    if List.length in_colors <> MultiPatterns.arity mpat then
-                        set_fail_message st "Bad number of input colors."
+                    if not (Files.is_name (Colors.name out_color)) then
+                        set_fail_message st "Bad output color name."
+                    else if in_colors |> List.map Colors.name
+                    |> List.for_all Files.is_name |> not then
+                        set_fail_message st "Bad input color name."
                     else
-                        let cpat =
-                            BudGrammars.make_colored_element out_color mpat in_colors
-                        in
-                        let st' = add_colored_multi_pattern st res_name cpat in
-                        set_success_message st' "Colored multi-pattern added."
+                        let mpat = Option.get mpat in
+                        if List.length in_colors <> MultiPatterns.arity mpat then
+                            set_fail_message st "Bad number of input colors."
+                        else
+                            let cpat =
+                                ColoredElements.make out_color mpat in_colors
+                            in
+                            let st' = add_colored_multi_pattern st res_name cpat in
+                            set_success_message st' "Colored multi-pattern added."
         |Programs.MonoColorize (res_name, mpat_name, out_color, in_color) ->
             if not (Files.is_name res_name) then
                 set_fail_message st "Bad multi-pattern name."
@@ -429,11 +448,15 @@ let execute_instruction instr st =
                 let mpat = multi_pattern_with_name st mpat_name in
                 if Option.is_none mpat then
                     set_fail_message st "Unknown multi-pattern name."
+                else if not (Files.is_name (Colors.name out_color)) then
+                    set_fail_message st "Bad output color name."
+                else if not (Files.is_name (Colors.name in_color)) then
+                    set_fail_message st "Bad input color name."
                 else
                     let mpat = Option.get mpat in
                     let n = MultiPatterns.arity mpat in
                     let cpat =
-                        BudGrammars.make_colored_element
+                        ColoredElements.make
                             out_color
                             mpat
                             (List.init n (Fun.const in_color))
@@ -445,7 +468,7 @@ let execute_instruction instr st =
                 set_fail_message st "Bad multi-pattern name."
             else if size < 0 then
                 set_fail_message st "Bad size for the generation."
-            else if not (Files.is_name (BudGrammars.color_name color)) then
+            else if not (Files.is_name (Colors.name color)) then
                 set_fail_message st "Bad color name."
             else
                 let cpat_lst =
@@ -454,16 +477,18 @@ let execute_instruction instr st =
                 in
                 if cpat_lst |> List.exists Option.is_none then
                     set_fail_message st "Unknown colored multi-pattern name."
+                else if not (Files.is_name (Colors.name color)) then
+                    set_fail_message st "Bad starting color name."
                 else
                     let cpat_lst' = cpat_lst |> List.map Option.get in
                     let m =
                         MultiPatterns.multiplicity
-                            (BudGrammars.get_element (List.hd cpat_lst'))
+                            (ColoredElements.element (List.hd cpat_lst'))
                     in
                     if cpat_lst'
                     |> List.exists
                         (fun cpat ->
-                            MultiPatterns.multiplicity (BudGrammars.get_element cpat) <> m)
+                            MultiPatterns.multiplicity (ColoredElements.element cpat) <> m)
                     then
                         set_fail_message st "Bad multiplicity of colored multi-patterns."
                     else if Option.is_none st.degree_monoid then

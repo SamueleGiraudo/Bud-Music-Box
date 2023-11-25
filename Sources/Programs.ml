@@ -20,15 +20,15 @@ type instructions =
     |Mirror of names * names
     |Inverse of names * names
     |Concatenate of names * (names list)
-    |Repeat of names * names * int
+    |ConcatenateRepeat of names * names * int
     |Stack of names * (names list)
+    |StackRepeat of names * names * int
     |PartialCompose of names * names * int * names
     |FullCompose of names * names * (names list)
     |HomogeneousCompose of names * names * names
-    |Colorize of names * names * BudGrammars.colors * (BudGrammars.colors list)
-    |MonoColorize of names * names * BudGrammars.colors * BudGrammars.colors
-    |Generate of
-        names * BudGrammars.generation_shapes * int * BudGrammars.colors * (names list)
+    |Colorize of names * names * Colors.colors * (Colors.colors list)
+    |MonoColorize of names * names * Colors.colors * Colors.colors
+    |Generate of names * BudGrammars.generation_shapes * int * Colors.colors * (names list)
 
 (* A program is a list of instructions. *)
 type programs = Program of instructions list

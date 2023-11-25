@@ -29,7 +29,7 @@ let from_colored_multi_patterns param initial_color dm colored_multi_patterns =
     assert (colored_multi_patterns <> []);
     let m =
         MultiPatterns.multiplicity
-            (BudGrammars.get_element (List.hd colored_multi_patterns))
+            (ColoredElements.element (List.hd colored_multi_patterns))
     in
     let budg =
         BudGrammars.make
@@ -37,5 +37,5 @@ let from_colored_multi_patterns param initial_color dm colored_multi_patterns =
             colored_multi_patterns initial_color
     in
     let res = BudGrammars.random_generator budg param.nb_steps param.shape in
-    BudGrammars.get_element res
+    ColoredElements.element res
 

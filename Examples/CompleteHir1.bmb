@@ -2,6 +2,7 @@ scale 2 1 4 1 4
 root 57
 tempo 192
 sounds 0 0
+monoid add
 
 multi-pattern p1 0 . 1 . 2 + 0 0 . . -5
 multi-pattern p2 0 . + . 0
@@ -11,5 +12,6 @@ colorize c2 %a | p2 | %a
 
 generate res partial 64 %a c1 c2
 show
+
 play res
 

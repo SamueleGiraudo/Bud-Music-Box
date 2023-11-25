@@ -31,8 +31,9 @@ syn keyword Structure multi-pattern
 syn keyword Structure mirror
 syn keyword Structure inverse
 syn keyword Structure concatenate
-syn keyword Structure repeat
+syn keyword Structure concatenate-repeat
 syn keyword Structure stack
+syn keyword Structure stack-repeat
 syn keyword Structure partial-compose
 syn keyword Structure full-compose
 syn keyword Structure colorize

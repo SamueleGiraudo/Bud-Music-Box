@@ -10,7 +10,7 @@ type multi_patterns = MultiPattern of Patterns.patterns list
 
 (* A colored multi-pattern is a multi-pattern surrounded with an output color an input
  * colors. *)
-type colored_multi_pattern = multi_patterns BudGrammars.colored_elements
+type colored_multi_pattern = multi_patterns ColoredElements.colored_elements
 
 (* Returns the list of the patterns forming the multi-pattern mp. *)
 let patterns mp =
@@ -137,10 +137,18 @@ let stack_list mp_lst =
     mp_lst |> List.tl |> List.fold_left stack (List.hd mp_lst)
 
 (* Returns the multi-pattern obtained by repeating k times the multi-pattern mpat. *)
-let repeat mp k =
+let concatenate_repeat mp k =
     assert (is_valid mp);
     assert (k >= 1);
     concatenate_list (List.init k (Fun.const mp))
+
+(* Returns the multi-pattern obtained by repeating ertically (by stacking) k times the
+ * multi-pattern mpat. *)
+let stack_repeat mp k =
+    assert (is_valid mp);
+    assert (k >= 1);
+    let pats = patterns mp in
+    MultiPattern (List.init k (Fun.const pats) |> List.flatten)
 
 (* Returns the operad of multi-patterns of multiplicity m on the degree monoid dm. *)
 let operad dm m =
