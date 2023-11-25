@@ -75,7 +75,9 @@ The _control instructions_ are the instructions `show`, `write`, and `play`.
 #### Display information
 
 ##### Instruction
-`show`
+```
+show
+```
 
 + Prints the current internal data consisting of the specified data, including the scale,
   root note, tempo, MIDI programs, degree monoid, and multi-patterns.
@@ -86,7 +88,9 @@ This instruction cannot produce errors.
 #### Generate the associated files of a multi-pattern 
 
 ##### Instruction
-`write NAME`
+```
+write NAME
+```
 
 + `NAME` is a name bound to a multi-pattern.
 + Creates, within the underlying context of scale, root note, tempo, and MIDI programs,
@@ -121,7 +125,9 @@ of `write pat` creates the files `Samples/First_1.abc`, `Samples/First_1.ps`, an
 #### Play a multi-pattern
 
 ##### Instruction
-`play NAME`
+```
+play NAME
+```
 
 + `NAME` is a name bound to a multi-pattern.
 + Plays `PAT` according to the underlying context of scale, root note, tempo, and MIDI
@@ -149,7 +155,9 @@ The _context management instructions_ are `scale`, `root`, `tempo`, `sounds`, an
 #### Setting a scale
 
 ##### Instruction
-`scale STEP_1 ... STEP_k`
+```
+scale STEP_1 ... STEP_k
+```
 
 + `STEP_1 ... STEP_k` is an integer composition (also named _profile_) specifying a
   $12$-TET scale.
@@ -165,7 +173,9 @@ For instance, `scale 2 1 2 2 1 2 2` sets the minor natural scale as underlying s
 #### Setting a root note
 
 ##### Instruction
-`root NOTE`
+```
+root NOTE
+```
 
 + `NOTE` is the MIDI code of a note between $0$ and $127$.
 + Sets the root of the underlying set of notes. If a root was already sets, this forgets
@@ -180,7 +190,9 @@ For instance, `root 60` sets the root note to the middle C.
 #### Setting a tempo
 
 ##### Instruction
-`tempo VAL`
+```
+tempo VAL
+```
 
 + `VAL` is a nonnegative integer.
 + Sets the tempo as `VAL` bpm. In each generated score files, each beat is denoted as one
@@ -196,7 +208,9 @@ This instruction cannot produce errors.
 #### Setting voice sounds
 
 ##### Instruction
-`sounds SOUND_1 ... SOUND_m`
+```
+sounds SOUND_1 ... SOUND_m
+```
 
 + `SOUND_1 ... SOUND_m` is a sequence of General MIDI sound programs, encoded as integers
   between $0$ and $127$.
@@ -213,7 +227,9 @@ MIDI program and to the $2$-nd voice, the _Kalimba_ MIDI program.
 #### Setting a degree monoid
 
 ##### Instruction
-`monoid DM`
+```
+monoid DM
+```
 
 + `DM` is a degree monoid among the five possible ones:
     + `add`, for the additive monoid on integers;
@@ -242,7 +258,9 @@ The _multi-pattern manipulation instructions_ are `multi-pattern`, `mirror`, `in
 #### Naming a multi-pattern
 
 ##### Instruction
-`multi-pattern NAME_RES PAT`
+```
+multi-pattern NAME_RES PAT
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `PAT` is a string specifying a multi-pattern.
@@ -265,7 +283,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Mirror image of a multi-pattern
 
 ##### Instruction
-`mirror NAME_RES NAME_SOURCE`
+```
+mirror NAME_RES NAME_SOURCE
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE` is a name bound to a multi-pattern.
@@ -280,7 +300,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Inverse image of a multi-pattern
 
 ##### Instruction
-`inverse NAME_RES NAME_SOURCE`
+```
+inverse NAME_RES NAME_SOURCE
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE` is a name bound to a multi-pattern.
@@ -297,7 +319,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Concatenate multi-patterns
 
 ##### Instruction
-`concatenate NAME_RES NAME_SOURCE_1 ... NAME_SOURCE_n`
+```
+concatenate NAME_RES NAME_SOURCE_1 ... NAME_SOURCE_n
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE_1 ... NAME_SOURCE_n` is a sequence of names bound to multi-patterns.
@@ -314,7 +338,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Repeat a multi-pattern with respect to concatenation
 
 ##### Instruction
-`concatenate-repeat NAME_RES NAME_SOURCE N`
+```
+concatenate-repeat NAME_RES NAME_SOURCE N
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE` is a name bound to a multi-pattern.
@@ -330,7 +356,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Stack multi-patterns
 
 ##### Instruction
-`stack NAME_RES NAME_SOURCE_1 ... NAME_SOURCE_n`
+```
+stack NAME_RES NAME_SOURCE_1 ... NAME_SOURCE_n
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE_1 ... NAME_SOURCE_n` is a sequence of names bound to multi-patterns.
@@ -349,7 +377,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Repeat a multi-pattern with respect to stack
 
 ##### Instruction
-`stack-repeat NAME_RES NAME_SOURCE N`
+```
+stack-repeat NAME_RES NAME_SOURCE N
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE` is a name bound to a multi-pattern.
@@ -365,7 +395,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Partial composition of two multi-patterns
 
 ##### Instruction
-`partial-compose NAME_RES NAME_SOURCE_1 POS NAME_SOURCE_2`
+```
+partial-compose NAME_RES NAME_SOURCE_1 POS NAME_SOURCE_2
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE_1` is a name bound to a multi-pattern.
@@ -387,7 +419,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Full composition of multi-patterns
 
 ##### Instruction
-`full-compose NAME_RES NAME_SOURCE_0 NAME_SOURCE_1 ... NAME_SOURCE_n`
+```
+full-compose NAME_RES NAME_SOURCE_0 NAME_SOURCE_1 ... NAME_SOURCE_n
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE_0 NAME_SOURCE_1 ... NAME_SOURCE_n` is a sequence of names bound to
@@ -408,7 +442,9 @@ bounds the name `p1` to the specified multi-pattern.
 #### Homogeneous composition of two multi-patterns
 
 ##### Instruction
-`homogeneous-compose NAME_RES NAME_SOURCE_1 NAME_SOURCE_2`
+```
+homogeneous-compose NAME_RES NAME_SOURCE_1 NAME_SOURCE_2
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `NAME_SOURCE_1` and `NAME_SOURCe_2` are name bound to multi-patterns.
@@ -430,7 +466,9 @@ The _bud grammar manipulation instructions_ are the instructions `colorize`,
 #### Colorize a multi-pattern
 
 ##### Instruction
-`colorize NAME_RES %OUT NAME_SOURCE %IN_1 ... %IN_n`
+```
+colorize NAME_RES %OUT NAME_SOURCE %IN_1 ... %IN_n
+```
 
 + `NAME_RES` is a name, which is bound or not to a colored multi-pattern.
 + `%OUT` is a color.
@@ -450,7 +488,9 @@ The _bud grammar manipulation instructions_ are the instructions `colorize`,
 #### Mono-colorize a multi-pattern
 
 ##### Instruction
-`mono-colorize NAME_RES %OUT NAME_SOURCE %IN`
+```
+mono-colorize NAME_RES %OUT NAME_SOURCE %IN
+```
 
 + `NAME_RES` is a name, which is bound or not to a colored multi-pattern.
 + `%OUT` is a color.
@@ -468,7 +508,9 @@ The _bud grammar manipulation instructions_ are the instructions `colorize`,
 #### Randomly generate a multi-pattern
 
 ##### Instruction
-`generate NAME_RES SHAPE K %INIT NAME_SOURCE_1 ... NAME_SOURCE_n`
+```
+generate NAME_RES SHAPE K %INIT NAME_SOURCE_1 ... NAME_SOURCE_n
+```
 
 + `NAME_RES` is a name, which is bound or not to a multi-pattern.
 + `SHAPE` is `partial`, `full`, or `colored`.
