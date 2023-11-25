@@ -168,7 +168,7 @@ let play_track st mpat =
             |> Sys.command
         in
         if err <> 0 then
-            set_fail_message st' "Timidity set_fail_messageure."
+            set_fail_message st' "Timidity failure."
         else
             success st'
 
@@ -205,9 +205,8 @@ let execute_instruction instr st =
                     set_success_message st' "Track played."
             end
         |Programs.SetScale scale ->
-            if not (Scales.is_valid scale) then
-                set_fail_message st "Not a scale."
-            else if not ((Scales.nb_steps_by_octave scale) = 12) then
+            if not (Scales.is_valid scale) || not (Scales.nb_steps_by_octave scale = 12)
+            then
                 set_fail_message st "Not a 12-TET scale."
             else
                 let st' = {st with scale = Some scale} in

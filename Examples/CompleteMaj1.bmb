@@ -2,6 +2,7 @@ scale 2 2 1 2 2 2 1
 root 60
 tempo 192
 sounds 0 1
+monoid add
 
 multi-pattern p1 0 . + . 0
 multi-pattern p2 -2 + -2
