@@ -1,18 +1,21 @@
 scale 2 1 4 1 4
 root 60
 tempo 128
-sounds 108 108
+sounds 107 107
+monoid add
 
-multi-pattern mpat_1 1 . . 0 2 . . . + -5 . . . 0 0 . .
-multi-pattern mpat_2 -1 . 0 . 1 . + . 0 -1 . 0 .
-multi-pattern mpat_3 0 . + . 0
+multi-pattern p1 1 . . 0 2 . . . + -5 . . . 0 0 . .
+multi-pattern p2 -1 . 0 . 1 . + . 0 -1 . 0 .
+multi-pattern p3 0 . + . 0
 
-colorize cpat_1 %c1 | mpat_1 | %c2 %c1 %c1
-colorize cpat_2 %c1 | mpat_1 | %c1 %c2 %c2
-colorize cpat_3 %c1 | mpat_2 | %c1 %c2 %c1
-colorize cpat_4 %c1 | mpat_3 | %c1
+colorize c1 %a p1 %b %a %a
+colorize c2 %a p1 %b %a %b
+colorize c3 %a p2 %a %b %a
+colorize c4 %a p3 %a
 
-generate mpat_4 partial 32 %c1 cpat_1 cpat_2 cpat_3 cpat_4
+generate mpat_4 partial 32 %a c1 c2 c3 c4
+
 show
+
 play mpat_4
 

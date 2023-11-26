@@ -33,7 +33,7 @@ let unity dm =
 (* Returns the additive degree monoid. *)
 let add =
     {
-        name = "Z";
+        name = "add";
         is_element = Fun.const true;
         product = Degrees.operation (+);
         unity = Degrees.zero
@@ -48,7 +48,7 @@ let cyclic k =
     in
     let product = Degrees.operation (fun n1 n2 -> (n1 + n2) mod k) in
     {
-        name = Printf.sprintf "Z_%d" k;
+        name = Printf.sprintf "cyclic %d" k;
         is_element = is_element;
         product = product;
         unity = Degrees.zero
@@ -57,7 +57,7 @@ let cyclic k =
 (* Returns the multiplicative degree monoid. *)
 let mul =
     {
-        name = "Zx";
+        name = "mul";
         is_element = Fun.const true;
         product = Degrees.operation ( * );
         unity = Degrees.Degree 1
@@ -72,7 +72,7 @@ let mul_mod k =
     in
     let product = Degrees.operation (fun n1 n2 -> (n1 * n2) mod k) in
     {
-        name = Printf.sprintf "Zx_%d" k;
+        name = Printf.sprintf "mul-mod %d" k;
         is_element = is_element;
         product = product;
         unity = Degrees.Degree 1
@@ -84,7 +84,7 @@ let max z =
         z <= (Degrees.value d)
     in
     {
-        name = (Printf.sprintf "M_%d" z);
+        name = (Printf.sprintf "max %d" z);
         is_element = is_element;
         product = Degrees.operation max;
         unity = Degrees.Degree z

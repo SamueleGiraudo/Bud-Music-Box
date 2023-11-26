@@ -19,14 +19,15 @@ over them, and to randomly generate some of them. Results can be converted to fi
 1. [Colored multi-patterns and random generation](Examples/Generation.bmb)
 
 ### Some examples
-+ An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale.
-+ An [example](Examples/CompleteHir2.bmb) on the Hirajoshi scale.
-+ An [example](Examples/CompleteHir3.bmb) on the Hirajoshi scale.
-+ An [example](Examples/CompleteMaj1.bmb) on the major natural scale.
-+ An [example](Examples/CompleteHar1.bmb) on the minor harmonic scale.
-+ An [example](Examples/CompletePen1.bmb) on the minor pentatonic scale.
-+ An [example](Examples/CompletePen2.bmb) on the minor pentatonic scale.
-+ An [example](Examples/CompletePen3.bmb) on the minor pentatonic scale.
+1. An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale.
+   Listen [here](https://soundcloud.com/samuele-giraudo-541379677/completehir1).
+2. An [example](Examples/CompleteHir2.bmb) on the Hirajoshi scale.
+3. An [example](Examples/CompleteHir3.bmb) on the Hirajoshi scale.
+4. An [example](Examples/CompleteMaj1.bmb) on the natural major scale.
+5. An [example](Examples/CompleteHar1.bmb) on the harmonic minor scale.
+6. An [example](Examples/CompletePen1.bmb) on the minor pentatonic scale.
+7. An [example](Examples/CompletePen2.bmb) on the minor pentatonic scale.
+8. An [example](Examples/CompleteMPen1.bmb) on the major pentatonic scale.
 
 ### Other examples
 + A [Mix of patterns](Examples/Mix.bmb).

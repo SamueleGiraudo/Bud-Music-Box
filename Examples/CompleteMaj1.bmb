@@ -1,7 +1,7 @@
 scale 2 2 1 2 2 2 1
 root 60
 tempo 192
-sounds 0 1
+sounds 33 32
 monoid add
 
 multi-pattern p1 0 . + . 0
@@ -10,13 +10,15 @@ multi-pattern p3 0 0 + 0 0
 multi-pattern p4 . 2 . 3 + 0 . 1 .
 multi-pattern p5 -1 . + . -2
 
-colorize c1 %a | p1 | %a
-colorize c2 %c | p2 | %a
-colorize c3 %a | p3 | %a %b
-colorize c4 %a | p4 | %c %c
-colorize c5 %b | p5 | %a
+colorize c1 %a p1 %a
+colorize c2 %c p2 %a
+colorize c3 %a p3 %a %b
+colorize c4 %a p4 %c %c
+colorize c5 %b p5 %a
 
 generate res partial 128 %a c1 c2 c3 c4 c5
+
 show
+
 play res
 

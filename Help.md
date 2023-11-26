@@ -249,6 +249,9 @@ For instance, `monoid cyclic 7` set the cyclic monoid of order $7$ as degree mon
 + `?? Degree monoid not compatible with existing multi-patterns.`: occurs when an already
   defined name is bound to a multi-pattern having a degree which is not an element of the
   specified degree monoid.
++ `?? Degree monoid not compatible with existing colored multi-patterns.`: occurs when an
+  already defined name is bound to a colored multi-pattern having a degree which is not an
+  element of the specified degree monoid.
 
 ### Multi-pattern manipulation
 The _multi-pattern manipulation instructions_ are `multi-pattern`, `mirror`, `inverse`,

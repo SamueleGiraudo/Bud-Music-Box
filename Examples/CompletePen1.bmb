@@ -11,6 +11,8 @@ colorize c1 %a p1 %a %b %a %a
 colorize c2 %b p2 %b
 
 generate res full 4 %a c1 c2
+
 show
+
 play res
 

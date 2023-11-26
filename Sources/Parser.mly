@@ -151,7 +151,7 @@ monoid:
 
     |MUL_MOD k=POSITIVE_INTEGER {DegreeMonoids.mul_mod k}
 
-    |MAX z=POSITIVE_INTEGER {DegreeMonoids.max z}
+    |MAX z=integer {DegreeMonoids.max z}
 
 
 color:

@@ -127,8 +127,6 @@ let create_files st mpat =
         set_fail_message st "Root note not specified."
     else if Option.is_none st.tempo then
         set_fail_message st "Tempo not specified."
-    else if Option.is_none st.degree_monoid then
-        set_fail_message st "Degree monoid not specified."
     else if List.length st.midi_programs < MultiPatterns.multiplicity mpat then
         set_fail_message st "General MIDI programs insufficiently specified."
     else
@@ -156,12 +154,10 @@ let create_files st mpat =
 
 (* Plays the track from the state st and returns the status obtained from st to report
 * failure or success information. *)
-let play_track st mpat = 
+let play_track st mpat =
     let st' = create_files st mpat in
     if not st'.success then
         st'
-    else if Option.is_none st'.path_mid then
-        set_fail_message st' "Missing MIDI file."
     else
         let err =
             Printf.sprintf "timidity %s &> /dev/null" (Option.get st'.path_mid)
@@ -236,6 +232,12 @@ let execute_instruction instr st =
                 set_fail_message
                     st
                     "Degree monoid not compatible with existing multi-patterns."
+            else if st.colored_multi_patterns |> List.map snd
+            |> List.map ColoredElements.element
+            |> List.for_all (MultiPatterns.is_on_degree_monoid dm) |> not then
+                set_fail_message
+                    st
+                    "Degree monoid not compatible with existing colored multi-patterns."
             else
                 set_success_message st' "Degree monoid set."
         |Programs.MultiPattern (name, mpat) ->
