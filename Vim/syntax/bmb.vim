@@ -36,6 +36,7 @@ syn keyword Structure stack
 syn keyword Structure stack-repeat
 syn keyword Structure partial-compose
 syn keyword Structure full-compose
+syn keyword Structure homogeneous-compose
 syn keyword Structure colorize
 syn keyword Structure mono-colorize
 syn keyword Structure generate

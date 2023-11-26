@@ -7,20 +7,16 @@ generating systems.
 Copyright (C) 2019--2023 [Samuele Giraudo](https://igm.univ-mlv.fr/~giraudo/) -
 `giraudo.samuele@uqam.ca` -
 
-
 ## Quick overview and examples
 This program offers a complete language allowing to represent musical patterns, to compute
 over them, and to randomly generate some of them. Results can be converted to files in the
 [abc format](http://abcnotation.com) and then into MIDI files.
 
-
 ### Main functionalities
 1. [Multi-pattern creation](Examples/MultiPatternCreation.bmb)
 1. [Multi-pattern operations](Examples/MultiPatternOperations.bmb)
-1. [Setting the ambient scale, root, and tempo](Examples/ScaleRootTempo.bmb)
-1. [Changing instruments](Examples/Sounds.bmb)
+1. [Specificating the context](Examples/ContextSpecifications.bmb)
 1. [Colored multi-patterns and random generation](Examples/Generation.bmb)
-
 
 ### Some examples
 + An [example](Examples/CompleteHir1.bmb) on the Hirajoshi scale.
@@ -32,7 +28,6 @@ over them, and to randomly generate some of them. Results can be converted to fi
 + An [example](Examples/CompletePen2.bmb) on the minor pentatonic scale.
 + An [example](Examples/CompletePen3.bmb) on the minor pentatonic scale.
 
-
 ### Other examples
 + A [Mix of patterns](Examples/Mix.bmb).
 + A [horizontal transformations](Examples/Horizontal.bmb).
@@ -40,45 +35,39 @@ over them, and to randomly generate some of them. Results can be converted to fi
 + Some [local variations](Examples/Variation.bmb).
 + A [full piece](Examples/Composition.bmb).
 
-
 ## Versions
 Here is the [changelog](Versions.md) of the different versions.
 
-
 ## Installation
-The following instructions hold for Linux systems like Debian or Archlinux, after 2021.
-
+The following instructions hold for up-to-date Linux systems.
 
 ### Dependencies
 The following programs are needed:
 
-+ `pkg-config`
 + `make`
-+ `ocaml` (Version `>= 5.0.0`. An inferior but not too old version may be suitable.)
-+ `opam`
-+ `ocamlbuild` (Available by `opam install ocamlbuild`.)
-+ `ocamlfind` (Available by `opam install ocamlfind`.)
-+ `extlib` (Available by `opam install extlib`.)
-+ `menhir` (Available by `opam install menhir`.)
++ `ocaml`
++ `ocamlbuild`
++ `ocamlfind`
++ `menhir`
 + `abcmidi`
 + `abcm2ps`
 + `timidity`
 
-Moreover, a proper installation of sound fonts is necessary.
-
+Moreover, a proper installation of a SoundFont is necessary.
 
 ### Building
 Here are the required steps to build the interpreter `Bud Music Box`:
 
 1. Clone the repository somewhere by running
-`git clone https://github.com/SamueleGiraudo/Bud-Music-Box.git`.
+```
+git clone https://github.com/SamueleGiraudo/Bud-Music-Box.git
+```
 
 2. Install all dependencies (see the section below).
 
 3. Build the project by running `make`.
 
 This creates an executable `bmb`. The following sections explain how to use it.
-
 
 ## User guide
 This [page](Help.md) contains the description of the Bud Music Box instruction set and
@@ -91,25 +80,22 @@ Files containing such instructions must have `.bmb` as extension. Given such a f
 
 executes the instructions of `Program.bmb`, sequentially from the first one to the last one.
 
-
 ## Miscellaneous
 To get the syntax highlighting in the text editor `vim` for the Bud Music Box language, put
 the file [bmb.vim](Vim/syntax/bmb.vim) at `~/.vim/syntax/bmb.vim` and the file
 [bmb.vim](Vim/ftdetect/bmb.vim) at `~/.vim/fdetect/bmb.vim`.
 
-
 ## Theoretical aspects
 An operad is an algebraic structure wherein elements are operations. This generative method
-is based upon an abstraction of polyphonic musical phrases called multi-patterns, forming
-the music box model. The set of these objects is endowed with the structure of an operad
-allowing us to perform computations on musical phrases. Indeed, the operad structure on
-multi-patterns makes it possible to see any multi-pattern as an operation on multi-patterns.
-The main idea is that one can, from a set of small musical phrases, generate randomly a new
-musical phrase by computing some random compositions of these patterns.
-
+is based upon an abstraction of polyphonic musical phrases called _multi-patterns_, forming
+the **music box model**. The set of these objects is endowed with the structure of an
+operad, thus enabling us to perform computations on musical phrases. Indeed, the operad
+structure on multi-patterns makes it possible to consider any multi-pattern as an operation
+on multi-patterns. The main idea is that one can, from a set of small musical phrases,
+randomly generate a new musical phrase by computing various random compositions of these
+patterns.
 
 ## Bibliography
-
 + About operads:
     + M. Méndez.
       Set operads in combinatorics and computer science.

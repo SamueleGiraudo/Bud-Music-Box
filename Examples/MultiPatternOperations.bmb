@@ -1,22 +1,47 @@
-{A first 1-multi-patten.}
+{The following five instructions will be detailed later in other example files.}
+scale 2 1 2 2 1 2 2
+root 57
+tempo 120
+sounds 1 1
+monoid add
+
+{Binds mpat_1 to a first multi-patten.}
 multi-pattern mpat_1 0 1 2 3
 
-{A second 1-multi-pattern.}
+{Binds mpat_2 to a second multi-patten.}
 multi-pattern mpat_2 0 2 4
 
-{A third 1-multi-pattern.}
+{Binds mpat_3 to a third multi-patten.}
 multi-pattern mpat_3 -1 -3 -5
 
-{The concatenation of the three 1-multi-patterns.}
-concatenate res_1 mpat_1 mpat_2 mpat_3
+{Binds res_1 to the mirror of mpat_1.}
+mirror res_1 mpat_1
 
-{The partial composition of the second multi-pattern into the first one at position 2.}
-partial-compose res_2 mpat_1 2 mpat_2
+{Binds res_2 to the inverse of mpat_1.}
+inverse res_2 mpat_1
 
-{The full composition of the second multi-pattern with the third, the third, and the first.}
-full-compose res_3 mpat_2 mpat_3 mpat_3 mpat_1
+{Binds res_3 to the concatenation of mpat_1, mpat_2, and mpat_3.}
+concatenate res_3 mpat_1 mpat_2 mpat_3
 
-{Print the internal state of the machine (scale, root note, tempo, MIDI sounds,
- multi-patterns, and colored multi-patterns).}
+{Binds res_4 to the concatenation of mpat_2 with itself three times.}
+concatenate-repeat res_4 mpat_2 3
+
+{Binds res_5 to the stack of mpat_2, mpat_3, and mpat_2.}
+stack res_5 mpat_2 mpat_3 mpat_2
+
+{Binds res_6 to the stack of mpat_3 with itself four times.}
+stack-repeat res_6 mpat_3 4
+
+{Binds res_7 to the partial composition of mpat_2 at position 2 into mpat_1.}
+partial-compose res_7 mpat_1 2 mpat_2
+
+{Binds res_8 to the full composition of mpat_2 with mpat_3, mpat_3, and mpat_1.}
+full-compose res_8 mpat_2 mpat_3 mpat_3 mpat_1
+
+{Binds res_9 to the homogeneous composition of mpat_1 and mpat_2.}
+homogeneous-compose res_9 mpat_1 mpat_2
+
+{Print the internal state of the machine (scale, root note, tempo, degree monoid, General
+ MIDI programs, multi-patterns, and colored multi-patterns).}
 show
 

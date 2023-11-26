@@ -15,7 +15,8 @@ let logo = "|3^^|3"
 (* let version = "0.1111" *)
 (* let version = "1.001" *)
 (* let version = "1.011" and version_date = "2021-04-17" *)
-let version = "1.100" and version_date = "2022-08-10"
+(*let version = "1.100" and version_date = "2022-08-10"*)
+let version = "1.101" and version_date = "2023-11-25"
 
 let author = "Samuele Giraudo"
 

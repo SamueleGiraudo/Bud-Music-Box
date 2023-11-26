@@ -1,0 +1,45 @@
+{Specifies the ambiant scale by the distances in semitones between its notes. This is the
+ natural minor scale.}
+scale 2 1 2 2 1 2 2
+
+{Specifies the MIDI code of the root note. This is the note corresponding with the degree
+ 0.}
+root 57
+
+{Specifies the tempo in beat per second.}
+tempo 120
+
+{Specifies the General MIDI programs of the sounds.}
+sounds 1 1
+
+{Specifies the underlying degree monoid. This controls the composition of multi-patterns.}
+monoid add
+
+{By default, the ambient scale is the minor natural scale.}
+multi-pattern increasing_7 0 1 2 3 4 5 6 7
+
+play increasing_7
+
+{Sets the natural major scale as ambient scale.}
+scale 2 2 1 2 2 2 1
+
+play increasing_7
+
+{Sets another root note.}
+root 45
+
+play increasing_7
+
+{Sets another tempo}
+tempo 240
+
+play increasing_7
+
+{Specifies another General MIDI programs. This specifies three virtual instruments, one for
+ each of the three voices of the next multi-pattern.}
+sounds 0 1 108
+
+multi-pattern p 0 . . 1 . + . 2 . 3 . + 0 . 2 . .
+
+play p
+

@@ -1,5 +1,15 @@
 # Versions
 
++ `1.101` (2023-11-25)
+    + The documentation has been updated.
+    + General cleaning of the code.
+    + Improvement of the error messages.
+    + Add instruction `stack-repeat`.
+    + Add the multiplicative degree monoid `mul`.
+    + Add the multiplicative modulo $k$ degree monoid `mul-mod`.
+    + Slight changes and improvements for the syntax.
+    + Some bugs have been fixed.
+
 + `1.100` (2022-08-10)
     + Improvement of the syntax.
     + Empty patterns are allowed.

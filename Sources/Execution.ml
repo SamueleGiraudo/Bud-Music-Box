@@ -61,7 +61,7 @@ let state_to_string st =
         "# Scale:\n%s\n\
          # MIDI root note:\n%s\n\
          # Tempo:\n%s bpm\n\
-         # MIDI sounds:\n%s\n\
+         # General MIDI programs:\n%s\n\
          # Monoid:\n%s\n\
          # Multi-patterns:\n%s\n\
          # Colored multi-patterns:\n%s"
@@ -239,7 +239,9 @@ let execute_instruction instr st =
             else
                 set_success_message st' "Degree monoid set."
         |Programs.MultiPattern (name, mpat) ->
-            if Option.is_none st.degree_monoid then
+            if not (MultiPatterns.is_valid mpat) then
+                set_fail_message st "Bad multi-pattern."
+            else if Option.is_none st.degree_monoid then
                 set_fail_message st "Degree monoid not specified."
             else
                 let dm = Option.get st.degree_monoid in

@@ -1,12 +1,19 @@
-{Create a 1-multi-pattern.}
+{The following five instructions will be detailed later in other example files.}
+scale 2 1 2 2 1 2 2
+root 57
+tempo 120
+sounds 1 1
+monoid add
+
+{Creates a multi-pattern of length 7, arity 5, and multiplicity 1.}
 multi-pattern mpat_1 0 . 1 2 . -1 0
 
-{Play this multi-pattern.}
+{Plays this multi-pattern.}
 play mpat_1
 
-{Create a 2-multi-pattern.}
+{Creates a multi-pattern of length 4, arity 2, and multiplicity 2.}
 multi-pattern mpat_2 0 . . 1 + 4 . -1 .
 
-{Play this multi-pattern.}
+{Plays this multi-pattern.}
 play mpat_2
 
