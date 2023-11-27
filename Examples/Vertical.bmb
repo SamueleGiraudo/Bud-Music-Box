@@ -4,8 +4,8 @@
 scale 2 1 2 2 1 2 2 {Minor natural scale.}
 root 57
 tempo 120
-sounds 108 {Kalimba sound.}
-monoid add-int
+sounds 24 25
+monoid add
 
 {The multi-pattern of multiplicity 1 which will be altered.}
 multi-pattern p 0 1 . -1 0 . 2 0 .
@@ -17,9 +17,11 @@ mirror p3 p2
 stack m p p3
 
 {Colorization of the multi-patterns.}
-mono-colorize c %b1 | m | %b1
+mono-colorize c %b1 m %b1
 
 generate res partial 4 %b1 c
+
 show
+
 play res
 

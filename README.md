@@ -37,11 +37,16 @@ over them, and to randomly generate some of them. Results can be converted to fi
    Listen [here](https://soundcloud.com/samuele-giraudo-541379677/completempen1).
 
 ### Other examples
-+ A [Mix of patterns](Examples/Mix.bmb).
-+ A [horizontal transformations](Examples/Horizontal.bmb).
-+ A [vertical transformations](Examples/Vertical.bmb).
-+ Some [local variations](Examples/Variation.bmb).
-+ A [full piece](Examples/Composition.bmb).
+1. A [Mix of patterns](Examples/Mix.bmb).
+   Listen [here](https://soundcloud.com/samuele-giraudo-541379677/mix).
+2. A [horizontal transformations](Examples/Horizontal.bmb).
+   Listen [here](https://soundcloud.com/samuele-giraudo-541379677/horizontal).
+3. A [vertical transformations](Examples/Vertical.bmb).
+   Listen [here](https://soundcloud.com/samuele-giraudo-541379677/vertical).
+4. Some [local variations](Examples/Variation.bmb).
+   Listen [here](https://soundcloud.com/samuele-giraudo-541379677/variation).
+5. A [full piece](Examples/Composition.bmb).
+   Listen [here](https://soundcloud.com/samuele-giraudo-541379677/composition).
 
 ## Versions
 Here is the [changelog](Versions.md) of the different versions.
