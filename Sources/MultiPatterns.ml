@@ -8,10 +8,6 @@
  * length and the same arity. *)
 type multi_patterns = MultiPattern of Patterns.patterns list
 
-(* A colored multi-pattern is a multi-pattern surrounded with an output color an input
- * colors. *)
-type colored_multi_pattern = multi_patterns ColoredElements.colored_elements
-
 (* Returns the list of the patterns forming the multi-pattern mp. *)
 let patterns mp =
     let MultiPattern pats = mp in
@@ -23,8 +19,8 @@ let is_valid mpat =
         |[] -> true
         |p :: lst' ->
             let len = Patterns.length p and ar = Patterns.arity p in
-            lst' |> List.for_all
-                (fun p' -> len = Patterns.length p' && ar = Patterns.arity p')
+            lst'
+            |> List.for_all (fun p' -> len = Patterns.length p' && ar = Patterns.arity p')
 
 (* Returns the multi-pattern of multiplicity m obtained by stacking the pattern pat with m
  * copies of itself. *)
@@ -113,8 +109,8 @@ let concatenate mp1 mp2 =
 let concatenate_list mp_lst =
     assert (mp_lst <> []);
     assert (mp_lst |> List.for_all is_valid);
-    assert (mp_lst |> List.for_all
-        (fun mp -> multiplicity mp = multiplicity (List.hd mp_lst)));
+    assert (mp_lst
+    |> List.for_all (fun mp -> multiplicity mp = multiplicity (List.hd mp_lst)));
     List.tl mp_lst |> List.fold_left concatenate (List.hd mp_lst)
 
 (* Returns the multi-pattern obtained by stacking the two multi-patterns mp_1 and mp_2.
@@ -162,8 +158,7 @@ let full_composition dm mp mp_lst =
     assert (is_on_degree_monoid dm mp);
     assert (mp_lst |> List.for_all is_valid);
     assert (mp_lst |> List.for_all (is_on_degree_monoid dm));
-    assert (mp_lst |> List.for_all
-        (fun mp' -> (multiplicity mp) = (multiplicity mp')));
+    assert (mp_lst |> List.for_all (fun mp' -> (multiplicity mp) = (multiplicity mp')));
     let m = multiplicity mp in
     Operads.full_composition (operad dm m) mp mp_lst
 

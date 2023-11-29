@@ -19,16 +19,3 @@ let remove_extension path =
     let i = String.rindex path '.' in
     String.sub path 0 i
 
-(* Returns a path that does not correspond to any existing file by adding a string "_N"
- * just before the extension of the path path, where N is an adequate number. *)
-let new_distinct path =
-    let path' = remove_extension path and ext' = extension path in
-    let rec aux i =
-        let res_path = Printf.sprintf "%s_%d%s" path' i ext' in
-        if Sys.file_exists res_path then
-            aux (i + 1)
-        else
-            res_path
-    in
-    aux 0
-

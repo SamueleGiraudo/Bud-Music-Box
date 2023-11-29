@@ -4,17 +4,18 @@
  *)
 
 (* The state is the internal memory during the execution of a program. It contains also
- * information about the last considered instruction (by the fields success and message. *)
+ * information about the last considered instruction (by the fields success and message). *)
 type states = {
-    path_bmb: string;
-    path_mid: string option;
+    prgm_path: string;
+    generation_seed: int;
     scale: Scales.scales option;
     root: MIDI.notes option;
     tempo: int option;
     midi_programs: MIDI.programs list;
     degree_monoid: DegreeMonoids.degree_monoids option;
     multi_patterns: (Programs.names * MultiPatterns.multi_patterns) list;
-    colored_multi_patterns: (Programs.names * MultiPatterns.colored_multi_pattern) list;
+    colored_multi_patterns:
+        (Programs.names * ColoredMultiPatterns.colored_multi_patterns) list;
     success: bool;
     message: string option
 }
@@ -34,16 +35,14 @@ let set_success_message st msg =
 let success st =
     {st with success = true; message = None}
 
-(* Returns the state which is equal to the state st but with path to a MIDI file equal to
- * path_mid. *)
-let set_path_mid st path_mid =
-    {st with path_mid = Some path_mid}
-
-(* Returns the empty state having path_bmb as path to the bmb program file. *)
-let empty_state path_bmb =
+(* Returns the empty state having prgm_path as path to the bmb program file and
+ * generation_seed as generation seed for random generation. *)
+let empty_state prgm_path generation_seed =
+    assert (Sys.file_exists prgm_path);
+    assert (generation_seed >= 0);
     {
-        path_bmb = path_bmb;
-        path_mid = None;
+        prgm_path = prgm_path;
+        generation_seed = generation_seed;
         scale = None;
         root = None;
         tempo = None;
@@ -58,13 +57,17 @@ let empty_state path_bmb =
 (* Returns a string representing the state st. *)
 let state_to_string st =
     Printf.sprintf
-        "# Scale:\n%s\n\
+        "# Bud Music Box program path:\n%s\n\
+         # Generation seed:\n%s\n\
+         # Scale:\n%s\n\
          # MIDI root note:\n%s\n\
          # Tempo:\n%s bpm\n\
          # General MIDI programs:\n%s\n\
          # Monoid:\n%s\n\
          # Multi-patterns:\n%s\n\
          # Colored multi-patterns:\n%s"
+        (st.prgm_path |> Strings.indent 4)
+        (st.generation_seed |> string_of_int |> Strings.indent 4)
         (st.scale |> Options.map Scales.to_string |> Options.value "Not set."
             |> Strings.indent 4)
         (st.root |> Options.map MIDI.note_to_string |> Options.value "Not set."
@@ -80,14 +83,13 @@ let state_to_string st =
                 name
                 (MultiPatterns.multiplicity mpat)
                 (MultiPatterns.length mpat)
-                (MultiPatterns. arity mpat)
+                (MultiPatterns.arity mpat)
                 (MultiPatterns.to_string mpat))
             "\n"
             st.multi_patterns))
         (Strings.indent 4 (Strings.from_list
             (fun (name, cpat) ->
-                Printf.sprintf "%s = %s" name
-                    (ColoredElements.to_string MultiPatterns.to_string cpat))
+                Printf.sprintf "%s = %s" name (ColoredMultiPatterns.to_string cpat))
             "\n"
             st.colored_multi_patterns))
         |> Strings.indent 4
@@ -95,22 +97,28 @@ let state_to_string st =
 (* Returns an option on the multi-pattern of name name in the state st. If there is no such
  * multi-pattern, None is returned. *)
 let multi_pattern_with_name st name =
+    assert (Files.is_name name);
     List.assoc_opt name st.multi_patterns
 
 (* Returns an option on the colored multi-pattern of name name in the state st. If there is
  * no such colored multi-pattern, None is returned. *)
 let colored_multi_pattern_with_name env name =
+    assert (Files.is_name name);
     List.assoc_opt name env.colored_multi_patterns
 
 (* Returns the state obtained by adding the multi-pattern mpat with the name name. If there
  * is already a multi-pattern with this name, it is overwritten. *)
 let add_multi_pattern st name mpat =
+    assert (Files.is_name name);
+    assert (MultiPatterns.is_valid mpat);
     let new_lst = (name, mpat) :: (List.remove_assoc name st.multi_patterns) in
     {st with multi_patterns = new_lst}
 
 (* Returns the state obtained by adding the colored multi-pattern cpat with the name
  * name. If there is already a colored multi-pattern with this name, it is overwritten. *)
 let add_colored_multi_pattern st name cpat =
+    assert (Files.is_name name);
+    assert (ColoredMultiPatterns.is_valid cpat);
     let new_lst = (name, cpat) :: (List.remove_assoc name st.colored_multi_patterns) in
     {st with colored_multi_patterns = new_lst}
 
@@ -118,9 +126,11 @@ let add_colored_multi_pattern st name cpat =
  * state st. Returns the status obtained from st to report failure or success
  * information. *)
 let create_files st mpat =
-    let path_abc = Paths.remove_extension st.path_bmb ^ ".abc" |> Paths.new_distinct in
-    let path_ps = Paths.remove_extension st.path_bmb ^ ".ps" |> Paths.new_distinct in
-    let path_mid = Paths.remove_extension st.path_bmb ^ ".mid" |> Paths.new_distinct in
+    assert (MultiPatterns.is_valid mpat);
+    let path' = Paths.remove_extension st.prgm_path in
+    let path_abc = Printf.sprintf "%s_%d.abc" path' st.generation_seed in
+    let path_ps = Printf.sprintf "%s_%d.ps" path' st.generation_seed in
+    let path_mid = Printf.sprintf "%s_%d.mid" path' st.generation_seed in
     if Option.is_none st.scale then
         set_fail_message st "Scale not specified."
     else if Option.is_none st.root then
@@ -148,20 +158,21 @@ let create_files st mpat =
             |> Sys.command |> ignore;
             Printf.sprintf "abc2midi %s -o %s &> /dev/null" path_abc path_mid
             |> Sys.command |> ignore;
-            let st' = set_path_mid st path_mid in
-            success st'
+            st
         end
 
 (* Plays the track from the state st and returns the status obtained from st to report
 * failure or success information. *)
 let play_track st mpat =
+    assert (MultiPatterns.is_valid mpat);
     let st' = create_files st mpat in
     if not st'.success then
         st'
     else
         let err =
-            Printf.sprintf "timidity %s &> /dev/null" (Option.get st'.path_mid)
-            |> Sys.command
+            let path' = Paths.remove_extension st.prgm_path in
+            let path_mid = Printf.sprintf "%s_%d.mid" path' st.generation_seed in
+            Printf.sprintf "timidity %s &> /dev/null" path_mid |> Sys.command
         in
         if err <> 0 then
             set_fail_message st' "Timidity failure."
@@ -233,8 +244,7 @@ let execute_instruction instr st =
                     st
                     "Degree monoid not compatible with existing multi-patterns."
             else if st.colored_multi_patterns |> List.map snd
-            |> List.map ColoredElements.element
-            |> List.for_all (MultiPatterns.is_on_degree_monoid dm) |> not then
+            |> List.for_all (ColoredMultiPatterns.is_on_degree_monoid dm) |> not then
                 set_fail_message
                     st
                     "Degree monoid not compatible with existing colored multi-patterns."
@@ -293,7 +303,7 @@ let execute_instruction instr st =
             else
                 let res = MultiPatterns.concatenate_repeat (Option.get mpat) k in
                 let st' = add_multi_pattern st res_name res in
-                set_success_message st' "Concatenate repetition computed and added.\n"
+                set_success_message st' "Concatenate repetition computed and added."
         |Programs.Stack (res_name, mpat_names_lst) ->
             let mpat_lst = mpat_names_lst |> List.map (multi_pattern_with_name st) in
             if mpat_lst |> List.exists Option.is_none then
@@ -382,7 +392,7 @@ let execute_instruction instr st =
                 if List.length in_colors <> MultiPatterns.arity mpat then
                     set_fail_message st "Bad number of input colors."
                 else
-                    let cpat = ColoredElements.make out_color mpat in_colors in
+                    let cpat = ColoredMultiPatterns.make out_color mpat in_colors in
                     let st' = add_colored_multi_pattern st res_name cpat in
                     set_success_message st' "Colored multi-pattern added."
         |Programs.MonoColorize (res_name, mpat_name, out_color, in_color) ->
@@ -392,11 +402,10 @@ let execute_instruction instr st =
             else
                 let mpat = Option.get mpat in
                 let n = MultiPatterns.arity mpat in
-                let cpat =
-                    ColoredElements.make out_color mpat (List.init n (Fun.const in_color))
-                in
+                let in_colors = List.init n (Fun.const in_color) in
+                let cpat = ColoredMultiPatterns.make out_color mpat in_colors in
                 let st' = add_colored_multi_pattern st res_name cpat in
-                set_success_message st' "Monocolored multi-pattern added.\n"
+                set_success_message st' "Monocolored multi-pattern added."
         |Programs.Generate (res_name, shape, size, color, cpat_names_lst) ->
             let cpat_lst =
                 cpat_names_lst |> List.map (colored_multi_pattern_with_name st)
@@ -405,14 +414,9 @@ let execute_instruction instr st =
                 set_fail_message st "Unknown colored multi-pattern name."
             else
                 let cpat_lst' = cpat_lst |> List.map Option.get in
-                let m =
-                    MultiPatterns.multiplicity
-                        (ColoredElements.element (List.hd cpat_lst'))
-                in
+                let m = ColoredMultiPatterns.multiplicity (List.hd cpat_lst') in
                 if cpat_lst'
-                |> List.exists
-                    (fun cpat ->
-                        MultiPatterns.multiplicity (ColoredElements.element cpat) <> m)
+                |> List.exists (fun cpat -> ColoredMultiPatterns.multiplicity cpat <> m)
                 then
                     set_fail_message st "Bad multiplicity of colored multi-patterns."
                 else
@@ -422,16 +426,20 @@ let execute_instruction instr st =
                             (Generation.make_parameters size shape)
                             color
                             dm
-                            cpat_lst'
+                            (cpat_lst' |> List.map ColoredMultiPatterns.colored_element)
                     in
                     let st' = add_multi_pattern st res_name res in
                     set_success_message st' "Multi-pattern generated."
 
-(* Executes the program prgm located in the program file of path path_bmb. This function
- * only produces the side effects prescribed by the program. *)
-let execute prgm path_bmb =
-    assert (Sys.file_exists path_bmb);
+(* Executes the program prgm located in the program file of path prgm_path and with
+ * generation_seed as generation seed for the random generation. This function only produces
+ * the side effects prescribed by the program. *)
+let execute prgm prgm_path generation_seed =
+    assert (Sys.file_exists prgm_path);
+    assert (generation_seed >= 0);
     Outputs.print_information "Execution...\n";
+    let st = empty_state prgm_path generation_seed in
+    Random.init generation_seed;
     prgm
     |> Programs.instructions
     |> List.fold_left
@@ -441,16 +449,18 @@ let execute prgm path_bmb =
                 (Option.get res.message) ^ "\n"
                 |> if res.success then Outputs.print_success else Outputs.print_error;
             res)
-        (empty_state path_bmb)
+        st
     |> ignore;
     Outputs.print_success "End of execution.\n"
 
-(* Executes the program contained in the file of path path_bmb. *)
-let execute_path path_bmb =
-    assert (Sys.file_exists path_bmb);
+(* Executes the program contained in the file of path prgm_path and with generation_seed as
+ * generation seed for random generation. *)
+let execute_path prgm_path generation_seed =
+    assert (Sys.file_exists prgm_path);
+    assert (generation_seed >= 0);
     try
-        let prgm = Files.path_to_program path_bmb in
-        execute prgm path_bmb
+        let prgm = Files.path_to_program prgm_path in
+        execute prgm prgm_path generation_seed
     with
         |Lexer.Error ei ->
             Printf.sprintf "Syntax error: %s\n" (Lexer.error_information_to_string ei)

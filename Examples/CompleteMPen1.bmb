@@ -2,6 +2,7 @@ scale 2 2 3 2 3
 root 60
 tempo 192
 sounds 24 25
+sounds 0 0
 monoid add
 
 multi-pattern p1 0 1 2 + -5 -1 0
@@ -14,11 +15,7 @@ colorize c2 %a p2 %in
 colorize c3 %b p3 %in
 colorize c4 %a p4 %in %in
 
-generate g homogeneous 32 %in c1 c2 c3 c4
-
-multi-pattern beg 0 0 0 . + . -5 -5 -5
-multi-pattern end 3 2 . 1 . . 0 . . . + -8 -7 . -6 . . . -5 . .
-concatenate res beg g end
+generate res homogeneous 32 %in c1 c2 c3 c4
 
 show
 

@@ -100,8 +100,9 @@ write NAME
     + a MIDI file;
   for the musical phrase encoded by the multi-pattern which is the value of `NAME`. The
   created files are obtained by adding adequate extensions to the path of the run `Bud Music
-  Box` program. A suffix `_N` is inserted just before the file extensions to create unique
-  file names. These files are put in the same directory as the one of the run program.
+  Box` program. A suffix `_N` is inserted just before the file extensions where `N` is the
+  seed of the random generation algorithm. This seed depends on when the program is run. It
+  can be specified by the argument `--seed N`.
 
 For instance, if the path of the run program is `Samples/First.bmb` and `pat` is a
 well-defined identified of a multi-pattern, `write pat` creates the files

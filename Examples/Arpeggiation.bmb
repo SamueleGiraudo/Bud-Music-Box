@@ -17,9 +17,9 @@ stack p_4 p p p p
 multi-pattern ar 0 . . . + . 4 . . + . . 2 . + . . . 7
 
 {Colorization of the multi-patterns.}
-colorize c_p_4_1 %a | p_4 | %b %b %b %b
-colorize c_p_4_2 %b | p_4 | %b %b %b %b
-colorize c_ar %b | ar | %c
+colorize c_p_4_1 %a p_4 %b %b %b %b
+colorize c_p_4_2 %b p_4 %b %b %b %b
+colorize c_ar %b ar %c
 
 generate res full 3 %a c_p_4_1 c_p_4_2 c_ar
 

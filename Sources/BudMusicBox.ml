@@ -53,7 +53,7 @@ if Arguments.exists "--help" then begin
     exit 0
 end;
 
-(* Sets the seed of the random generator. *)
+(* Read the seed of the random generator. *)
 let s =
     if Arguments.exists "--seed" then begin
         let arg_lst = Arguments.option_values "--seed" in
@@ -72,9 +72,8 @@ let s =
                 end
     end
     else
-        Unix.time () |> int_of_float
+        (Unix.time () |> int_of_float) mod 8192
 in
-Random.init s;
 Printf.sprintf "Seed of the random generator set to %d.\n" s |> Outputs.print_information;
 
 (* Tests if there is a single file path. *)
@@ -101,7 +100,7 @@ if not (Paths.has_extension Files.extension path) then begin
 end;
 
 (* Considers the program and executes it. *)
-Execution.execute_path path;
+Execution.execute_path path s;
 
 exit 0
 
