@@ -55,8 +55,11 @@ The output communicates three types of messages:
 ## Errors
 
 ### Syntax and type errors
-The error message `?? Syntax error: in file PATH at line NUM_L and column NUM_C: parsing
-error` says that there is an error in the `.bmb` file at path `PATH`, located on the
+The error message
+```
+?? Syntax error: in file PATH at line NUM_L and column NUM_C: parsing error.
+```
+says that there is an error in the `.bmb` file at path `PATH`, located on the
 instruction having `NUM_L` as line number and `NUM_C` as column number.
 
 These errors occur in two cases:

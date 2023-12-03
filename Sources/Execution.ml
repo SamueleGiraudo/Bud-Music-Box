@@ -1,6 +1,6 @@
 (* Author: Samuele Giraudo
  * Creation: nov. 2023
- * Modifications: nov. 2023
+ * Modifications: nov. 2023, dec. 2023
  *)
 
 (* The state is the internal memory during the execution of a program. It contains also
@@ -154,9 +154,9 @@ let create_files st mpat =
             let file_abc = open_out path_abc in
             Printf.fprintf file_abc "%s\n" (Option.get str_abc);
             close_out file_abc;
-            Printf.sprintf "abcm2ps %s -O %s &> /dev/null" path_abc path_ps
+            Printf.sprintf "abcm2ps \"%s\" -O \"%s\" &> /dev/null" path_abc path_ps
             |> Sys.command |> ignore;
-            Printf.sprintf "abc2midi %s -o %s &> /dev/null" path_abc path_mid
+            Printf.sprintf "abc2midi \"%s\" -o \"%s\" &> /dev/null" path_abc path_mid
             |> Sys.command |> ignore;
             st
         end
@@ -172,7 +172,7 @@ let play_track st mpat =
         let err =
             let path' = Paths.remove_extension st.prgm_path in
             let path_mid = Printf.sprintf "%s_%d.mid" path' st.generation_seed in
-            Printf.sprintf "timidity %s &> /dev/null" path_mid |> Sys.command
+            Printf.sprintf "timidity \"%s\" &> /dev/null" path_mid |> Sys.command
         in
         if err <> 0 then
             set_fail_message st' "Timidity failure."

@@ -20,6 +20,7 @@ type generation_shapes =
 
 (* Returns the bud grammar with the specified attributes. *)
 let make operad generators initial_color =
+    assert (generators <> []);
     assert (generators |> List.for_all (ColoredElements.belongs operad));
     {operad = operad; generators = generators; initial_color = initial_color}
 
@@ -34,6 +35,7 @@ let colored_unity budg color =
 (* Returns the partial composition of y at position i in x in the colored operad of the bud
  * grammar budg. *)
 let partial_composition budg x i y =
+    assert (budg.generators <> []);
     assert (1 <= i && i <= arity budg x);
     assert (ColoredElements.out_color y = ColoredElements.in_color x i);
     let z' =
@@ -54,6 +56,7 @@ let partial_composition budg x i y =
 (* Returns the full composition of each elements of the list lst in x in the colored operad
  * of the bud grammar budg. *)
 let full_composition budg x lst =
+    assert (budg.generators <> []);
     assert ((arity budg x) = (List.length lst));
     assert (List.for_all2 (=) (ColoredElements.in_colors x)
     (lst |> List.map ColoredElements.out_color));
@@ -74,11 +77,13 @@ let colored_composition budg x y =
 
 (* Returns the list of the generators of the bud grammar budg which have c as out color. *)
 let generators_with_out_color budg c =
+    assert (budg.generators <> []);
     budg.generators |> List.filter (fun g -> ColoredElements.out_color g = c)
 
 (* Returns the colored element obtained by using the partial random generator algorithm on
  * the bug grammar budg after nb_iter iterations. *)
 let partial_random_generator budg nb_iter =
+    assert (budg.generators <> []);
     assert (nb_iter >= 0);
     Lists.interval 1 nb_iter
     |> List.fold_left
@@ -89,9 +94,7 @@ let partial_random_generator budg nb_iter =
             else
                 let i = 1 + Random.int ar in
                 let candidates =
-                    generators_with_out_color
-                        budg
-                        (ColoredElements.in_color res i)
+                    generators_with_out_color budg (ColoredElements.in_color res i)
                 in
                 if candidates = [] then
                     res
@@ -103,13 +106,13 @@ let partial_random_generator budg nb_iter =
 (* Returns the colored element obtained by using the full random generator algorithm on the
  * bug grammar budg after nb_iter iterations. *)
 let full_random_generator budg nb_iter =
+    assert (budg.generators <> []);
     assert (nb_iter >= 0);
     Lists.interval 1 nb_iter
     |> List.fold_left
         (fun res _ ->
             let candidates =
-                ColoredElements.in_colors res
-                |> List.map (generators_with_out_color budg)
+                ColoredElements.in_colors res |> List.map (generators_with_out_color budg)
             in
             if candidates |> List.exists ((=) []) then
                 res
@@ -123,6 +126,7 @@ let full_random_generator budg nb_iter =
  * at each step a generator and performs to the right a colored composition with the element
  * generated at the previous step. *)
 let homogeneous_random_generator budg nb_iter =
+    assert (budg.generators <> []);
     assert (nb_iter >= 0);
     Lists.interval 1 nb_iter |> List.fold_left
         (fun res _ ->
@@ -133,6 +137,7 @@ let homogeneous_random_generator budg nb_iter =
 (* Returns an element generated at random by one of the three algorithms specified by shape.
  * The random generation uses the bud generating system budg and uses nb_iter iterations. *)
 let random_generator budg nb_iter shape =
+    assert (budg.generators <> []);
     assert (nb_iter >= 0);
     match shape with
         |Partial -> partial_random_generator budg nb_iter
